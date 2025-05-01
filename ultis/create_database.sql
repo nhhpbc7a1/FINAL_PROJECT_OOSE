@@ -1,0 +1,260 @@
+-- Database creation
+CREATE DATABASE IF NOT EXISTS FINAL_PROJECT_OOSE;
+USE FINAL_PROJECT_OOSE;
+
+-- Create Role table
+CREATE TABLE IF NOT EXISTS Role (
+    roleId INT AUTO_INCREMENT PRIMARY KEY,
+    roleName VARCHAR(50) NOT NULL
+);
+
+-- Create User table
+CREATE TABLE IF NOT EXISTS User (
+    userId INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    fullName VARCHAR(100) NOT NULL,
+    phoneNumber VARCHAR(20) UNIQUE NOT NULL,
+    address VARCHAR(255),
+    accountStatus ENUM('active', 'inactive', 'pending') DEFAULT 'pending',
+    createdDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    roleId INT NOT NULL,
+    FOREIGN KEY (roleId) REFERENCES Role(roleId)
+);
+
+-- Create Notification table
+CREATE TABLE IF NOT EXISTS Notification (
+    notificationId INT AUTO_INCREMENT PRIMARY KEY,
+    userId INT,
+    title VARCHAR(100) NOT NULL,
+    content TEXT NOT NULL,
+    isRead BOOLEAN DEFAULT FALSE,
+    createdDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (userId) REFERENCES User(userId)
+);
+
+-- Create Hospital table
+CREATE TABLE IF NOT EXISTS Hospital (
+    hospitalId INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    phoneNumber VARCHAR(20) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    website VARCHAR(255),
+    description TEXT,
+    logo VARCHAR(255),
+    workingHours TEXT
+);
+
+-- Create Patient table
+CREATE TABLE IF NOT EXISTS Patient (
+    patientId INT AUTO_INCREMENT PRIMARY KEY,
+    userId INT UNIQUE,
+    dob DATE NOT NULL,
+    gender ENUM('male', 'female', 'other') NOT NULL,
+    bloodType VARCHAR(10),
+    healthInsuranceNumber VARCHAR(50),
+    emergencyContact VARCHAR(100),
+    medicalHistory TEXT,
+    FOREIGN KEY (userId) REFERENCES User(userId)
+);
+
+-- Create Administrator table
+CREATE TABLE IF NOT EXISTS Administrator (
+    adminId INT AUTO_INCREMENT PRIMARY KEY,
+    userId INT UNIQUE,
+    department VARCHAR(100),
+    position VARCHAR(100),
+    FOREIGN KEY (userId) REFERENCES User(userId)
+);
+
+-- Create Doctor table
+CREATE TABLE IF NOT EXISTS Doctor (
+    doctorId INT AUTO_INCREMENT PRIMARY KEY,
+    userId INT UNIQUE,
+    specialtyId INT,
+    licenseNumber VARCHAR(50) NOT NULL,
+    experience INT,
+    education TEXT,
+    certifications TEXT,
+    bio TEXT,
+    FOREIGN KEY (userId) REFERENCES User(userId)
+);
+
+-- Create Specialty table
+CREATE TABLE IF NOT EXISTS Specialty (
+    specialtyId INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT
+);
+
+-- Add foreign key to Doctor table
+ALTER TABLE Doctor
+ADD FOREIGN KEY (specialtyId) REFERENCES Specialty(specialtyId);
+
+-- Create Schedule table
+CREATE TABLE IF NOT EXISTS Schedule (
+    scheduleId INT AUTO_INCREMENT PRIMARY KEY,
+    doctorId INT,
+    workDate DATE NOT NULL,
+    startTime TIME NOT NULL,
+    endTime TIME NOT NULL,
+    status ENUM('available', 'booked', 'unavailable') DEFAULT 'available',
+    FOREIGN KEY (doctorId) REFERENCES Doctor(doctorId)
+);
+
+-- Create Service table
+CREATE TABLE IF NOT EXISTS Service (
+    serviceId INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    price DECIMAL(10, 2) NOT NULL,
+    duration INT,  -- in minutes
+    status ENUM('active', 'inactive') DEFAULT 'active'
+);
+
+-- Create Appointment table
+CREATE TABLE IF NOT EXISTS Appointment (
+    appointmentId INT AUTO_INCREMENT PRIMARY KEY,
+    patientId INT,
+    doctorId INT,
+    scheduleId INT,
+    reason TEXT,
+    status ENUM('pending', 'confirmed', 'cancelled', 'completed') DEFAULT 'pending',
+    createdDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (patientId) REFERENCES Patient(patientId),
+    FOREIGN KEY (doctorId) REFERENCES Doctor(doctorId),
+    FOREIGN KEY (scheduleId) REFERENCES Schedule(scheduleId)
+);
+
+-- Create AppointmentDetails table
+CREATE TABLE IF NOT EXISTS AppointmentDetails (
+    appointmentDetailsId INT AUTO_INCREMENT PRIMARY KEY,
+    appointmentId INT,
+    serviceId INT,
+    notes TEXT,
+    FOREIGN KEY (appointmentId) REFERENCES Appointment(appointmentId),
+    FOREIGN KEY (serviceId) REFERENCES Service(serviceId)
+);
+
+-- Create MedicalRecord table
+CREATE TABLE IF NOT EXISTS MedicalRecord (
+    recordId INT AUTO_INCREMENT PRIMARY KEY,
+    appointmentId INT,
+    diagnosis TEXT,
+    notes TEXT,
+    recommendations TEXT,
+    createdDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    followupDate DATE,
+    FOREIGN KEY (appointmentId) REFERENCES Appointment(appointmentId)
+);
+
+-- Create LabTechnician table
+CREATE TABLE IF NOT EXISTS LabTechnician (
+    technicianId INT AUTO_INCREMENT PRIMARY KEY,
+    userId INT UNIQUE,
+    specialization VARCHAR(100),
+    FOREIGN KEY (userId) REFERENCES User(userId)
+);
+
+-- Create Test table
+CREATE TABLE IF NOT EXISTS Test (
+    testId INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    price DECIMAL(10, 2) NOT NULL,
+    category VARCHAR(100)
+);
+
+-- Create TestResult table
+CREATE TABLE IF NOT EXISTS TestResult (
+    resultId INT AUTO_INCREMENT PRIMARY KEY,
+    recordId INT,
+    testId INT,
+    technicianId INT,
+    result TEXT,
+    performedDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('pending', 'completed', 'cancelled') DEFAULT 'pending',
+    attachment VARCHAR(255),
+    FOREIGN KEY (recordId) REFERENCES MedicalRecord(recordId),
+    FOREIGN KEY (testId) REFERENCES Test(testId),
+    FOREIGN KEY (technicianId) REFERENCES LabTechnician(technicianId)
+);
+
+-- Create Medication table
+CREATE TABLE IF NOT EXISTS Medication (
+    medicationId INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    dosage VARCHAR(50),
+    price DECIMAL(10, 2) NOT NULL,
+    category VARCHAR(100),
+    manufacturer VARCHAR(100),
+    sideEffects TEXT
+);
+
+-- Create Prescription table
+CREATE TABLE IF NOT EXISTS Prescription (
+    prescriptionId INT AUTO_INCREMENT PRIMARY KEY,
+    recordId INT,
+    doctorId INT,
+    prescriptionDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    notes TEXT,
+    status ENUM('active', 'completed', 'cancelled') DEFAULT 'active',
+    FOREIGN KEY (recordId) REFERENCES MedicalRecord(recordId),
+    FOREIGN KEY (doctorId) REFERENCES Doctor(doctorId)
+);
+
+-- Create PrescriptionDetail table
+CREATE TABLE IF NOT EXISTS PrescriptionDetail (
+    detailId INT AUTO_INCREMENT PRIMARY KEY,
+    prescriptionId INT,
+    medicationId INT,
+    dosage VARCHAR(100),
+    frequency VARCHAR(100),
+    duration VARCHAR(100),
+    instructions TEXT,
+    FOREIGN KEY (prescriptionId) REFERENCES Prescription(prescriptionId),
+    FOREIGN KEY (medicationId) REFERENCES Medication(medicationId)
+);
+
+-- Create Payment table
+CREATE TABLE IF NOT EXISTS Payment (
+    paymentId INT AUTO_INCREMENT PRIMARY KEY,
+    appointmentId INT,
+    amount DECIMAL(10, 2) NOT NULL,
+    method ENUM('credit_card', 'debit_card', 'cash', 'bank_transfer', 'e_wallet') NOT NULL,
+    status ENUM('pending', 'completed', 'failed', 'refunded') DEFAULT 'pending',
+    transactionId VARCHAR(100),
+    paymentDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (appointmentId) REFERENCES Appointment(appointmentId)
+);
+
+-- Create EmailVerification table
+CREATE TABLE IF NOT EXISTS EmailVerification (
+    verificationId INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    verificationCode VARCHAR(50) NOT NULL,
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expiresAt TIMESTAMP,
+    verified BOOLEAN DEFAULT FALSE
+);
+
+-- Create IdentityVerification table
+CREATE TABLE IF NOT EXISTS IdentityVerification (
+    verificationId INT AUTO_INCREMENT PRIMARY KEY,
+    patientId INT UNIQUE,
+    idNumber VARCHAR(50) NOT NULL,
+    idType VARCHAR(50) NOT NULL,
+    verificationStatus ENUM('pending', 'verified', 'rejected') DEFAULT 'pending',
+    verificationDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (patientId) REFERENCES Patient(patientId)
+);
+
+-- Insert default roles
+INSERT INTO Role (roleName) VALUES 
+('administrator'), 
+('doctor'), 
+('patient'), 
+('lab_technician'); 
