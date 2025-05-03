@@ -6,6 +6,10 @@ router.use((req, res, next) => {
     next();
   });
 
+// router.get('/', (req, res) => {
+//   res.render('patient'); // sẽ render views/patient.hbs
+// });
+
 router.get('/', async function (req, res) {
     res.render('homepage');
 });
