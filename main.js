@@ -60,8 +60,7 @@ app.get('/', async function (req, res) {
 
 
 
-import patientRouter from './routes/patient/patient.route.js'
-//app.use('/patient', authPatient, patientRouter);
+import patientRouter from './routes/patient/patient.route.js';
 app.use('/patient', patientRouter);
 
 import doctorRouter from './routes/doctor/doctor.route.js'
