@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EternalCare - Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/public/css/admin-side/admin-layout.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo-container">
+            <img src="/public/images/logo.png" alt="EternalCare Logo" class="logo-img">
+            <div class="logo-text">EternalCare</div>
+        </div>
+
+        <div class="menu-title">
+            Admin Dashboard
+            <i class="fas fa-ellipsis-v"></i>
+        </div>
+
+        <a href="/admin/dashboard" class="menu-item {{#if (eq currentRoute 'dashboard')}}active{{/if}}">
+            <i class="fas fa-th-large"></i>
+            Dashboard
+        </a>
+
+        <!-- Medical Staff Management -->
+        <div class="menu-category">
+            <div class="menu-category-header" data-toggle="collapse" data-target="#staffManagement" aria-expanded="true">
+                <i class="fas fa-user-md"></i>
+                <span>Medical Staff</span>
+                <i class="fas fa-chevron-down ml-auto"></i>
+            </div>
+            <div class="collapse show" id="staffManagement">
+                <a href="/admin/specialty" class="menu-subitem {{#if (eq currentRoute 'specialty')}}active{{/if}}">
+                    <i class="fas fa-stethoscope"></i>
+                    Specialty Management
+                </a>
+                <a href="/admin/manage_doctor" class="menu-subitem {{#if (eq currentRoute 'doctors')}}active{{/if}}">
+                    <i class="fas fa-user-md"></i>
+                    Doctor Management
+                </a>
+                <a href="/admin/lab-technicians" class="menu-subitem {{#if (eq currentRoute 'lab')}}active{{/if}}">
+                    <i class="fas fa-flask"></i>
+                    Lab Technician Management
+                </a>
+            </div>
+        </div>
+
+        <!-- Resource Management -->
+        <div class="menu-category">
+            <div class="menu-category-header" data-toggle="collapse" data-target="#resourceManagement" aria-expanded="false">
+                <i class="fas fa-clipboard-list"></i>
+                <span>Resources</span>
+                <i class="fas fa-chevron-down ml-auto"></i>
+            </div>
+            <div class="collapse" id="resourceManagement">
+                <a href="/admin/medications" class="menu-subitem {{#if (eq currentRoute 'medications')}}active{{/if}}">
+                    <i class="fas fa-pills"></i>
+                    Medication Library
+                </a>
+                <a href="/admin/services" class="menu-subitem {{#if (eq currentRoute 'services')}}active{{/if}}">
+                    <i class="fas fa-clipboard-list"></i>
+                    Services & Tests
+                </a>
+                <a href="/admin/rooms" class="menu-subitem {{#if (eq currentRoute 'rooms')}}active{{/if}}">
+                    <i class="fas fa-door-open"></i>
+                    Room Management
+                </a>
+            </div>
+        </div>
+
+        <!-- Patient Services -->
+        <div class="menu-category">
+            <div class="menu-category-header" data-toggle="collapse" data-target="#patientServices" aria-expanded="false">
+                <i class="fas fa-user-injured"></i>
+                <span>Patient Services</span>
+                <i class="fas fa-chevron-down ml-auto"></i>
+            </div>
+            <div class="collapse" id="patientServices">
+                <a href="/admin/patients" class="menu-subitem {{#if (eq currentRoute 'patients')}}active{{/if}}">
+                    <i class="fas fa-user-injured"></i>
+                    Patient Management
+                </a>
+                <a href="/admin/appointments" class="menu-subitem {{#if (eq currentRoute 'appointments')}}active{{/if}}">
+                    <i class="fas fa-calendar-check"></i>
+                    Appointment Management
+                </a>
+                <a href="/admin/schedule" class="menu-subitem {{#if (eq currentRoute 'schedule')}}active{{/if}}">
+                    <i class="fas fa-calendar-alt"></i>
+                    Work Schedule
+                </a>
+            </div>
+        </div>
+
+        <!-- System -->
+        <div class="menu-category">
+            <div class="menu-category-header" data-toggle="collapse" data-target="#systemManagement" aria-expanded="false">
+                <i class="fas fa-cog"></i>
+                <span>System</span>
+                <i class="fas fa-chevron-down ml-auto"></i>
+            </div>
+            <div class="collapse" id="systemManagement">
+                <a href="/admin/reports" class="menu-subitem {{#if (eq currentRoute 'reports')}}active{{/if}}">
+                    <i class="fas fa-chart-bar"></i>
+                    Hospital Statistics
+                    <span class="badge badge-warning badge-pill">New</span>
+                </a>
+                <a href="/admin/settings" class="menu-subitem {{#if (eq currentRoute 'settings')}}active{{/if}}">
+                    <i class="fas fa-cog"></i>
+                    System Settings
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <h4 class="mb-0 mr-3">Admin Side</h4>
+                <div class="search-container d-none">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search across the system...">
+                </div>
+            </div>
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <div class="user-info">
+                    <div class="user-name">Admin User</div>
+                    <div class="user-role">Administrator</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <a href="/admin/dashboard" class="back-link d-none">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
+        </a>
+
+        <div class="content-card">
+            {{{body}}}
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Initialize feather icons
+            feather.replace();
+
+            // Keep the current category expanded based on active item
+            $('.menu-subitem.active').parents('.collapse').addClass('show');
+
+            // Add active class to parent category when child is active
+            $('.menu-subitem.active').parents('.menu-category').addClass('active-category');
+
+            // Global search functionality
+            const searchInput = $('.header .search-container input');
+
+            searchInput.on('keypress', function(e) {
+                if (e.which === 13) { // Enter key
+                    const searchTerm = $(this).val().trim();
+                    if (searchTerm) {
+                        // You can implement actual search functionality here
+                        alert('Searching for: ' + searchTerm);
+                        // For now, just redirect to the dashboard with a search parameter
+                        // window.location.href = '/admin/dashboard?search=' + encodeURIComponent(searchTerm);
+                    }
+                }
+            });
+
+            // Add scroll effect to header
+            $(window).scroll(function() {
+                if ($(this).scrollTop() > 10) {
+                    $('.header').addClass('header-scrolled');
+                } else {
+                    $('.header').removeClass('header-scrolled');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
