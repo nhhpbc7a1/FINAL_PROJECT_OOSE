@@ -6,6 +6,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import fs from 'fs/promises'; // Import fs promises for file deletion
+import db from '../../ultis/db.js'; // Import database connection for direct queries
 
 // Định nghĩa __dirname cho ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -87,34 +88,70 @@ router.get('/doctors/add', async function (req, res) {
     res.locals.pageTitle = 'Add New Doctor';
     const specialties = await specialtyService.findAll();
 
+    // Kiểm tra xem có dữ liệu form đã lưu từ lần submit trước không
+    let formData = {};
+    if (req.session.formData) {
+      formData = req.session.formData;
+      // Xóa dữ liệu form sau khi đã sử dụng
+      delete req.session.formData;
+    }
+
+    // Kiểm tra xem có thông báo lỗi không
+    let error = null;
+    if (req.session.flashMessage && req.session.flashMessage.type === 'danger') {
+      error = req.session.flashMessage.message;
+      delete req.session.flashMessage;
+    }
+
     res.render('vwAdmin/manage_doctor/add_doctor', {
       specialties,
-      doctor: {}, // Empty object for the form
+      doctor: formData, // Sử dụng dữ liệu form đã lưu hoặc object rỗng
+      error,
       layout: 'admin' // Explicitly set layout if needed
     });
   } catch (error) {
     console.error('Error loading add doctor form:', error);
     // Add flash message for error redirection
-    req.session.flashMessage = { type: 'danger', message: 'Could not load the add doctor form.' };
+    req.session.flashMessage = { type: 'danger', message: 'Không thể tải form thêm bác sĩ.' };
     res.redirect('/admin/manage_doctor');
   }
 });
 
 // POST: Handle adding a new doctor
-router.post('/doctors/add', async function (req, res) {
+router.post('/doctors/add', async function (req, res, next) {
   let profileImagePath = null; // Define outside try block
-  const specialties = await specialtyService.findAll(); // Fetch specialties upfront for error case
+
+  // Lưu URL để quay lại form nếu có lỗi
+  req.session.returnTo = '/admin/doctors/add';
 
   try {
     const { fullName, email, phoneNumber, address, gender, dob, specialty,
             experience, education, certifications, licenseNumber, bio, accountStatus } = req.body;
 
+    // --- Kiểm tra dữ liệu đầu vào ---
+    if (!email || !fullName || !phoneNumber || !specialty || !licenseNumber) {
+      throw new Error('Vui lòng điền đầy đủ thông tin bắt buộc.');
+    }
+
     // --- File Upload Handling ---
     if (req.files && req.files.profilePhoto) {
       const profilePhoto = req.files.profilePhoto;
+
+      // Kiểm tra loại file
+      const fileExtension = path.extname(profilePhoto.name).toLowerCase();
+      const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif'];
+
+      if (!allowedExtensions.includes(fileExtension)) {
+        throw new Error('Chỉ chấp nhận file hình ảnh có định dạng JPG, JPEG, PNG hoặc GIF.');
+      }
+
+      // Kiểm tra kích thước file (giới hạn 5MB)
+      if (profilePhoto.size > 5 * 1024 * 1024) {
+        throw new Error('Kích thước file không được vượt quá 5MB.');
+      }
+
       const timestamp = Date.now();
       const safeEmailPrefix = email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '_'); // Sanitize email for filename
-      const fileExtension = path.extname(profilePhoto.name); // Use path.extname
       const filename = `${safeEmailPrefix}_${timestamp}${fileExtension}`;
       const uploadPath = path.join(UPLOAD_DIR, filename);
 
@@ -124,8 +161,10 @@ router.post('/doctors/add', async function (req, res) {
 
     // --- Database Operations ---
     // 1. Create User
-    // IMPORTANT: Hash password before saving in a real app! Using placeholder.
-    const hashedPassword = await userService.hashPassword('password123'); // Example hashing
+    // Generate a default password (you might want to implement a more secure way to handle this)
+    const defaultPassword = 'password123'; // In a real app, consider generating a random password
+    const hashedPassword = await userService.hashPassword(defaultPassword);
+
     const userData = {
         email,
         password: hashedPassword, // Store hashed password
@@ -141,7 +180,7 @@ router.post('/doctors/add', async function (req, res) {
     const newUser = await userService.add(userData); // Assume add returns the created user with ID
 
     if (!newUser || !newUser.userId) {
-        throw new Error('Failed to create user account.');
+        throw new Error('Không thể tạo tài khoản người dùng.');
     }
 
     // 2. Create Doctor Record
@@ -149,7 +188,7 @@ router.post('/doctors/add', async function (req, res) {
         userId: newUser.userId,
         specialtyId: parseInt(specialty, 10), // Ensure specialty is integer
         licenseNumber,
-        experience: parseInt(experience, 10), // Ensure experience is integer
+        experience: parseInt(experience, 10) || 0, // Ensure experience is integer, default to 0
         education,
         certifications,
         bio
@@ -157,7 +196,7 @@ router.post('/doctors/add', async function (req, res) {
     await doctorService.add(doctorData);
 
     // --- Success Response ---
-    req.session.flashMessage = { type: 'success', message: 'Doctor added successfully!' };
+    req.session.flashMessage = { type: 'success', message: 'Thêm bác sĩ thành công!' };
     res.redirect('/admin/manage_doctor');
 
   } catch (error) {
@@ -174,14 +213,11 @@ router.post('/doctors/add', async function (req, res) {
       }
     }
 
-    // --- Error Response ---
-    res.locals.pageTitle = 'Add New Doctor'; // Set title again for render
-    res.render('vwAdmin/manage_doctor/add_doctor', {
-      specialties,
-      doctor: req.body, // Keep submitted data to refill form
-      error: 'Failed to add doctor. ' + error.message,
-      layout: 'admin'
-    });
+    // Lưu dữ liệu form để điền lại
+    req.session.formData = req.body;
+
+    // Chuyển lỗi cho middleware xử lý
+    return next(error);
   }
 });
 
@@ -439,6 +475,114 @@ router.post('/doctors/update/:doctorId', async function (req, res) {
   }
 });
 
+
+// DELETE: Handle doctor deletion
+router.delete('/doctors/delete/:doctorId', async function (req, res) {
+  try {
+    const doctorId = parseInt(req.params.doctorId, 10);
+
+    if (isNaN(doctorId)) {
+      return res.status(400).json({ success: false, message: 'Invalid Doctor ID' });
+    }
+
+    // First, get the doctor to find the associated userId
+    const doctor = await doctorService.findById(doctorId);
+
+    if (!doctor) {
+      return res.status(404).json({ success: false, message: 'Doctor not found' });
+    }
+
+    // Store the userId for later use
+    const userId = doctor.userId;
+
+    // Check if the doctor has any appointments
+    const hasAppointments = await db('Appointment')
+      .where('doctorId', doctorId)
+      .first();
+
+    if (hasAppointments) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot delete doctor with existing appointments. Please reassign or cancel appointments first.'
+      });
+    }
+
+    // Bắt đầu transaction để đảm bảo tính nhất quán dữ liệu
+    const trx = await db.transaction();
+
+    try {
+      // 1. Xóa lịch làm việc của bác sĩ
+      await trx('Schedule')
+        .where('doctorId', doctorId)
+        .delete();
+
+      // 2. Kiểm tra xem bác sĩ có phải là trưởng khoa không
+      const isHeadDoctor = await trx('Specialty')
+        .where('headDoctorId', doctorId)
+        .first();
+
+      if (isHeadDoctor) {
+        // Cập nhật trưởng khoa thành NULL
+        await trx('Specialty')
+          .where('headDoctorId', doctorId)
+          .update({ headDoctorId: null });
+      }
+
+      // 3. Xóa bản ghi trong bảng Doctor
+      const deleted = await trx('Doctor')
+        .where('doctorId', doctorId)
+        .delete();
+
+      if (!deleted) {
+        await trx.rollback();
+        return res.status(500).json({ success: false, message: 'Không thể xóa bác sĩ' });
+      }
+
+      // 4. Cập nhật trạng thái tài khoản User thành "inactive"
+      const userUpdated = await trx('User')
+        .where('userId', userId)
+        .update({
+          accountStatus: 'inactive',
+          email: trx.raw(`CONCAT(email, '_deleted_', ?)`, [Date.now()]) // Thêm hậu tố để tránh trùng lặp email
+        });
+
+      if (!userUpdated) {
+        await trx.rollback();
+        return res.status(500).json({ success: false, message: 'Không thể cập nhật trạng thái tài khoản người dùng' });
+      }
+
+      // Commit transaction nếu tất cả thành công
+      await trx.commit();
+    } catch (error) {
+      // Rollback transaction nếu có lỗi
+      await trx.rollback();
+      throw error;
+    }
+
+    // Return success response
+    return res.json({
+      success: true,
+      message: 'Doctor deleted successfully',
+      doctorId: doctorId
+    });
+
+  } catch (error) {
+    console.error(`Error deleting doctor:`, error);
+
+    // Kiểm tra lỗi khóa ngoại
+    if (error.code === 'ER_ROW_IS_REFERENCED_2') {
+      return res.status(400).json({
+        success: false,
+        message: 'Không thể xóa bác sĩ vì còn dữ liệu liên quan. Vui lòng kiểm tra lịch hẹn hoặc các dữ liệu khác.'
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: 'Đã xảy ra lỗi khi xóa bác sĩ. Vui lòng thử lại sau.'
+    });
+  }
+});
 
 // API endpoint for AJAX filtering/search (Keep as is)
 router.get('/api/doctors', async function (req, res) {

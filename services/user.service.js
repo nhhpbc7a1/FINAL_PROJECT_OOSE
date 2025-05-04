@@ -1,6 +1,28 @@
 import db from '../ultis/db.js';
+import bcrypt from 'bcryptjs';
 
 export default {
+    async hashPassword(password) {
+        try {
+            // Generate a salt
+            const salt = await bcrypt.genSalt(10);
+            // Hash the password with the salt
+            const hashedPassword = await bcrypt.hash(password, salt);
+            return hashedPassword;
+        } catch (error) {
+            console.error('Error hashing password:', error);
+            throw new Error('Unable to hash password');
+        }
+    },
+
+    async comparePassword(password, hashedPassword) {
+        try {
+            return await bcrypt.compare(password, hashedPassword);
+        } catch (error) {
+            console.error('Error comparing passwords:', error);
+            throw new Error('Unable to compare passwords');
+        }
+    },
     async findAll() {
         try {
             return await db('User')
@@ -75,20 +97,26 @@ export default {
             if (!user.phoneNumber) {
                 throw new Error('Phone number is required');
             }
-            
+
             // Insert user using knex
             const [userId] = await db('User').insert({
                 email: user.email,
-                password: user.password,
+                password: user.password, // Password should already be hashed by the caller
                 fullName: user.fullName,
                 phoneNumber: user.phoneNumber,
                 address: user.address || null,
                 profileImage: user.profileImage || null,
+                gender: user.gender || 'other',
+                dob: user.dob || null,
                 accountStatus: user.accountStatus || 'pending',
                 roleId: user.roleId || 3
             });
-            
-            return userId;
+
+            // Return the full user object with the new ID
+            return {
+                userId,
+                ...user
+            };
         } catch (error) {
             console.error('Error adding user:', error);
             throw new Error('Unable to add user: ' + error.message);
@@ -156,4 +184,4 @@ export default {
             throw new Error('Unable to count active users');
         }
     }
-}; 
+};
