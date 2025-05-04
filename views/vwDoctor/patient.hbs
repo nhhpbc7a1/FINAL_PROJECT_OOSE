@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Doctor Examination</title>
+  <title>Patient List</title>
   <link rel="stylesheet" href="/public/css/examination.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
@@ -102,20 +102,23 @@
 
       <div class="content-container">
         <div class="column"> 
-         <a href="#" class="back-link">
+            <a href="#" class="back-link">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="#6c757d"/>
           </svg>
           Back to Dashboard
         </a>
 
-        <div class="page-header">
-                <h1 class="page-title">Medical examination form</h1>
-                <button class="test-request-btn">Test Request</button>
+        <div class="lab-request-header">
+          <h1>Laboratory Test Request</h1>
+          <div class="action-buttons">
+            <button class="btn-print">Print</button>
+            <button class="btn-save">Save</button>
+          </div>
         </div>
 
         <div class="patient-card">
-          <div class="patient-initials">
+          <div class="patient-avatar">
             NL
           </div>
           <div class="patient-info">
@@ -124,79 +127,80 @@
               <span>32 years old</span>
               <span>Female</span>
               <span>Code: P-20250428</span>
-              <span class="badge">Examining</span>
+              <span class="examining-tag">Examining</span>
             </div>
           </div>
         </div>
 
-        <div class="exam-info-card">
-          <div class="exam-info-header">
-            <div>Medical examination information</div>
-            <div>Code: EX-20250429-0912</div>
+        <div class="test-request-card">
+          <div class="card-header">
+            <h2>Test Request Information</h2>
+            <span class="test-code">Code: LT-20250429-001</span>
           </div>
 
-          <div class="vital-signs">
-            <h2 class="vital-signs-title">Vital signs</h2>
+          <div>
+            <h3 style="margin-bottom: 15px; font-size: 14px;">Test Selection</h3>
             
-            <div class="vital-signs-grid">
-              <div class="vital-sign-item">
-                <div class="vital-sign-label">Temperature</div>
-                <div class="vital-sign-value">
-                  <input type="text" class="vital-sign-input" value="37.2" />
-                  <span class="vital-sign-unit">°C</span>
-                </div>
-              </div>
+            <div class="test-categories">
+              <div class="category-tab active">Hematology</div>
+              <div class="category-tab">Biochemistry</div>
+              <div class="category-tab">Immunology</div>
+              <div class="category-tab">Microbiology</div>
+              <div class="category-tab">Urine Analysis</div>
+              <div class="category-tab">Imaging</div>
+            </div>
 
-              <div class="vital-sign-item">
-                <div class="vital-sign-label">Blood pressure</div>
-                <div class="vital-sign-value">
-                  <input type="text" class="vital-sign-input" value="130/85" />
-                  <span class="vital-sign-unit">mmHg</span>
-                </div>
+            <div class="test-options">
+              <div class="test-option">
+                <input type="checkbox" id="cbc" checked>
+                <label for="cbc">Complete Blood Count (CBC)</label>
               </div>
-
-              <div class="vital-sign-item">
-                <div class="vital-sign-label">Pulse</div>
-                <div class="vital-sign-value">
-                  <input type="text" class="vital-sign-input" value="78" />
-                  <span class="vital-sign-unit">bpm</span>
-                </div>
+              <div class="test-option">
+                <input type="checkbox" id="pt">
+                <label for="pt">Prothrombin Time (PT)</label>
               </div>
-
-              <div class="vital-sign-item">
-                <div class="vital-sign-label">Breathing</div>
-                <div class="vital-sign-value">
-                  <input type="text" class="vital-sign-input" value="16" />
-                  <span class="vital-sign-unit">bpm</span>
-                </div>
+              <div class="test-option">
+                <input type="checkbox" id="electro">
+                <label for="electro">Hemoglobin Electrophoresis</label>
               </div>
-
-              <div class="vital-sign-item">
-                <div class="vital-sign-label">SpO2</div>
-                <div class="vital-sign-value">
-                  <input type="text" class="vital-sign-input" value="98" />
-                  <span class="vital-sign-unit">%</span>
-                </div>
+              <div class="test-option">
+                <input type="checkbox" id="esr">
+                <label for="esr">Erythrocyte Sedimentation Rate</label>
               </div>
+              <div class="test-option">
+                <input type="checkbox" id="ptt">
+                <label for="ptt">Partial Thromboplastin Time</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="retic">
+                <label for="retic">Reticulocyte Count</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="bgrh">
+                <label for="bgrh">Blood Group & Rh Factor</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="inr">
+                <label for="inr">International Normalized Ratio</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="pbs">
+                <label for="pbs">Peripheral Blood Smear</label>
+              </div>
+            </div>
 
-              <div class="vital-sign-item">
-                <div class="vital-sign-label">Weight</div>
-                <div class="vital-sign-value">
-                  <input type="text" class="vital-sign-input" value="78" />
-                  <span class="vital-sign-unit">Kg</span>
-                </div>
+            <div class="selected-tests">
+              <div class="selected-tests-header">Selected Tests (1)</div>
+              <div class="selected-test-item">
+                <span>Complete Blood Count (CBC)</span>
+                <button class="remove-test">✕</button>
               </div>
             </div>
           </div>
 
-          <div class="examination-section">
-            <h2 class="examination-title">Examination</h2>
-            <textarea class="examination-textarea">The patient is alert and responsive. Skin and mucous membranes are pink. There are no signs of difficulty breathing.</textarea>
-          </div>
-
           <div class="form-actions">
-            <button class="btn btn-outline">Print</button>
-            <button class="btn btn-primary">Submit</button>
+            <button class="btn-cancel">Cancel</button>
+            <button class="btn-submit">Submit Request</button>
           </div>
         </div>
         </div>

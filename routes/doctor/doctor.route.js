@@ -8,6 +8,10 @@ router.use((req, res, next) => {
 
 router.get('/',async function (req, res){
     res.redirect('/doctor/dashboard');
+
+});
+router.get('/dashboard', async function (req, res) {
+  res.render('vwDoctor/dashboard');  
 });
 
 export default router;
