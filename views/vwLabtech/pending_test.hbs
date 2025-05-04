@@ -1,0 +1,34 @@
+<main class="flex-1 p-6 pt-20">
+  <div class="bg-white p-6 rounded-lg shadow-md">
+    <h1 class="text-2xl font-bold mb-4 text-blue-700">Pending Test List</h1>
+    <div class="overflow-x-auto">
+      <table class="min-w-full border border-gray-300 rounded-md overflow-hidden shadow-sm">
+        <thead class="bg-blue-100 text-gray-700">
+          <tr>
+            <th class="py-3 px-4 text-left font-semibold border-b border-gray-300">Patient ID</th>
+            <th class="py-3 px-4 text-left font-semibold border-b border-gray-300">Patient Name</th>
+            <th class="py-3 px-4 text-left font-semibold border-b border-gray-300">Requested Date</th>
+            <th class="py-3 px-4 text-left font-semibold border-b border-gray-300">Status</th>
+            <th class="py-3 px-4 text-left font-semibold border-b border-gray-300">Specialty</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          <tr class="bg-white hover:bg-gray-50">
+            <td class="py-2 px-4">P001</td>
+            <td class="py-2 px-4">Nguyen Van A</td>
+            <td class="py-2 px-4">{{format_date "2023-10-01"}}</td>
+            <td class="py-2 px-4">Pending</td>
+            <td class="py-2 px-4">Cardiology</td>
+          </tr>
+          <tr class="bg-gray-50 hover:bg-gray-100">
+            <td class="py-2 px-4">P002</td>
+            <td class="py-2 px-4">Tran Thi B</td>
+            <td class="py-2 px-4">{{format_date "2023-10-02"}}</td>
+            <td class="py-2 px-4">Pending</td>
+            <td class="py-2 px-4">Neurology</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
