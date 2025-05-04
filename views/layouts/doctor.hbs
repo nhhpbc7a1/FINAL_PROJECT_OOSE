@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EternalCare - Doctor Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/public/css/doctor-layout.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo-container">
+            <img src="/public/images/logo.png" alt="EternalCare Logo" class="logo-img">
+            <div class="logo-text">EternalCare</div>
+        </div>
+        
+        <div class="menu-title">
+            My menu
+            <i class="fas fa-ellipsis-v"></i>
+        </div>
+        
+        <a href="/dashboard" class="menu-item">
+            <i class="fas fa-th-large"></i>
+            Dashboard
+        </a>
+        
+        <a href="/schedule" class="menu-item">
+            <i class="far fa-calendar-alt"></i>
+            Schedule
+        </a>
+        
+        <a href="/appointments" class="menu-item">
+            <i class="far fa-calendar-check"></i>
+            Appointments
+            <span class="badge badge-primary badge-pill">4</span>
+        </a>
+        
+        <a href="/messages" class="menu-item">
+            <i class="far fa-comment-alt"></i>
+            Message
+            <span class="badge badge-primary badge-pill">3</span>
+        </a>
+        
+        <a href="/patients" class="menu-item active">
+            <i class="fas fa-user-injured"></i>
+            Patients
+        </a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <div class="search-container">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search...">
+            </div>
+            <div class="user-profile">
+                <div class="user-avatar">
+                    Dr
+                </div>
+                <div class="user-info">
+                    <div class="user-name">Dr TobyNguyen</div>
+                    <div class="user-role">Doctor</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <a href="/dashboard" class="back-link">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
+        </a>
+        
+        <div class="page-title">
+            Manage Patients
+        </div>
+        
+        <div class="content-card">
+            {{{body}}}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Initialize feather icons
+            feather.replace();
+        });
+    </script>
+</body>
+</html>
