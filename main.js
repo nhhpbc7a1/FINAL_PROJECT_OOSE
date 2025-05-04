@@ -64,11 +64,24 @@ app.engine('hbs', engine({
         },
         formatDate: function(date, format) {
             if (!date) return '';
-            return moment(date).format(format || 'DD/MM/YYYY');
+
+            // Kiểm tra xem date có phải là đối tượng Date hay không
+            try {
+                return moment(date).format(format || 'DD/MM/YYYY');
+            } catch (error) {
+                console.error('Error formatting date:', error);
+                return 'Invalid date';
+            }
         },
         formatDateTime: function(date, format) {
             if (!date) return '';
-            return moment(date).format(format || 'DD/MM/YYYY HH:mm');
+
+            try {
+                return moment(date).format(format || 'DD/MM/YYYY HH:mm');
+            } catch (error) {
+                console.error('Error formatting datetime:', error);
+                return 'Invalid date';
+            }
         },
         toLowerCase: function(str) {
             return str ? str.toLowerCase() : '';
@@ -134,7 +147,7 @@ app.use(async function (req, res, next) {
 });
 
 
-app.get('/', async function (req, res) {
+app.get('/', (_req, res) => {
     res.redirect('/patient');
 });
 

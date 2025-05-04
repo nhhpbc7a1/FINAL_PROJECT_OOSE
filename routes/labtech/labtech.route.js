@@ -6,11 +6,21 @@ router.use((req, res, next) => {
     next();
 });
 
+
+
 // Route cho dashboard
 router.get('/dashboard', async function (req, res) {
     res.render('vwLabtech/dashboard', {
         title: 'Lab Dashboard',
         activeRoute: 'dashboard'
+    });
+});
+
+// Route cho request-list
+router.get('/pending_test', async function (req, res) {
+    res.render('vwLabtech/pending_test', {
+        title: 'Pending Tests',
+        activeRoute: 'pending_test'
     });
 });
 
