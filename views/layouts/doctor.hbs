@@ -1,226 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Doctor Examination</title>
-  <link rel="stylesheet" href="/public/css/examination.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EternalCare - Doctor Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/public/css/doctor-layout.css">
 </head>
 <body>
-  <div class="container">
-     <aside class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-        <div class="logo">
-          <img src="/public/images/logo/logo.png" alt="Logo page">
-          EternalCare
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo-container">
+            <img src="/public/images/logo.png" alt="EternalCare Logo" class="logo-img">
+            <div class="logo-text">EternalCare</div>
         </div>
-      </div>
-        <button id="toggleSidebar" class="toggle-sidebar">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M15 6L9 12L15 18" stroke="#6c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-        </button>
-      <div class="my-menu">
-        My menu
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 13.5C12.8284 13.5 13.5 12.8284 13.5 12C13.5 11.1716 12.8284 10.5 12 10.5C11.1716 10.5 10.5 11.1716 10.5 12C10.5 12.8284 11.1716 13.5 12 13.5Z" fill="black"/>
-          <path d="M19 13.5C19.8284 13.5 20.5 12.8284 20.5 12C20.5 11.1716 19.8284 10.5 19 10.5C18.1716 10.5 17.5 11.1716 17.5 12C17.5 12.8284 18.1716 13.5 19 13.5Z" fill="black"/>
-          <path d="M5 13.5C5.82843 13.5 6.5 12.8284 6.5 12C6.5 11.1716 5.82843 10.5 5 10.5C4.17157 10.5 3.5 11.1716 3.5 12C3.5 12.8284 4.17157 13.5 5 13.5Z" fill="black"/>
-        </svg>
-      </div>
-      
-      <div class="menu">
-        <ul>
-          <li class="active">
-            <span>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 13H10V4H4V13ZM4 20H10V15H4V20ZM12 20H18V11H12V20ZM12 4V9H18V4H12Z" fill="#0D99FF"/>
-              </svg>
-              Dashboard
-            </span>
-          </li>
-          <li>
-            <span>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V5H19V19ZM17 12H12V17H10V12H7V10H10V7H12V10H17V12Z" fill="#6c757d"/>
-              </svg>
-              Appointments
-            </span>
-            <span class="badge">3</span>
-          </li>
-          <li>
-            <span>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H5.17L4 17.17V4H20V16Z" fill="#6c757d"/>
-              </svg>
-              Message
-            </span>
-            <span class="badge">3</span>
-          </li>
-          <li>
-            <span>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M16 11C17.66 11 18.99 9.66 18.99 8C18.99 6.34 17.66 5 16 5C14.34 5 13 6.34 13 8C13 9.66 14.34 11 16 11ZM8 11C9.66 11 10.99 9.66 10.99 8C10.99 6.34 9.66 5 8 5C6.34 5 5 6.34 5 8C5 9.66 6.34 11 8 11ZM8 13C5.67 13 1 14.17 1 16.5V19H15V16.5C15 14.17 10.33 13 8 13ZM16 13C15.71 13 15.38 13.02 15.03 13.05C16.19 13.89 17 15.02 17 16.5V19H23V16.5C23 14.17 18.33 13 16 13Z" fill="#6c757d"/>
-              </svg>
-              Patients
-            </span>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill="#6c757d"/>
-            </svg>
-          </li>
-        </ul>
-      </div>
-    </aside>
-
-    <main class="main">
-      <header class="header">
-        <div class="search-bar">
-          <input type="txtText" placeholder="Search" />
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%);">
-            <path d="M15.5 14H14.71L14.43 13.73C15.41 12.59 16 11.11 16 9.5C16 5.91 13.09 3 9.5 3C5.91 3 3 5.91 3 9.5C3 13.09 5.91 16 9.5 16C11.11 16 12.59 15.41 13.73 14.43L14 14.71V15.5L19 20.49L20.49 19L15.5 14ZM9.5 14C7.01 14 5 11.99 5 9.5C5 7.01 7.01 5 9.5 5C11.99 5 14 7.01 14 9.5C14 11.99 11.99 14 9.5 14Z" fill="#6c757d"/>
-          </svg>
-        </div>
-        <div class="notification" style="margin-right: 20px;">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22ZM18 16V11C18 7.93 16.37 5.36 13.5 4.68V4C13.5 3.17 12.83 2.5 12 2.5C11.17 2.5 10.5 3.17 10.5 4V4.68C7.64 5.36 6 7.92 6 11V16L4 18V19H20V18L18 16ZM16 17H8V11C8 8.52 9.51 6.5 12 6.5C14.49 6.5 16 8.52 16 11V17Z" fill="#6c757d"/>
-          </svg>
-        </div>
-        <div class="profile">
-          <img src="/api/placeholder/40/40" alt="Profile" />
-          <div>
-            <strong>Dr TobeyNguyen</strong>
-            <div style="font-size: 14px; color: #6c757d;">Urologist</div>
-          </div>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-left: 10px;">
-            <path d="M7 10L12 15L17 10H7Z" fill="#6c757d"/>
-          </svg>
-        </div>
-      </header>
-
-      <div class="content-container">
-        <div class="column"> 
-         <a href="#" class="back-link">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="#6c757d"/>
-          </svg>
-          Back to Dashboard
-        </a>
-
-        <div class="page-header">
-                <h1 class="page-title">Medical examination form</h1>
-                <button class="test-request-btn">Test Request</button>
-        </div>
-
-        <div class="patient-card">
-          <div class="patient-initials">
-            NL
-          </div>
-          <div class="patient-info">
-            <h3>NGUYEN LE TUNG CHI</h3>
-            <div class="patient-details">
-              <span>32 years old</span>
-              <span>Female</span>
-              <span>Code: P-20250428</span>
-              <span class="badge">Examining</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="exam-info-card">
-          <div class="exam-info-header">
-            <div>Medical examination information</div>
-            <div>Code: EX-20250429-0912</div>
-          </div>
-
-          <div class="vital-signs">
-            <h2 class="vital-signs-title">Vital signs</h2>
-            
-            <div class="vital-signs-grid">
-              <div class="vital-sign-item">
-                <div class="vital-sign-label">Temperature</div>
-                <div class="vital-sign-value">
-                  <input type="text" class="vital-sign-input" value="37.2" />
-                  <span class="vital-sign-unit">°C</span>
-                </div>
-              </div>
-
-              <div class="vital-sign-item">
-                <div class="vital-sign-label">Blood pressure</div>
-                <div class="vital-sign-value">
-                  <input type="text" class="vital-sign-input" value="130/85" />
-                  <span class="vital-sign-unit">mmHg</span>
-                </div>
-              </div>
-
-              <div class="vital-sign-item">
-                <div class="vital-sign-label">Pulse</div>
-                <div class="vital-sign-value">
-                  <input type="text" class="vital-sign-input" value="78" />
-                  <span class="vital-sign-unit">bpm</span>
-                </div>
-              </div>
-
-              <div class="vital-sign-item">
-                <div class="vital-sign-label">Breathing</div>
-                <div class="vital-sign-value">
-                  <input type="text" class="vital-sign-input" value="16" />
-                  <span class="vital-sign-unit">bpm</span>
-                </div>
-              </div>
-
-              <div class="vital-sign-item">
-                <div class="vital-sign-label">SpO2</div>
-                <div class="vital-sign-value">
-                  <input type="text" class="vital-sign-input" value="98" />
-                  <span class="vital-sign-unit">%</span>
-                </div>
-              </div>
-
-              <div class="vital-sign-item">
-                <div class="vital-sign-label">Weight</div>
-                <div class="vital-sign-value">
-                  <input type="text" class="vital-sign-input" value="78" />
-                  <span class="vital-sign-unit">Kg</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="examination-section">
-            <h2 class="examination-title">Examination</h2>
-            <textarea class="examination-textarea">The patient is alert and responsive. Skin and mucous membranes are pink. There are no signs of difficulty breathing.</textarea>
-          </div>
-
-          <div class="form-actions">
-            <button class="btn btn-outline">Print</button>
-            <button class="btn btn-primary">Submit</button>
-          </div>
-        </div>
-        </div>
-      </div>
-    </main>
-  </div>
-   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
-
-
-   <script>
-     const sidebar = document.getElementById('sidebar');
-      const toggleSidebar = document.getElementById('toggleSidebar');
-      
-      toggleSidebar.addEventListener('click', function() {
-        sidebar.classList.toggle('collapsed');
         
-        // Update toggle button position based on sidebar state
-        if (sidebar.classList.contains('collapsed')) {
-          toggleSidebar.style.right = '-15px';
-        } else {
-          toggleSidebar.style.right = '-15px';
-        }
-      });
-  </script>
-</body>
+        <div class="menu-title">
+            My menu
+            <i class="fas fa-ellipsis-v"></i>
+        </div>
+        
+        <a href="/dashboard" class="menu-item">
+            <i class="fas fa-th-large"></i>
+            Dashboard
+        </a>
+        
+        <a href="/schedule" class="menu-item">
+            <i class="far fa-calendar-alt"></i>
+            Schedule
+        </a>
+        
+        <a href="/appointments" class="menu-item">
+            <i class="far fa-calendar-check"></i>
+            Appointments
+            <span class="badge badge-primary badge-pill">4</span>
+        </a>
+        
+        <a href="/messages" class="menu-item">
+            <i class="far fa-comment-alt"></i>
+            Message
+            <span class="badge badge-primary badge-pill">3</span>
+        </a>
+        
+        <a href="/patients" class="menu-item active">
+            <i class="fas fa-user-injured"></i>
+            Patients
+        </a>
+    </div>
 
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <div class="search-container">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search...">
+            </div>
+            <div class="user-profile">
+                <div class="user-avatar">
+                    Dr
+                </div>
+                <div class="user-info">
+                    <div class="user-name">Dr TobyNguyen</div>
+                    <div class="user-role">Doctor</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <a href="/dashboard" class="back-link">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
+        </a>
+        
+        <div class="page-title">
+            Manage Patients
+        </div>
+        
+        <div class="content-card">
+            {{{body}}}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Initialize feather icons
+            feather.replace();
+        });
+    </script>
+</body>
 </html>

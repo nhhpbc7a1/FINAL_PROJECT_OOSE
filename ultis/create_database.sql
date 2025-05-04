@@ -16,6 +16,9 @@ CREATE TABLE IF NOT EXISTS User (
     fullName VARCHAR(100) NOT NULL,
     phoneNumber VARCHAR(20) UNIQUE NOT NULL,
     address VARCHAR(255),
+    gender ENUM('male', 'female', 'other') NOT NULL,
+    dob DATE,
+    profileImage VARCHAR(255),
     accountStatus ENUM('active', 'inactive', 'pending') DEFAULT 'pending',
     createdDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     roleId INT NOT NULL,
@@ -63,9 +66,30 @@ CREATE TABLE IF NOT EXISTS Patient (
 CREATE TABLE IF NOT EXISTS Administrator (
     adminId INT AUTO_INCREMENT PRIMARY KEY,
     userId INT UNIQUE,
-    department VARCHAR(100),
     position VARCHAR(100),
     FOREIGN KEY (userId) REFERENCES User(userId)
+);
+
+-- Create Specialty table
+CREATE TABLE IF NOT EXISTS Specialty (
+    specialtyId INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    hospitalId INT,
+    headDoctorId INT,
+    FOREIGN KEY (hospitalId) REFERENCES Hospital(hospitalId)
+);
+
+-- Create Room table
+CREATE TABLE IF NOT EXISTS Room (
+    roomId INT AUTO_INCREMENT PRIMARY KEY,
+    roomNumber VARCHAR(20) NOT NULL,
+    specialtyId INT,
+    capacity INT,
+    roomType ENUM('examination', 'operation', 'laboratory', 'consultation', 'emergency', 'general') NOT NULL,
+    status ENUM('available', 'occupied', 'maintenance') DEFAULT 'available',
+    description TEXT,
+    FOREIGN KEY (specialtyId) REFERENCES Specialty(specialtyId)
 );
 
 -- Create Doctor table
@@ -78,29 +102,25 @@ CREATE TABLE IF NOT EXISTS Doctor (
     education TEXT,
     certifications TEXT,
     bio TEXT,
-    FOREIGN KEY (userId) REFERENCES User(userId)
+    FOREIGN KEY (userId) REFERENCES User(userId),
+    FOREIGN KEY (specialtyId) REFERENCES Specialty(specialtyId)
 );
 
--- Create Specialty table
-CREATE TABLE IF NOT EXISTS Specialty (
-    specialtyId INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    description TEXT
-);
-
--- Add foreign key to Doctor table
-ALTER TABLE Doctor
-ADD FOREIGN KEY (specialtyId) REFERENCES Specialty(specialtyId);
+-- Update Specialty with foreign key to headDoctor after Doctor table is created
+ALTER TABLE Specialty
+ADD FOREIGN KEY (headDoctorId) REFERENCES Doctor(doctorId);
 
 -- Create Schedule table
 CREATE TABLE IF NOT EXISTS Schedule (
     scheduleId INT AUTO_INCREMENT PRIMARY KEY,
     doctorId INT,
+    roomId INT,
     workDate DATE NOT NULL,
     startTime TIME NOT NULL,
     endTime TIME NOT NULL,
     status ENUM('available', 'booked', 'unavailable') DEFAULT 'available',
-    FOREIGN KEY (doctorId) REFERENCES Doctor(doctorId)
+    FOREIGN KEY (doctorId) REFERENCES Doctor(doctorId),
+    FOREIGN KEY (roomId) REFERENCES Room(roomId)
 );
 
 -- Create Service table
@@ -110,29 +130,43 @@ CREATE TABLE IF NOT EXISTS Service (
     description TEXT,
     price DECIMAL(10, 2) NOT NULL,
     duration INT,  -- in minutes
-    status ENUM('active', 'inactive') DEFAULT 'active'
+    type ENUM('service', 'test') NOT NULL,
+    category VARCHAR(100),
+    specialtyId INT,
+    status ENUM('active', 'inactive') DEFAULT 'active',
+    FOREIGN KEY (specialtyId) REFERENCES Specialty(specialtyId)
 );
 
 -- Create Appointment table
 CREATE TABLE IF NOT EXISTS Appointment (
     appointmentId INT AUTO_INCREMENT PRIMARY KEY,
     patientId INT,
-    doctorId INT,
-    scheduleId INT,
+    specialtyId INT,
+    appointmentDate DATE NOT NULL,
     reason TEXT,
-    status ENUM('pending', 'confirmed', 'cancelled', 'completed') DEFAULT 'pending',
+    queueNumber INT,
+    estimatedTime TIME,
+    doctorId INT,
+    roomId INT,
+    scheduleId INT,
+    status ENUM('pending', 'confirmed', 'cancelled', 'completed', 'waiting_payment', 'paid') DEFAULT 'pending',
+    emailVerified BOOLEAN DEFAULT FALSE,
+    paymentStatus ENUM('pending', 'completed', 'failed', 'refunded') DEFAULT 'pending',
     createdDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updatedDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (patientId) REFERENCES Patient(patientId),
+    FOREIGN KEY (specialtyId) REFERENCES Specialty(specialtyId),
     FOREIGN KEY (doctorId) REFERENCES Doctor(doctorId),
+    FOREIGN KEY (roomId) REFERENCES Room(roomId),
     FOREIGN KEY (scheduleId) REFERENCES Schedule(scheduleId)
 );
 
--- Create AppointmentDetails table
-CREATE TABLE IF NOT EXISTS AppointmentDetails (
-    appointmentDetailsId INT AUTO_INCREMENT PRIMARY KEY,
+-- Create AppointmentServices table
+CREATE TABLE IF NOT EXISTS AppointmentServices (
+    appointmentServiceId INT AUTO_INCREMENT PRIMARY KEY,
     appointmentId INT,
     serviceId INT,
+    price DECIMAL(10, 2) NOT NULL,
     notes TEXT,
     FOREIGN KEY (appointmentId) REFERENCES Appointment(appointmentId),
     FOREIGN KEY (serviceId) REFERENCES Service(serviceId)
@@ -155,31 +189,42 @@ CREATE TABLE IF NOT EXISTS LabTechnician (
     technicianId INT AUTO_INCREMENT PRIMARY KEY,
     userId INT UNIQUE,
     specialization VARCHAR(100),
-    FOREIGN KEY (userId) REFERENCES User(userId)
+    specialtyId INT,
+    FOREIGN KEY (userId) REFERENCES User(userId),
+    FOREIGN KEY (specialtyId) REFERENCES Specialty(specialtyId)
 );
 
--- Create Test table
-CREATE TABLE IF NOT EXISTS Test (
-    testId INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    description TEXT,
-    price DECIMAL(10, 2) NOT NULL,
-    category VARCHAR(100)
+-- Create File table for storing files
+CREATE TABLE IF NOT EXISTS File (
+    fileId INT AUTO_INCREMENT PRIMARY KEY,
+    fileName VARCHAR(255) NOT NULL,
+    filePath VARCHAR(255) NOT NULL,
+    fileType VARCHAR(50) NOT NULL,
+    fileSize INT NOT NULL,
+    uploadDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    description TEXT
 );
 
 -- Create TestResult table
 CREATE TABLE IF NOT EXISTS TestResult (
     resultId INT AUTO_INCREMENT PRIMARY KEY,
     recordId INT,
-    testId INT,
+    serviceId INT,
     technicianId INT,
-    result TEXT,
+    roomId INT,
+    resultText TEXT,
+    resultFileId INT,
+    resultType ENUM('text', 'numeric', 'file', 'image', 'pdf') NOT NULL,
+    normalRange VARCHAR(100),
+    unit VARCHAR(50),
+    interpretation TEXT,
     performedDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     status ENUM('pending', 'completed', 'cancelled') DEFAULT 'pending',
-    attachment VARCHAR(255),
     FOREIGN KEY (recordId) REFERENCES MedicalRecord(recordId),
-    FOREIGN KEY (testId) REFERENCES Test(testId),
-    FOREIGN KEY (technicianId) REFERENCES LabTechnician(technicianId)
+    FOREIGN KEY (serviceId) REFERENCES Service(serviceId),
+    FOREIGN KEY (technicianId) REFERENCES LabTechnician(technicianId),
+    FOREIGN KEY (roomId) REFERENCES Room(roomId),
+    FOREIGN KEY (resultFileId) REFERENCES File(fileId)
 );
 
 -- Create Medication table
@@ -237,19 +282,8 @@ CREATE TABLE IF NOT EXISTS EmailVerification (
     email VARCHAR(100) UNIQUE NOT NULL,
     verificationCode VARCHAR(50) NOT NULL,
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    expiresAt TIMESTAMP,
+    expiresAt TIMESTAMP NULL DEFAULT NULL,
     verified BOOLEAN DEFAULT FALSE
-);
-
--- Create IdentityVerification table
-CREATE TABLE IF NOT EXISTS IdentityVerification (
-    verificationId INT AUTO_INCREMENT PRIMARY KEY,
-    patientId INT UNIQUE,
-    idNumber VARCHAR(50) NOT NULL,
-    idType VARCHAR(50) NOT NULL,
-    verificationStatus ENUM('pending', 'verified', 'rejected') DEFAULT 'pending',
-    verificationDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (patientId) REFERENCES Patient(patientId)
 );
 
 -- Insert default roles

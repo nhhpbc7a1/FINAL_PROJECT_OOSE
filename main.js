@@ -6,6 +6,7 @@ import { engine } from 'express-handlebars';
 import hbs_sections from 'express-handlebars-sections';
 import moment from 'moment';
 import session from 'express-session';
+import fileUpload from 'express-fileupload';
 import { authAdmin, authDoctor, authLabtech, authPatient } from './middlewares/auth.route.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -13,6 +14,15 @@ const app = express();
 
 app.use(express.urlencoded({
     extended: true,
+}));
+
+// File upload middleware
+app.use(fileUpload({
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+    useTempFiles: true,
+    tempFileDir: '/tmp/',
+    createParentPath: true, // Tự động tạo thư mục cha nếu không tồn tại
+    debug: false // Enable debugging để xem logs
 }));
 
 app.engine('hbs', engine({
@@ -23,6 +33,90 @@ app.engine('hbs', engine({
         format_price(value) {
             return numeral(value).format('0,000') + ' VNĐ';
         },
+        section: function(name, options) {
+            if (!this._sections) this._sections = {};
+            this._sections[name] = options.fn(this);
+            return null;
+        },
+        eq: function(v1, v2) {
+            return v1 === v2;
+        },
+        ne: function(v1, v2) {
+            return v1 !== v2;
+        },
+        lt: function(v1, v2) {
+            return v1 < v2;
+        },
+        gt: function(v1, v2) {
+            return v1 > v2;
+        },
+        lte: function(v1, v2) {
+            return v1 <= v2;
+        },
+        gte: function(v1, v2) {
+            return v1 >= v2;
+        },
+        and: function() {
+            return Array.prototype.slice.call(arguments, 0, -1).every(Boolean);
+        },
+        or: function() {
+            return Array.prototype.slice.call(arguments, 0, -1).some(Boolean);
+        },
+        formatDate: function(date, format) {
+            if (!date) return '';
+
+            // Kiểm tra xem date có phải là đối tượng Date hay không
+            try {
+                return moment(date).format(format || 'DD/MM/YYYY');
+            } catch (error) {
+                console.error('Error formatting date:', error);
+                return 'Invalid date';
+            }
+        },
+        formatDateTime: function(date, format) {
+            if (!date) return '';
+
+            try {
+                return moment(date).format(format || 'DD/MM/YYYY HH:mm');
+            } catch (error) {
+                console.error('Error formatting datetime:', error);
+                return 'Invalid date';
+            }
+        },
+        toLowerCase: function(str) {
+            return str ? str.toLowerCase() : '';
+        },
+        toUpperCase: function(str) {
+            return str ? str.toUpperCase() : '';
+        },
+        add: function(a, b) {
+            return a + b;
+        },
+        subtract: function(a, b) {
+            return a - b;
+        },
+        multiply: function(a, b) {
+            return a * b;
+        },
+        divide: function(a, b) {
+            return a / b;
+        },
+        min: function(a, b) {
+            return Math.min(a, b);
+        },
+        max: function(a, b) {
+            return Math.max(a, b);
+        },
+        range: function(start, end) {
+            let result = [];
+            for (let i = start; i < end; i++) {
+                result.push(i);
+            }
+            return result;
+        },
+        json: function(obj) {
+            return JSON.stringify(obj);
+        }
     },
 }));
 
@@ -30,7 +124,6 @@ app.set('view engine', 'hbs');
 app.set('views', './views');
 
 app.use('/public', express.static('public'));
-app.use('/uploads', express.static('uploads'));
 
 app.set('trust proxy', 1) // trust first proxy
 app.use(session({
@@ -54,7 +147,7 @@ app.use(async function (req, res, next) {
 });
 
 
-app.get('/', async function (req, res) {
+app.get('/', (_req, res) => {
     res.redirect('/patient');
 });
 
@@ -79,7 +172,3 @@ app.use('/admin', adminRouter);
 app.listen(3000, function () {
     console.log('Server is running at http://localhost:3000');
 });
-
-
-// 6LcynaMqAAAAAAPYVUVSXJSUNkNj7ggkTVWJIxlj
-// 6LcynaMqAAAAALy_DhSeh1s1dVepKLOSD-QGr1Fc
