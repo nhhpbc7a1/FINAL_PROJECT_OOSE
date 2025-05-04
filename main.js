@@ -8,14 +8,6 @@ import moment from 'moment';
 import session from 'express-session';
 import fileUpload from 'express-fileupload';
 import { authAdmin, authDoctor, authLabtech, authPatient } from './middlewares/auth.route.js';
-<<<<<<< HEAD
-import { errorHandler, apiErrorHandler } from './middlewares/error-handler.js';
-=======
-import labtechRouter from './routes/labtech/labtech.route.js';
-import patientRouter from './routes/patient/patient.route.js';
-import doctorRouter from './routes/doctor/doctor.route.js';
-import adminRouter from './routes/admin/admin.route.js';
->>>>>>> a6d37a8ff93b87dba1d33beecf883f87a93cf1d9
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
@@ -35,17 +27,12 @@ app.use(fileUpload({
 
 app.engine('hbs', engine({
     extname: '.hbs',
-    defaultLayout: 'labtech',
+    defaultLayout: 'patient',
     partialsDir: __dirname + '/views/partials',
     helpers: {
         format_price(value) {
             return numeral(value).format('0,000') + ' VNĐ';
         },
-   
-        format_date(date) {
-            return moment(date).format('DD/MM/YYYY');
-        },
-
         section: function(name, options) {
             if (!this._sections) this._sections = {};
             this._sections[name] = options.fn(this);
@@ -116,7 +103,6 @@ app.engine('hbs', engine({
         },
         json: function(obj) {
             return JSON.stringify(obj);
-
         }
     },
 }));
@@ -126,13 +112,12 @@ app.set('views', './views');
 
 app.use('/public', express.static('public'));
 
-app.set('trust proxy', 1);
+app.set('trust proxy', 1) // trust first proxy
 app.use(session({
     secret: 'keyboard cat',
     resave: false,
     saveUninitialized: true,
     cookie: {}
-<<<<<<< HEAD
 }))
 
 app.use(async function (req, res, next) {
@@ -145,45 +130,32 @@ app.use(async function (req, res, next) {
     }
     res.locals.auth = req.session.auth;
     res.locals.authUser = req.session.authUser;
-
-    // Truyền thông báo flash đến view
-    if (req.session.flashMessage) {
-        res.locals.flashMessage = req.session.flashMessage;
-        delete req.session.flashMessage;
-    }
-
     next();
 });
 
-=======
-}));
->>>>>>> a6d37a8ff93b87dba1d33beecf883f87a93cf1d9
 
 app.get('/', async function (req, res) {
-    res.redirect('/labtech');
+    res.redirect('/patient');
 });
 
-app.get('/labtech', async function (req, res) {
-    res.render('vwLabtech/pending_test', {
-        title: 'Pending Test List',
-        activeRoute: 'pending'
-    });
-});
 
+
+import patientRouter from './routes/patient/patient.route.js';
 app.use('/patient', patientRouter);
+
+import doctorRouter from './routes/doctor/doctor.route.js'
+// app.use('/doctor', authDoctor, doctorRouter);
 app.use('/doctor', doctorRouter);
+
+import labtechRouter from './routes/labtech/labtech.route.js'
+// app.use('/labtech', authLabtech, labtechRouter);
 app.use('/labtech', labtechRouter);
+
+import adminRouter from './routes/admin/admin.route.js'
+// app.use('/admin', authAdmin, adminRouter);
 app.use('/admin', adminRouter);
 
-<<<<<<< HEAD
-// Thêm middleware xử lý lỗi - phải đặt sau tất cả các routes
-app.use(errorHandler);
-// Middleware xử lý lỗi cho API
-app.use('/api', apiErrorHandler);
 
-=======
->>>>>>> a6d37a8ff93b87dba1d33beecf883f87a93cf1d9
 app.listen(3000, function () {
     console.log('Server is running at http://localhost:3000');
-
 });
