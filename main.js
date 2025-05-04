@@ -7,6 +7,10 @@ import hbs_sections from 'express-handlebars-sections';
 import moment from 'moment';
 import session from 'express-session';
 import { authAdmin, authDoctor, authLabtech, authPatient } from './middlewares/auth.route.js';
+import labtechRouter from './routes/labtech/labtech.route.js';
+import patientRouter from './routes/patient/patient.route.js';
+import doctorRouter from './routes/doctor/doctor.route.js';
+import adminRouter from './routes/admin/admin.route.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
@@ -26,6 +30,9 @@ app.engine('hbs', engine({
         format_date(date) {
             return moment(date).format('DD/MM/YYYY');
         },
+        eq(a, b) {
+            return a === b;
+        }
     },
 }));
 
@@ -49,21 +56,14 @@ app.get('/', async function (req, res) {
 
 app.get('/labtech', async function (req, res) {
     res.render('vwLabtech/pending_test', {
-        layout: 'labtech',
-        title: 'Pending Test List'
+        title: 'Pending Test List',
+        activeRoute: 'pending'
     });
 });
 
-import patientRouter from './routes/patient/patient.route.js';
 app.use('/patient', patientRouter);
-
-import doctorRouter from './routes/doctor/doctor.route.js';
 app.use('/doctor', doctorRouter);
-
-import labtechRouter from './routes/labtech/labtech.route.js';
 app.use('/labtech', labtechRouter);
-
-import adminRouter from './routes/admin/admin.route.js';
 app.use('/admin', adminRouter);
 
 app.listen(3000, function () {
