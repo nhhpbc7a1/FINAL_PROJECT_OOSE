@@ -116,7 +116,16 @@ app.engine('hbs', engine({
         },
         json: function(obj) {
             return JSON.stringify(obj);
-        }
+        },
+        truncate: function (str, len) {
+            // Kiểm tra xem str có phải là string và có tồn tại không
+            if (str && typeof str === 'string' && str.length > len) {
+                // Cắt chuỗi và thêm dấu "..."
+                return str.substring(0, len) + '...';
+            }
+            // Trả về chuỗi gốc nếu không cần cắt hoặc không hợp lệ
+            return typeof str === 'string' ? str : ''; // Trả về rỗng nếu không phải string
+        },
     },
 }));
 
@@ -150,6 +159,9 @@ app.use(async function (req, res, next) {
 app.get('/', (_req, res) => {
     res.redirect('/patient');
 });
+
+import accountRouter from './routes/account.route.js';
+app.use('/account', accountRouter);
 
 
 

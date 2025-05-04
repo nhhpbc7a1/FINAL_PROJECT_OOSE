@@ -1,0 +1,394 @@
+{{!-- Medication List View --}}
+<link rel="stylesheet" href="/public/css/admin-side/doctor-list.css"> {{!-- Reuse list styling --}}
+
+<div class="patient-list-container">
+    <div class="filters-bar">
+        {{!-- Filters Section - Removed form tag --}}
+        <div class="search-box flex-grow-1 mr-2"> {{!-- Search box takes more space --}}
+            <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="Search by name, category, manufacturer..." value=""> {{!-- Removed name attr, value starts empty --}}
+            <i class="fas fa-search"></i>
+        </div>
+        <a href="#" class="btn btn-sm btn-secondary" id="clearSearchBtn" title="Clear Search"><i class="fas fa-times"></i></a> {{!-- Changed to #, added ID --}}
+
+        {{!-- Add other filters here if needed in the future --}}
+
+        <a href="/admin/manage_medication/add" class="add-new-btn ml-auto"> {{!-- Use ml-auto to push right --}}
+            <i class="fas fa-plus"></i> Add New Medication
+        </a>
+    </div>
+
+    {{#if flashMessage}}
+    <div class="alert alert-{{flashMessage.type}} alert-dismissible fade show mt-3 mx-3" role="alert">
+         <i class="fas fa-{{#if (eq flashMessage.type 'success')}}check-circle{{else}}exclamation-circle{{/if}}"></i>
+        {{flashMessage.message}}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">×</span>
+        </button>
+    </div>
+    {{/if}}
+
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Category</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Manufacturer</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody id="medication-table-body">
+                {{#each medications}}
+                <tr class="medication-row"
+                    data-id="{{medicationId}}"
+                    data-name="{{toLowerCase name}}"
+                    data-category="{{toLowerCase category}}"        {{!-- Added data attribute --}}
+                    data-manufacturer="{{toLowerCase manufacturer}}" {{!-- Added data attribute --}}
+                >
+                    <td>{{name}}</td>
+                    <td class="medication-category">{{#if category}}{{category}}{{else}}<span class="text-muted">N/A</span>{{/if}}</td>
+                    <td>${{format_price price}}</td> {{!-- Use existing helper --}}
+                    <td class="medication-manufacturer">{{#if manufacturer}}{{manufacturer}}{{else}}<span class="text-muted">N/A</span>{{/if}}</td>
+                    <td class="medication-description">{{#if description}}{{truncate description 80}}{{else}}<span class="text-muted">N/A</span>{{/if}}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="/admin/manage_medication/edit/{{medicationId}}" class="btn btn-icon" title="Edit Medication">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="#" class="btn btn-icon delete-medication" title="Delete Medication" data-toggle="modal" data-target="#deleteModal" data-id="{{medicationId}}" data-name="{{name}}">
+                                <i class="fas fa-trash-alt text-danger"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {{/each}}
+                {{!-- No results row shown by JS --}}
+                <tr id="no-results-row" style="display: none;">
+                    <td colspan="6">
+                         <div class="empty-state">
+                            <i class="fas fa-search"></i>
+                            <h5>No medications found</h5>
+                            <p>No medications match your search criteria. Try adjusting your search.</p>
+                        </div>
+                    </td>
+                </tr>
+                 {{!-- Initial empty state row --}}
+                 <tr id="no-data-row" style="display: {{#if medications}}none{{else}}table-row{{/if}};">
+                    <td colspan="6">
+                         <div class="empty-state">
+                            <i class="fas fa-pills"></i>
+                            <h5>No medications added yet</h5>
+                            <p>Click "Add New Medication" to create the first one.</p>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-container">
+        <div class="page-info">
+            Showing <span id="showing-start">1</span> to <span id="showing-end">10</span> of <span id="total-items">{{medications.length}}</span> medications
+        </div>
+        <ul class="pagination" id="pagination">
+            <!-- Pagination will be generated by JavaScript -->
+        </ul>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+{{!-- (Modal HTML remains the same as before) --}}
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the medication <strong id="medicationToDeleteName"></strong>?</p>
+                <p class="text-danger font-weight-bold">Warning: This action cannot be undone. Deletion will fail if the medication is part of any existing prescriptions.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{#if error}}
+<div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+    {{error}}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">×</span>
+    </button>
+</div>
+{{/if}}
+
+
+{{!-- Add Handlebars helper for formatCurrency in main.js/app.js if not already present --}}
+{{!-- Example helper (add to express-handlebars config):
+    formatCurrency: function(value) {
+        if (value === null || value === undefined) return '';
+        // Simple formatting, consider using a library like Intl.NumberFormat for better localization
+        return Number(value).toFixed(2);
+    }
+--}}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Store all medication data rows
+        const allMedications = Array.from(document.querySelectorAll('.medication-row'));
+
+        // Pagination config
+        const itemsPerPage = 10; // Or your preferred number
+        let currentPage = 1;
+        let filteredMedications = [...allMedications]; // Start with all medications
+
+        // DOM elements
+        const searchInput = document.getElementById('searchInput');
+        const clearSearchBtn = document.getElementById('clearSearchBtn');
+        const medicationTableBody = document.getElementById('medication-table-body');
+        const noResultsRow = document.getElementById('no-results-row');
+        const noDataRow = document.getElementById('no-data-row'); // Initial empty state row
+        const pagination = document.getElementById('pagination');
+        const showingStart = document.getElementById('showing-start');
+        const showingEnd = document.getElementById('showing-end');
+        const totalItems = document.getElementById('total-items');
+
+        // --- Alert Function ---
+        function showAlert(type, message) {
+             const alertContainer = document.querySelector('.patient-list-container');
+             if (!alertContainer) return;
+             // Remove existing alerts of the same type to prevent stacking (optional)
+             // alertContainer.querySelectorAll(`.alert.alert-${type}`).forEach(a => a.remove());
+             const alertDiv = document.createElement('div');
+             alertDiv.className = `alert alert-${type} alert-dismissible fade show mt-3 mx-3`;
+             alertDiv.role = 'alert';
+             alertDiv.innerHTML = `
+                  <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                 ${message}
+                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                     <span aria-hidden="true">×</span>
+                 </button>
+             `;
+             const filtersBar = alertContainer.querySelector('.filters-bar');
+             alertContainer.insertBefore(alertDiv, filtersBar ? filtersBar.nextSibling : alertContainer.firstChild);
+             setTimeout(() => {
+                 try { new bootstrap.Alert(alertDiv).close(); } catch(e){ alertDiv.remove(); }
+             }, 5000);
+         }
+
+
+        // --- Filter Function ---
+        function applyFilters() {
+            const searchTerm = searchInput.value.trim().toLowerCase();
+
+            filteredMedications = allMedications.filter(row => {
+                if (!searchTerm) return true; // Show all if search is empty
+
+                const name = row.getAttribute('data-name') || '';
+                const category = row.getAttribute('data-category') || '';
+                const manufacturer = row.getAttribute('data-manufacturer') || '';
+                // Get description text directly from the cell (less efficient but ok for moderate data)
+                const descriptionCell = row.querySelector('.medication-description');
+                const description = descriptionCell ? descriptionCell.textContent.toLowerCase() : '';
+
+                return name.includes(searchTerm) ||
+                       category.includes(searchTerm) ||
+                       manufacturer.includes(searchTerm) ||
+                       description.includes(searchTerm);
+            });
+
+            currentPage = 1; // Reset to first page after filtering
+            updateDisplay();
+        }
+
+        // --- Display Update Function ---
+        function updateDisplay() {
+            // Hide all medication rows first
+            allMedications.forEach(row => {
+                row.style.display = 'none';
+            });
+
+             // Hide no-data row if it exists
+             if(noDataRow) noDataRow.style.display = 'none';
+
+            // Show "No results" row if filtering yields nothing
+            if (filteredMedications.length === 0) {
+                noResultsRow.style.display = 'table-row';
+                showingStart.textContent = '0';
+                showingEnd.textContent = '0';
+                totalItems.textContent = '0';
+                pagination.innerHTML = ''; // Clear pagination
+                return;
+            } else {
+                noResultsRow.style.display = 'none';
+            }
+
+            // Calculate pagination details for the filtered list
+            const totalFilteredItems = filteredMedications.length;
+            const totalPages = Math.ceil(totalFilteredItems / itemsPerPage);
+
+            // Adjust current page if it's out of bounds (e.g., after filtering)
+            if (currentPage > totalPages) {
+                currentPage = totalPages > 0 ? totalPages : 1;
+            }
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, totalFilteredItems);
+
+            // Show only the rows for the current page from the filtered list
+            for (let i = startIndex; i < endIndex; i++) {
+                if (filteredMedications[i]) { // Ensure the element exists
+                   filteredMedications[i].style.display = 'table-row';
+                }
+            }
+
+            // Update pagination info text
+            showingStart.textContent = totalFilteredItems ? startIndex + 1 : 0;
+            showingEnd.textContent = endIndex;
+            totalItems.textContent = totalFilteredItems;
+
+            // Update pagination controls
+            updatePagination();
+        }
+
+        // --- Pagination Update Function ---
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredMedications.length / itemsPerPage);
+            let paginationHTML = '';
+
+            // Previous Button
+            paginationHTML += `
+                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" data-page="${currentPage - 1}">Previous</a>
+                </li>`;
+
+            // Page Number Logic (Example: Simple range with ellipses)
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, currentPage + 2);
+            if (totalPages <= 5) { startPage = 1; endPage = totalPages; }
+            else if (currentPage <= 3) { endPage = 5; }
+            else if (currentPage >= totalPages - 2) { startPage = totalPages - 4; }
+
+            if (startPage > 1) {
+                paginationHTML += `<li class="page-item"><a class="page-link" href="#" data-page="1">1</a></li>`;
+                if (startPage > 2) paginationHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            }
+            for (let i = startPage; i <= endPage; i++) {
+                paginationHTML += `
+                    <li class="page-item ${i === currentPage ? 'active' : ''}">
+                        <a class="page-link" href="#" data-page="${i}">${i}</a>
+                    </li>`;
+            }
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) paginationHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                paginationHTML += `<li class="page-item"><a class="page-link" href="#" data-page="${totalPages}">${totalPages}</a></li>`;
+            }
+
+            // Next Button
+            paginationHTML += `
+                <li class="page-item ${currentPage === totalPages || totalPages === 0 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" data-page="${currentPage + 1}">Next</a>
+                </li>`;
+
+            pagination.innerHTML = paginationHTML;
+
+            // Add click listeners to new pagination links
+            document.querySelectorAll('.pagination .page-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const pageNum = this.getAttribute('data-page');
+                    if (!this.parentElement.classList.contains('disabled') && pageNum) {
+                        currentPage = parseInt(pageNum);
+                        updateDisplay();
+                        // Optional: Scroll to top
+                         // document.querySelector('.table-responsive')?.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            });
+        }
+
+        // --- Event Listeners ---
+        // Real-time search on input
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(applyFilters, 300); // Debounce search
+        });
+
+        // Clear search button
+        clearSearchBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            searchInput.value = ''; // Clear the input
+            applyFilters();       // Re-apply filters (will show all)
+        });
+
+        // Delete functionality (Mostly unchanged from your previous version)
+        let medicationIdToDelete = null;
+        const confirmDeleteBtn = document.getElementById('confirmDelete');
+        const deleteModal = $('#deleteModal');
+
+         document.querySelectorAll('.delete-medication').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                medicationIdToDelete = this.getAttribute('data-id');
+                const medicationName = this.getAttribute('data-name');
+                 document.getElementById('medicationToDeleteName').textContent = medicationName;
+                deleteModal.modal('show');
+            });
+        });
+
+        confirmDeleteBtn.addEventListener('click', function() {
+            if (medicationIdToDelete) {
+                confirmDeleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Deleting...';
+                confirmDeleteBtn.disabled = true;
+
+                fetch(`/admin/manage_medication/delete/${medicationIdToDelete}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                .then(response => response.json().then(data => ({ status: response.status, body: data })))
+                .then(({ status, body }) => {
+                     deleteModal.modal('hide');
+                     confirmDeleteBtn.innerHTML = 'Delete';
+                     confirmDeleteBtn.disabled = false;
+
+                    if (body.success) {
+                        // Remove from the main array FIRST
+                        const indexInAll = allMedications.findIndex(row => row.getAttribute('data-id') === medicationIdToDelete);
+                         if (indexInAll > -1) {
+                             allMedications.splice(indexInAll, 1);
+                         }
+                        // Re-filter the now smaller 'allMedications' list
+                        applyFilters(); // This calls updateDisplay which handles removing row visually and updating counts/pagination
+                        showAlert('success', body.message || 'Medication deleted successfully.');
+
+                    } else {
+                         showAlert('danger', body.message || 'Failed to delete medication.');
+                    }
+                     medicationIdToDelete = null;
+                })
+                .catch(error => {
+                    console.error('Error deleting medication:', error);
+                    deleteModal.modal('hide');
+                     confirmDeleteBtn.innerHTML = 'Delete';
+                     confirmDeleteBtn.disabled = false;
+                     showAlert('danger', 'An unexpected error occurred.');
+                    medicationIdToDelete = null;
+                });
+            }
+        });
+
+        // --- Initial Display ---
+        updateDisplay();
+
+    });
+</script>

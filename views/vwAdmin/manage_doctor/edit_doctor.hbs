@@ -34,7 +34,7 @@
 <div class="card form-card">
     <div class="card-body">
         <!-- Form Action using doctorId -->
-        <form id="doctorForm" action="/admin/doctors/update/{{doctor.doctorId}}" method="POST" enctype="multipart/form-data">
+        <form id="doctorForm" action="/admin/manage_doctor/update/{{doctor.doctorId}}" method="POST" enctype="multipart/form-data">
             <!-- Hidden input for userId to ensure it's available for the update -->
             <input type="hidden" name="userId" value="{{doctor.userId}}">
             <!-- Optional: Add hidden input for PUT/PATCH if your framework needs it -->

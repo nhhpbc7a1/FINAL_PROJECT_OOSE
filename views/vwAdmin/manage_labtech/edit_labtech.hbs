@@ -1,0 +1,309 @@
+<!-- Edit Lab Technician Form -->
+<link rel="stylesheet" href="/public/css/admin-side/add-doctor.css"> <!-- Reusing the same CSS -->
+
+{{!-- ... (header and alerts remain the same) ... --}}
+
+<div class="card form-card">
+    <div class="card-body">
+        {{!-- Updated form ID and Action --}}
+        <form id="labtechForm" action="/admin/manage_labtech/update/{{labTechnician.technicianId}}" method="POST" enctype="multipart/form-data" novalidate> {{!-- Added novalidate --}}
+            {{!-- Hidden input for userId with an ID for JS access --}}
+            <input type="hidden" name="userId" id="userId" value="{{labTechnician.userId}}">
+
+            <div class="row">
+                <div class="col-md-9">
+                    <!-- Basic Information Section -->
+                    <div class="form-section">
+                        <h3 class="section-title">Basic Information</h3>
+                        <div class="form-row">
+                           {{!-- ... (fullName) ... --}}
+                            <div class="form-group col-md-6">
+                                <label for="fullName">Full Name <span class="required">*</span></label>
+                                <input type="text" class="form-control" id="fullName" name="fullName" value="{{labTechnician.fullName}}" required>
+                                <small class="form-text text-muted">Enter the technician's full name.</small>
+                                <div class="invalid-feedback">Please provide the full name.</div>
+                            </div>
+
+                            <div class="form-group col-md-6">
+                                <label for="email">Email Address <span class="required">*</span></label>
+                                <input type="email" class="form-control" id="email" name="email" value="{{labTechnician.email}}" required aria-describedby="email-feedback">
+                                <small class="form-text text-muted">This email will be used for login and notifications.</small>
+                                {{!-- Feedback area for email availability --}}
+                                <div id="email-feedback"></div>
+                                <div class="invalid-feedback">Please provide a valid email address.</div>
+                            </div>
+                        </div>
+                        {{!-- ... (rest of the form fields: phoneNumber, address, gender, dob, specialtyId) ... --}}
+                         <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="phoneNumber">Phone Number <span class="required">*</span></label>
+                                <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber" value="{{labTechnician.phoneNumber}}" required>
+                                <small class="form-text text-muted">Format: (123) 456-7890 or international</small>
+                                 <div class="invalid-feedback">Please provide a phone number.</div>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="address">Address</label>
+                                <input type="text" class="form-control" id="address" name="address" value="{{labTechnician.address}}">
+                                <small class="form-text text-muted">Complete street address</small>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label for="gender">Gender <span class="required">*</span></label>
+                                <select class="form-control" id="gender" name="gender" required>
+                                    <option value="" disabled {{#unless labTechnician.gender}}selected{{/unless}}>Select Gender</option>
+                                    <option value="male" {{#if (eq labTechnician.gender "male")}}selected{{/if}}>Male</option>
+                                    <option value="female" {{#if (eq labTechnician.gender "female")}}selected{{/if}}>Female</option>
+                                    <option value="other" {{#if (eq labTechnician.gender "other")}}selected{{/if}}>Other</option>
+                                </select>
+                                 <div class="invalid-feedback">Please select a gender.</div>
+                            </div>
+                             <div class="form-group col-md-4">
+                                <label for="dob">Date of Birth <span class="required">*</span></label>
+                                <input type="date" class="form-control" id="dob" name="dob" value="{{labTechnician.dob}}" required>
+                                <div class="invalid-feedback">Please provide the date of birth.</div>
+                            </div>
+                             <div class="form-group col-md-4">
+                                <label for="specialtyId">Assigned Specialty <span class="required">*</span></label>
+                                <select class="form-control" id="specialtyId" name="specialtyId" required>
+                                    <option value="" disabled {{#unless labTechnician.specialtyId}}selected{{/unless}}>Select Specialty</option>
+                                    {{#each specialties}}
+                                    <option value="{{specialtyId}}" {{#if (eq ../labTechnician.specialtyId specialtyId)}}selected{{/if}}>{{name}}</option>
+                                    {{/each}}
+                                </select>
+                                 <small class="form-text text-muted">The lab or department the technician belongs to.</small>
+                                  <div class="invalid-feedback">Please select a specialty.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                     <!-- Professional Information -->
+                    <div class="form-section">
+                        <h3 class="section-title">Professional Information</h3>
+                        <div class="form-group">
+                             <label for="specialization">Specialization</label>
+                             <input type="text" class="form-control" id="specialization" name="specialization" value="{{labTechnician.specialization}}">
+                             <small class="form-text text-muted">Specific area of expertise, e.g., Hematology, Microbiology.</small>
+                        </div>
+                    </div>
+                </div>
+                {{!-- ... (col-md-3 for photo and account settings) ... --}}
+                <div class="col-md-3">
+                    <!-- Profile Photo Upload -->
+                    <div class="form-section">
+                        <h3 class="section-title">Profile Photo</h3>
+                        <div class="profile-photo-upload">
+                            <div class="photo-preview {{#if labTechnician.profilePictureUrl}}has-image{{/if}}" id="photoPreview"
+                                 {{#if labTechnician.profilePictureUrl}}style="background-image: url('{{labTechnician.profilePictureUrl}}');"{{/if}}>
+                                {{#unless labTechnician.profilePictureUrl}}
+                                    <i class="fas fa-flask"></i>
+                                    <span>Update Photo</span>
+                                {{/unless}}
+                            </div>
+                            <input type="file" id="profilePhoto" name="profileImage" accept="image/*" class="profile-photo-input">
+                            <button type="button" class="btn btn-outline-primary btn-sm btn-block mt-2" id="uploadPhotoBtn">
+                                <i class="fas fa-upload"></i> Choose New Photo
+                            </button>
+                            <small class="form-text text-muted">
+                                Upload a new photo to replace the current one. Max 5MB.
+                            </small>
+                        </div>
+                    </div>
+                    <!-- Account Settings -->
+                    <div class="form-section">
+                        <h3 class="section-title">Account Settings</h3>
+                        <div class="form-group">
+                            <label for="accountStatus">Status</label>
+                            <select class="form-control" id="accountStatus" name="accountStatus">
+                                <option value="active" {{#if (eq labTechnician.accountStatus "active")}}selected{{/if}}>Active</option>
+                                <option value="inactive" {{#if (eq labTechnician.accountStatus "inactive")}}selected{{/if}}>Inactive</option>
+                                <option value="pending" {{#if (eq labTechnician.accountStatus "pending")}}selected{{/if}}>Pending</option>
+                            </select>
+                            <small class="form-text text-muted">
+                                Set the technician's account status. Inactive accounts cannot log in.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+             <div class="form-actions">
+                <button type="button" class="btn btn-outline-secondary" onclick="location.href='/admin/manage_labtech'">
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- Elements ---
+        const labtechForm = document.getElementById('labtechForm');
+        const emailInput = document.getElementById('email');
+        const emailFeedbackEl = document.getElementById('email-feedback');
+        const userIdInput = document.getElementById('userId'); // Get the hidden user ID input
+        const profilePhotoInput = document.getElementById('profilePhoto');
+        const photoPreview = document.getElementById('photoPreview');
+        const uploadPhotoBtn = document.getElementById('uploadPhotoBtn');
+
+        // Store original email to avoid check if unchanged
+        const originalEmail = emailInput.value.trim();
+        let isEmailAvailable = true; // Assume available initially (it's the user's own email or will be checked)
+        let emailCheckTimeout = null;
+
+        // --- Functions ---
+         const checkEmailAvailability = async () => {
+            const currentEmail = emailInput.value.trim();
+            const userId = userIdInput.value; // Get the user ID being edited
+            emailFeedbackEl.innerHTML = '';
+            emailInput.classList.remove('is-invalid', 'is-valid');
+
+            if (!currentEmail) {
+                isEmailAvailable = false; // Cannot submit empty email
+                return;
+            }
+
+            // If email hasn't changed, it's considered available for this user
+            if (currentEmail === originalEmail) {
+                isEmailAvailable = true;
+                // Optional: show a neutral message or clear feedback
+                // emailFeedbackEl.innerHTML = '<small class="text-muted">Original email address.</small>';
+                emailInput.classList.add('is-valid'); // Mark as valid if unchanged
+                return;
+            }
+
+             // Basic format check
+             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+             if (!emailRegex.test(currentEmail)) {
+                 emailInput.classList.add('is-invalid');
+                 emailFeedbackEl.innerHTML = '<small class="text-danger">Please enter a valid email format.</small>';
+                 isEmailAvailable = false;
+                 return;
+             }
+
+            emailFeedbackEl.innerHTML = '<small class="text-muted">Checking availability...</small>';
+
+            try {
+                // Pass both email and userId to the backend check
+                const response = await fetch(`/account/is-available-email?email=${encodeURIComponent(currentEmail)}&userId=${userId}`);
+                const isAvailable = await response.json();
+
+                 if (response.ok) {
+                    if (isAvailable) {
+                        emailFeedbackEl.innerHTML = '<small class="text-success">Email is available!</small>';
+                        emailInput.classList.add('is-valid');
+                        isEmailAvailable = true;
+                    } else {
+                        emailFeedbackEl.innerHTML = '<small class="text-danger">This email address is already in use by another account.</small>';
+                        emailInput.classList.add('is-invalid');
+                        isEmailAvailable = false;
+                    }
+                } else {
+                     emailFeedbackEl.innerHTML = '<small class="text-danger">Could not check email availability. Please try again.</small>';
+                     emailInput.classList.add('is-invalid');
+                     isEmailAvailable = false; // Treat server error as unavailable
+                }
+            } catch (error) {
+                console.error('Error checking email:', error);
+                emailFeedbackEl.innerHTML = '<small class="text-danger">Network error checking email. Please try again.</small>';
+                 emailInput.classList.add('is-invalid');
+                isEmailAvailable = false; // Treat network error as unavailable
+            }
+        };
+
+        // --- Event Listeners ---
+         // Check email on blur
+        emailInput.addEventListener('blur', checkEmailAvailability);
+
+         // Optional: Check email while typing (with delay)
+         emailInput.addEventListener('input', () => {
+             clearTimeout(emailCheckTimeout);
+             // Reset validation state while typing
+             emailInput.classList.remove('is-invalid', 'is-valid');
+             emailFeedbackEl.innerHTML = '';
+             isEmailAvailable = false; // Reset until check completes
+
+             emailCheckTimeout = setTimeout(() => {
+                 checkEmailAvailability();
+             }, 1000); // Check 1s after typing stops
+         });
+
+
+        // Profile photo preview
+        uploadPhotoBtn.addEventListener('click', () => profilePhotoInput.click());
+        profilePhotoInput.addEventListener('change', function() {
+           if (this.files && this.files[0]) {
+                 if (this.files[0].size > 5 * 1024 * 1024) {
+                     alert('File size exceeds 5MB. Please choose a smaller image.');
+                     this.value = '';
+                     return;
+                 }
+                 const reader = new FileReader();
+                 reader.onload = (e) => {
+                     photoPreview.innerHTML = '';
+                     photoPreview.style.backgroundImage = `url('${e.target.result}')`;
+                     photoPreview.classList.add('has-image');
+                 }
+                 reader.readAsDataURL(this.files[0]);
+             }
+        });
+
+        // Form Submission
+        labtechForm.addEventListener('submit', async function(event) {
+            // Prevent default submission first
+            event.preventDefault();
+            event.stopPropagation();
+
+             // Perform final email check
+             await checkEmailAvailability();
+
+            // Check Bootstrap's native validation AND our custom email check
+            const isFormValid = labtechForm.checkValidity();
+
+            // Add Bootstrap's 'was-validated' class
+            labtechForm.classList.add('was-validated');
+
+            if (isFormValid && isEmailAvailable) {
+                // All checks passed, submit the form
+                 console.log('Form is valid, submitting...');
+                 const submitButton = labtechForm.querySelector('button[type="submit"]');
+                 if(submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
+                 }
+                labtechForm.submit(); // Submit programmatically
+            } else {
+                console.log('Form validation failed.');
+                // Find the first invalid field (including our custom check) and focus it
+                 let firstInvalidField = labtechForm.querySelector(':invalid');
+                 if (!isEmailAvailable && (!firstInvalidField || firstInvalidField !== emailInput)) {
+                      firstInvalidField = emailInput; // Prioritize email if it's the issue
+                  }
+
+                  if (firstInvalidField) {
+                     firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                     firstInvalidField.focus({ preventScroll: true });
+                 }
+            }
+        });
+
+         // --- Initial DOB Formatting (example, adjust based on how backend passes it) ---
+         const dobInput = document.getElementById('dob');
+         if (dobInput && dobInput.value) {
+             try {
+                 // Assuming dobInput.value is SOMETHING, try to format it consistently
+                 const dateObj = new Date(dobInput.value);
+                 if (!isNaN(dateObj)) {
+                     const year = dateObj.getUTCFullYear(); // Use UTC to avoid timezone shifts
+                     const month = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
+                     const day = String(dateObj.getUTCDate()).padStart(2, '0');
+                     dobInput.value = `${year}-${month}-${day}`;
+                 }
+             } catch(e) { console.error("Error formatting existing DOB"); }
+         }
+
+    });
+</script>

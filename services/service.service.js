@@ -1,11 +1,21 @@
 import db from '../ultis/db.js';
 
 export default {
-    async findAll() {
+    async findAll(includeInactive = false) {
         try {
-            return await db('Service')
-                .select('*')
-                .orderBy('name');
+            const query = db('Service')
+                .leftJoin('Specialty', 'Service.specialtyId', '=', 'Specialty.specialtyId')
+                .select(
+                    'Service.*',
+                    'Specialty.name as specialtyName'
+                )
+                .orderBy('Service.name');
+
+            if (!includeInactive) {
+                query.where('Service.status', 'active');
+            }
+
+            return await query;
         } catch (error) {
             console.error('Error fetching services:', error);
             throw new Error('Unable to load services');
@@ -15,6 +25,11 @@ export default {
     async findById(serviceId) {
         try {
             const service = await db('Service')
+                .leftJoin('Specialty', 'Service.specialtyId', '=', 'Specialty.specialtyId')
+                .select(
+                    'Service.*',
+                    'Specialty.name as specialtyName'
+                )
                 .where('serviceId', serviceId)
                 .first();
             return service || null;
@@ -24,202 +39,182 @@ export default {
         }
     },
 
-    async findByType(type) {
+    /**
+     * Checks if a service name already exists, optionally excluding a specific ID.
+     * @param {string} name - The service name to check.
+     * @param {number|null} excludeId - The service ID to exclude (for updates).
+     * @returns {boolean} - True if the name is unique, false otherwise.
+     */
+    async isNameUnique(name, excludeId = null) {
         try {
-            return await db('Service')
-                .where('type', type)
-                .orderBy('name');
+            // Case-insensitive check might be useful here depending on requirements
+            const query = db('Service').whereRaw('LOWER(name) = LOWER(?)', [name]);
+            if (excludeId) {
+                query.andWhereNot('serviceId', excludeId);
+            }
+            const existing = await query.first();
+            return !existing; // Return true if no existing record found
         } catch (error) {
-            console.error(`Error fetching services of type ${type}:`, error);
-            throw new Error('Unable to find services by type');
-        }
-    },
-
-    async findBySpecialty(specialtyId) {
-        try {
-            return await db('Service')
-                .where('specialtyId', specialtyId)
-                .orderBy('name');
-        } catch (error) {
-            console.error(`Error fetching services for specialty ID ${specialtyId}:`, error);
-            throw new Error('Unable to find services by specialty');
-        }
-    },
-
-    async searchByName(query) {
-        try {
-            return await db('Service')
-                .where('name', 'like', `%${query}%`)
-                .orderBy('name');
-        } catch (error) {
-            console.error(`Error searching for services with query '${query}':`, error);
-            throw new Error('Unable to search services');
-        }
-    },
-
-    async findByAppointment(appointmentId) {
-        try {
-            return await db('AppointmentServices')
-                .join('Service', 'AppointmentServices.serviceId', '=', 'Service.serviceId')
-                .select(
-                    'Service.*',
-                    'AppointmentServices.price as appliedPrice',
-                    'AppointmentServices.appointmentServiceId'
-                )
-                .where('AppointmentServices.appointmentId', appointmentId)
-                .orderBy('Service.name');
-        } catch (error) {
-            console.error(`Error fetching services for appointment ID ${appointmentId}:`, error);
-            throw new Error('Unable to find services by appointment');
+            console.error('Error checking service name uniqueness:', error);
+            return false; // Treat errors as non-unique to be safe
         }
     },
 
     async add(service) {
         try {
-            const [serviceId] = await db('Service').insert(service);
+            // Prepare data for insertion, handling optional fields
+            const serviceData = {
+                name: service.name,
+                description: service.description || null,
+                price: parseFloat(service.price), // Ensure price is a number
+                duration: service.duration ? parseInt(service.duration, 10) : null,
+                type: service.type, // Required field
+                category: service.category || null,
+                specialtyId: service.specialtyId ? parseInt(service.specialtyId, 10) : null,
+                status: service.status || 'active' // Default status
+            };
+
+            // Basic validation
+            if (isNaN(serviceData.price) || serviceData.price < 0) {
+                throw new Error('Invalid price provided. Price must be a non-negative number.');
+            }
+             if (!['service', 'test'].includes(serviceData.type)) {
+                 throw new Error('Invalid service type provided.');
+             }
+             if (serviceData.duration !== null && (isNaN(serviceData.duration) || serviceData.duration < 0)) {
+                throw new Error('Invalid duration provided. Duration must be a non-negative integer.');
+            }
+
+
+            const [serviceId] = await db('Service').insert(serviceData);
             return serviceId;
         } catch (error) {
             console.error('Error adding service:', error);
-            throw new Error('Unable to add service');
+            if (error.code === 'ER_DUP_ENTRY' || (error.message && error.message.includes('Duplicate entry'))) {
+                 throw new Error(`Service name "${service.name}" already exists.`);
+            } else if (error.code === 'ER_NO_REFERENCED_ROW_2') {
+                 throw new Error('Invalid Specialty ID provided.');
+            }
+             // Rethrow other errors (like validation errors)
+            throw new Error(error.message || 'Unable to add service');
         }
     },
 
     async update(serviceId, service) {
         try {
+            // Prepare data for update, only include provided fields
+            const serviceData = {};
+            if (service.hasOwnProperty('name')) serviceData.name = service.name;
+            if (service.hasOwnProperty('description')) serviceData.description = service.description;
+            if (service.hasOwnProperty('price')) {
+                serviceData.price = parseFloat(service.price);
+                if (isNaN(serviceData.price) || serviceData.price < 0) {
+                    throw new Error('Invalid price provided. Price must be a non-negative number.');
+                }
+            }
+            if (service.hasOwnProperty('duration')) {
+                 serviceData.duration = service.duration ? parseInt(service.duration, 10) : null;
+                 if (serviceData.duration !== null && (isNaN(serviceData.duration) || serviceData.duration < 0)) {
+                    throw new Error('Invalid duration provided. Duration must be a non-negative integer.');
+                }
+            }
+            if (service.hasOwnProperty('type')) {
+                 if (!['service', 'test'].includes(service.type)) {
+                    throw new Error('Invalid service type provided.');
+                 }
+                 serviceData.type = service.type;
+            }
+            if (service.hasOwnProperty('category')) serviceData.category = service.category;
+             // Allow setting specialtyId to null
+             if (service.hasOwnProperty('specialtyId')) {
+                 serviceData.specialtyId = service.specialtyId ? parseInt(service.specialtyId, 10) : null;
+            }
+            if (service.hasOwnProperty('status')) {
+                 if (!['active', 'inactive'].includes(service.status)) {
+                     throw new Error('Invalid status provided.');
+                 }
+                 serviceData.status = service.status;
+            }
+
+            if (Object.keys(serviceData).length === 0) {
+                 return true; // Nothing to update
+            }
+
             const result = await db('Service')
                 .where('serviceId', serviceId)
-                .update(service);
+                .update(serviceData);
+
             return result > 0;
         } catch (error) {
             console.error(`Error updating service with ID ${serviceId}:`, error);
-            throw new Error('Unable to update service');
+            if (error.code === 'ER_DUP_ENTRY' || (error.message && error.message.includes('Duplicate entry'))) {
+                 throw new Error(`Service name "${service.name}" already exists.`);
+            } else if (error.code === 'ER_NO_REFERENCED_ROW_2') {
+                 throw new Error('Invalid Specialty ID provided.');
+            }
+             // Rethrow other errors (like validation errors)
+            throw new Error(error.message || 'Unable to update service');
+        }
+    },
+
+     /**
+     * Checks if a service is associated with any appointment.
+     * @param {number} serviceId - The ID of the service to check.
+     * @returns {boolean} - True if dependencies exist, false otherwise.
+     */
+    async checkDependencies(serviceId) {
+        try {
+            // Check if the service exists in AppointmentServices
+            const hasAppointments = await db('AppointmentServices')
+                                          .where('serviceId', serviceId)
+                                          .first();
+            // Check if the service exists in TestResult (if service type can be 'test')
+            const hasTestResults = await db('TestResult')
+                                         .where('serviceId', serviceId)
+                                         .first();
+
+            return !!(hasAppointments || hasTestResults); // Returns true if found in either table
+        } catch (error) {
+            console.error(`Error checking dependencies for service ID ${serviceId}:`, error);
+            return true; // Assume dependencies exist on error to be safe
         }
     },
 
     async delete(serviceId) {
         try {
-            // Check if service is used in any appointment
-            const usedInAppointment = await db('AppointmentServices')
-                .where('serviceId', serviceId)
-                .first();
-            
-            if (usedInAppointment) {
-                throw new Error('Cannot delete service that is used in appointments');
-            }
-            
-            // Check if service is used in any test result
-            const usedInTestResult = await db('TestResult')
-                .where('serviceId', serviceId)
-                .first();
-            
-            if (usedInTestResult) {
-                throw new Error('Cannot delete service that is used in test results');
-            }
-            
+            // Dependency check should be done in the route before calling this.
             const result = await db('Service')
                 .where('serviceId', serviceId)
                 .delete();
             return result > 0;
         } catch (error) {
             console.error(`Error deleting service with ID ${serviceId}:`, error);
-            throw error; // Throw the specific error to handle in controller
+             if (error.code === 'ER_ROW_IS_REFERENCED_2') {
+                 throw new Error('Cannot delete service because it is referenced by other records (Appointments, Test Results).');
+             }
+            throw new Error('Unable to delete service');
         }
     },
 
-    async countByType() {
-        try {
-            return await db('Service')
-                .select('type')
-                .count('serviceId as count')
-                .groupBy('type');
-        } catch (error) {
-            console.error('Error counting services by type:', error);
-            throw new Error('Unable to count services by type');
-        }
-    },
-
-    async countBySpecialty() {
+    async search(query) {
         try {
             return await db('Service')
                 .leftJoin('Specialty', 'Service.specialtyId', '=', 'Specialty.specialtyId')
-                .select('Specialty.name as specialtyName')
-                .count('Service.serviceId as count')
-                .groupBy('Service.specialtyId', 'Specialty.name')
-                .orderBy('count', 'desc');
+                .select(
+                    'Service.*',
+                    'Specialty.name as specialtyName'
+                )
+                .where(builder => {
+                    builder.where('Service.name', 'like', `%${query}%`)
+                           .orWhere('Service.category', 'like', `%${query}%`)
+                           .orWhere('Service.type', 'like', `%${query}%`)
+                           .orWhere('Service.description', 'like', `%${query}%`)
+                           .orWhere('Specialty.name', 'like', `%${query}%`); // Search by specialty name too
+                 })
+                 .orderBy('Service.name');
         } catch (error) {
-            console.error('Error counting services by specialty:', error);
-            throw new Error('Unable to count services by specialty');
-        }
-    },
-
-    async getMostRequestedServices(limit = 10) {
-        try {
-            return await db('AppointmentServices')
-                .join('Service', 'AppointmentServices.serviceId', '=', 'Service.serviceId')
-                .select('Service.serviceId', 'Service.name', 'Service.type')
-                .count('AppointmentServices.appointmentServiceId as requestCount')
-                .groupBy('Service.serviceId', 'Service.name', 'Service.type')
-                .orderBy('requestCount', 'desc')
-                .limit(limit);
-        } catch (error) {
-            console.error(`Error fetching most requested services (limit: ${limit}):`, error);
-            throw new Error('Unable to get most requested services');
-        }
-    },
-
-    // Methods for appointment services
-    async addServiceToAppointment(appointmentService) {
-        try {
-            // If price is not provided, use default service price
-            if (!appointmentService.price && appointmentService.serviceId) {
-                const service = await this.findById(appointmentService.serviceId);
-                if (service) {
-                    appointmentService.price = service.price;
-                }
-            }
-            
-            const [appointmentServiceId] = await db('AppointmentServices').insert(appointmentService);
-            return appointmentServiceId;
-        } catch (error) {
-            console.error('Error adding service to appointment:', error);
-            throw new Error('Unable to add service to appointment');
-        }
-    },
-
-    async removeServiceFromAppointment(appointmentServiceId) {
-        try {
-            const result = await db('AppointmentServices')
-                .where('appointmentServiceId', appointmentServiceId)
-                .delete();
-            return result > 0;
-        } catch (error) {
-            console.error(`Error removing appointment service with ID ${appointmentServiceId}:`, error);
-            throw new Error('Unable to remove service from appointment');
-        }
-    },
-
-    async updateAppointmentService(appointmentServiceId, data) {
-        try {
-            const result = await db('AppointmentServices')
-                .where('appointmentServiceId', appointmentServiceId)
-                .update(data);
-            return result > 0;
-        } catch (error) {
-            console.error(`Error updating appointment service with ID ${appointmentServiceId}:`, error);
-            throw new Error('Unable to update appointment service');
-        }
-    },
-
-    async getTotalServiceCost(appointmentId) {
-        try {
-            const result = await db('AppointmentServices')
-                .where('appointmentId', appointmentId)
-                .sum('price as totalCost')
-                .first();
-            return result.totalCost || 0;
-        } catch (error) {
-            console.error(`Error calculating total service cost for appointment ID ${appointmentId}:`, error);
-            throw new Error('Unable to calculate total service cost');
+            console.error(`Error searching services with query "${query}":`, error);
+            throw new Error('Unable to search services');
         }
     }
-}; 
+};
