@@ -57,8 +57,9 @@ app.use(async function (req, res, next) {
 app.get('/', async function (req, res) {
     res.redirect('/patient');
 });
-
-
+app.get('/', async function (req, res) {
+    res.redirect('/login');
+});
 
 import patientRouter from './routes/patient/patient.route.js';
 app.use('/patient', patientRouter);
