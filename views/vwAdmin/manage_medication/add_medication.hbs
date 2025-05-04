@@ -1,0 +1,200 @@
+<link rel="stylesheet" href="/public/css/admin-side/add-doctor.css"> {{!-- Reuse form styling --}}
+
+<div class="content-header">
+    <div>
+        <h1 class="page-title">{{pageTitle}}</h1>
+        <p class="page-subtitle">Add a new medication by filling out the form below.</p>
+    </div>
+    <div class="header-actions">
+        <a href="/admin/manage_medication" class="btn btn-outline">
+            <i class="fas fa-arrow-left"></i> Back to Medications
+        </a>
+    </div>
+</div>
+
+{{#if error}}
+<div class="alert alert-danger alert-dismissible fade show">
+    <i class="fas fa-exclamation-circle"></i>
+    <span>{{error}}</span>
+    <button type="button" class="close" data-dismiss="alert">×</button>
+</div>
+{{/if}}
+
+{{#if flashMessage}}
+<div class="alert alert-{{flashMessage.type}} alert-dismissible fade show">
+    <i class="fas fa-{{#if (eq flashMessage.type 'success')}}check-circle{{else}}exclamation-circle{{/if}}"></i>
+    <span>{{flashMessage.message}}</span>
+    <button type="button" class="close" data-dismiss="alert">×</button>
+</div>
+{{/if}}
+
+<div class="card form-card">
+    <div class="card-body">
+        <form id="medicationForm" action="/admin/manage_medication/add" method="POST" novalidate>
+            <div class="form-section">
+                 <h3 class="section-title">Medication Details</h3>
+
+                 <div class="form-group">
+                    <label for="name">Medication Name <span class="required">*</span></label>
+                    <input type="text" class="form-control" id="name" name="name" value="{{medication.name}}" required aria-describedby="name-feedback">
+                    <small class="form-text text-muted">The brand or generic name of the medication.</small>
+                     <div id="name-feedback"></div>
+                    <div class="invalid-feedback">Please enter the medication name.</div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-8">
+                        <label for="dosage">Common Dosage / Form</label>
+                        <input type="text" class="form-control" id="dosage" name="dosage" value="{{medication.dosage}}">
+                        <small class="form-text text-muted">E.g., "10mg tablets", "5ml suspension", "Topical cream".</small>
+                    </div>
+                     <div class="form-group col-md-4">
+                        <label for="price">Price (per unit/package) <span class="required">*</span></label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">$</span>
+                            </div>
+                            <input type="number" step="0.01" min="0" class="form-control" id="price" name="price" value="{{medication.price}}" required>
+                             <div class="invalid-feedback">Please enter a valid, non-negative price.</div>
+                        </div>
+                         <small class="form-text text-muted">Enter the cost for a standard unit or package.</small>
+                    </div>
+                </div>
+
+                 <div class="form-row">
+                     <div class="form-group col-md-6">
+                        <label for="category">Category</label>
+                        <input type="text" class="form-control" id="category" name="category" value="{{medication.category}}">
+                        <small class="form-text text-muted">E.g., "Antibiotic", "Pain Reliever", "Antihypertensive".</small>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="manufacturer">Manufacturer</label>
+                        <input type="text" class="form-control" id="manufacturer" name="manufacturer" value="{{medication.manufacturer}}">
+                        <small class="form-text text-muted">The company that produces the medication.</small>
+                    </div>
+                </div>
+
+                 <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="3">{{medication.description}}</textarea>
+                    <small class="form-text text-muted">A brief description of the medication's use or properties (optional).</small>
+                </div>
+
+                 <div class="form-group">
+                    <label for="sideEffects">Common Side Effects</label>
+                    <textarea class="form-control" id="sideEffects" name="sideEffects" rows="3">{{medication.sideEffects}}</textarea>
+                    <small class="form-text text-muted">List common side effects, separated by commas (optional).</small>
+                </div>
+             </div>
+
+
+            <div class="form-actions">
+                <button type="button" class="btn btn-outline-secondary" onclick="location.href='/admin/manage_medication'">
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save Medication
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+     document.addEventListener('DOMContentLoaded', function() {
+         const medicationForm = document.getElementById('medicationForm');
+         const nameInput = document.getElementById('name');
+         const nameFeedbackEl = document.getElementById('name-feedback');
+         const priceInput = document.getElementById('price');
+
+         let isNameAvailable = false; // Assume unavailable until checked
+         let nameCheckTimeout = null;
+
+          const checkNameAvailability = async () => {
+             const name = nameInput.value.trim();
+             nameFeedbackEl.innerHTML = '';
+             nameInput.classList.remove('is-invalid', 'is-valid');
+             if (!name) { isNameAvailable = false; return; }
+             nameFeedbackEl.innerHTML = '<small class="text-muted">Checking name...</small>';
+             try {
+                 const response = await fetch(`/admin/manage_medication/api/check-name?name=${encodeURIComponent(name)}`); // Corrected API path
+                 const data = await response.json();
+                 if (response.ok) {
+                    if (data.isUnique) {
+                         nameFeedbackEl.innerHTML = '<small class="text-success">Name is available!</small>';
+                         nameInput.classList.add('is-valid'); isNameAvailable = true;
+                     } else {
+                         nameFeedbackEl.innerHTML = '<small class="text-danger">This medication name already exists.</small>';
+                         nameInput.classList.add('is-invalid'); isNameAvailable = false;
+                     }
+                 } else {
+                     console.error("Name check failed:", data.message);
+                     nameFeedbackEl.innerHTML = '<small class="text-warning">Could not verify name uniqueness.</small>';
+                     isNameAvailable = true; // Allow submission, rely on server
+                 }
+             } catch (error) {
+                 console.error('Error checking name:', error);
+                 nameFeedbackEl.innerHTML = '<small class="text-warning">Network error checking name.</small>';
+                 isNameAvailable = true; // Allow submission, rely on server
+             }
+         };
+
+         // Check name events
+         nameInput.addEventListener('blur', checkNameAvailability);
+         nameInput.addEventListener('input', () => {
+             clearTimeout(nameCheckTimeout);
+             nameInput.classList.remove('is-invalid', 'is-valid'); nameFeedbackEl.innerHTML = ''; isNameAvailable = false;
+             nameCheckTimeout = setTimeout(checkNameAvailability, 1000);
+         });
+
+         // Form Submission
+         medicationForm.addEventListener('submit', async function(event) {
+             event.preventDefault(); event.stopPropagation();
+             await checkNameAvailability(); // Final check
+
+             // Additional check for price validity
+             const priceValue = parseFloat(priceInput.value);
+             let isPriceValid = !isNaN(priceValue) && priceValue >= 0;
+             if (!isPriceValid) {
+                 priceInput.classList.add('is-invalid');
+             } else {
+                  priceInput.classList.remove('is-invalid');
+                  priceInput.classList.add('is-valid'); // Mark valid if correct
+             }
+
+
+             const isFormValid = medicationForm.checkValidity();
+             medicationForm.classList.add('was-validated');
+
+             if (isFormValid && isNameAvailable && isPriceValid) {
+                 console.log('Form is valid, submitting...');
+                  const submitButton = medicationForm.querySelector('button[type="submit"]');
+                  if(submitButton){ submitButton.disabled = true; submitButton.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...'; }
+                 medicationForm.submit();
+             } else {
+                 console.log('Form validation failed.');
+                  let firstInvalidField = medicationForm.querySelector(':invalid');
+                  if (!isNameAvailable && (!firstInvalidField || firstInvalidField !== nameInput)) { firstInvalidField = nameInput; }
+                  if (!isPriceValid && (!firstInvalidField || firstInvalidField !== priceInput)) { firstInvalidField = priceInput; }
+
+                  if (firstInvalidField) {
+                     firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                     firstInvalidField.focus({ preventScroll: true });
+                 }
+             }
+         });
+
+         // Remove validation state on input for price
+          priceInput.addEventListener('input', function() {
+              const priceValue = parseFloat(this.value);
+              if (!isNaN(priceValue) && priceValue >= 0) {
+                   this.classList.remove('is-invalid');
+                   // Optionally add is-valid immediately
+                   // this.classList.add('is-valid');
+              } else {
+                   // Optionally add is-invalid immediately
+                   // this.classList.add('is-invalid');
+              }
+          });
+     });
+</script>
