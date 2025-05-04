@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS User (
     email VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     fullName VARCHAR(100) NOT NULL,
-    phoneNumber VARCHAR(20) UNIQUE NOT NULL,
+    phoneNumber VARCHAR(20) NOT NULL,
     address VARCHAR(255),
     gender ENUM('male', 'female', 'other') NOT NULL,
     dob DATE,

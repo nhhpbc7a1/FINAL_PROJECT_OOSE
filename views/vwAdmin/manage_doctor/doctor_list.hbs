@@ -25,7 +25,7 @@
         </div>
     </div>
 
-        <a href="/admin/doctors/add" class="add-new-btn">
+        <a href="/admin/manage_doctor/add" class="add-new-btn">
             <i class="fas fa-plus"></i> Add New Doctor
         </a>
     </div>
@@ -71,10 +71,10 @@
                     </td>
                     <td>
                         <div class="action-buttons">
-                            <a href="/admin/doctors/view/{{doctorId}}" class="btn btn-icon" title="View Profile" style="display: none;">
+                            <a href="/admin/manage_doctor/view/{{doctorId}}" class="btn btn-icon" title="View Profile" style="display: none;">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <a href="/admin/doctors/edit/{{doctorId}}" class="btn btn-icon" title="Edit Doctor">
+                            <a href="/admin/manage_doctor/edit/{{doctorId}}" class="btn btn-icon" title="Edit Doctor">
                                 <i class="fas fa-edit"></i>
                             </a>
                             <a href="#" class="btn btn-icon delete-doctor" title="Delete Doctor" data-toggle="modal" data-target="#deleteModal" data-id="{{doctorId}}">
@@ -231,7 +231,7 @@
                 confirmDeleteBtn.disabled = true;
 
                 // Send AJAX request to delete the doctor
-                fetch(`/admin/doctors/delete/${doctorIdToDelete}`, {
+                fetch(`/admin/manage_doctor/delete/${doctorIdToDelete}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json'
