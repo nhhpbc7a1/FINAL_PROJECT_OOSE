@@ -8,6 +8,7 @@ import moment from 'moment';
 import session from 'express-session';
 import fileUpload from 'express-fileupload';
 import { authAdmin, authDoctor, authLabtech, authPatient } from './middlewares/auth.route.js';
+import { errorHandler, apiErrorHandler } from './middlewares/error-handler.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
@@ -130,6 +131,13 @@ app.use(async function (req, res, next) {
     }
     res.locals.auth = req.session.auth;
     res.locals.authUser = req.session.authUser;
+
+    // Truyền thông báo flash đến view
+    if (req.session.flashMessage) {
+        res.locals.flashMessage = req.session.flashMessage;
+        delete req.session.flashMessage;
+    }
+
     next();
 });
 
@@ -155,6 +163,10 @@ import adminRouter from './routes/admin/admin.route.js'
 // app.use('/admin', authAdmin, adminRouter);
 app.use('/admin', adminRouter);
 
+// Thêm middleware xử lý lỗi - phải đặt sau tất cả các routes
+app.use(errorHandler);
+// Middleware xử lý lỗi cho API
+app.use('/api', apiErrorHandler);
 
 app.listen(3000, function () {
     console.log('Server is running at http://localhost:3000');
