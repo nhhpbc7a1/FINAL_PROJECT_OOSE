@@ -1,0 +1,19 @@
+<main class="flex-1 p-6">
+  <div class="bg-white p-6 rounded-lg shadow-md">
+    <h1 class="text-2xl font-bold mb-4 text-blue-700">Notifications</h1>
+    <div class="space-y-4">
+      {{#each notifications}}
+        <div class="p-4 bg-gray-50 rounded-lg {{#if isRead}}opacity-70{{else}}bg-white{{/if}}">
+          <h3 class="text-lg font-medium">{{title}}</h3>
+          <p class="text-gray-600">{{content}}</p>
+          <p class="text-sm text-gray-400">{{format_date createdDate}}</p>
+        </div>
+      {{/each}}
+      {{#if notifications.length}}
+        <a href="#" class="text-blue-600 hover:underline">View more notifications</a>
+      {{else}}
+        <p class="text-gray-500">No notifications available.</p>
+      {{/if}}
+    </div>
+  </div>
+</main>
