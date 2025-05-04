@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prescription Medicine</title>
+  <link rel="stylesheet" href="/public/css/prescriptionMedicine.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="content-container">
+      <!-- Back Button -->
+      <div class="back-section">
+        <a href="/doctor/dashboard" class="back-link">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="#6c757d"/>
+          </svg>
+          Back to Dashboard
+        </a>
+      </div>
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <h1>Prescription Medicine</h1>
+        <div class="action-buttons">
+          <button class="btn-secondary">Prescription form</button>
+          <button class="btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 6px;">
+              <path d="M19 8H5C3.34 8 2 9.34 2 11V17H6V21H18V17H22V11C22 9.34 20.66 8 19 8ZM16 19H8V14H16V19ZM19 12C18.45 12 18 11.55 18 11C18 10.45 18.45 10 19 10C19.55 10 20 10.45 20 11C20 11.55 19.55 12 19 12ZM18 3H6V7H18V3Z" fill="white"/>
+            </svg>
+            Print Prescription
+          </button>
+        </div>
+      </div>
+
+      <!-- Patient Information Card -->
+      <div class="patient-card">
+        <div class="patient-avatar">
+          <div class="avatar-circle">
+            <span>NK</span>
+          </div>
+        </div>
+        <div class="patient-info">
+          <h2>NGUYEN LE TUNG CHI</h2>
+          <div class="patient-details">
+            <div class="detail-item">
+              <span class="label">32 years old</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Female</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Code: P-20250428</span>
+            </div>
+            <div class="status-badge examining">Examining</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab-button active">Prescription information</button>
+        <button class="tab-button">Prescription history</button>
+      </div>
+
+      <!-- Tab Content -->
+      <div class="tab-content">
+        <!-- Prescription Header Info -->
+        <div class="prescription-header">
+          <div class="prescription-info">
+            <div class="prescription-info-item">
+              <span class="label">Prescription ID</span>
+              <span class="value">PRE-20250428-001</span>
+            </div>
+            <div class="prescription-info-item">
+              <span class="label">Date</span>
+              <span class="value">April 28, 2025</span>
+            </div>
+            <div class="prescription-info-item">
+              <span class="label">Department</span>
+              <span class="value">Internal Medicine</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Diagnosis Section -->
+        <div class="section">
+          <h3>Diagnose</h3>
+          <div class="form-group">
+            <input type="text" class="form-control" value="Urinary tract Infection" placeholder="Enter diagnosis">
+          </div>
+        </div>
+
+        <!-- Prescribed Drugs Section -->
+        <div class="section">
+          <div class="section-header">
+            <h3>Prescribed drugs (6)</h3>
+            <button class="btn-icon add-drug">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z" fill="#ffffff"/>
+              </svg>
+              Add drugs
+            </button>
+          </div>
+
+          <!-- Drug Cards -->
+          <div class="drug-list">
+            <!-- Repeat this card 6 times as shown in the image -->
+            <div class="drug-card">
+              <div class="drug-info">
+                <h4>Ciprofloxacin 500mg</h4>
+                <p>1 viên, 2 lần/ngày, sau ăn, 7 ngày</p>
+              </div>
+              <div class="drug-actions">
+                <button class="btn-icon edit">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25ZM20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z" fill="#006eb9"/>
+                  </svg>
+                </button>
+                <button class="btn-icon delete">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM19 4H15.5L14.5 3H9.5L8.5 4H5V6H19V4Z" fill="#dc3545"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            
+            <div class="drug-card">
+              <div class="drug-info">
+                <h4>Paracetamol 500mg</h4>
+                <p>1 viên, 3 lần/ngày, khi đau, 5 ngày</p>
+              </div>
+              <div class="drug-actions">
+                <button class="btn-icon edit">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25ZM20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z" fill="#006eb9"/>
+                  </svg>
+                </button>
+                <button class="btn-icon delete">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM19 4H15.5L14.5 3H9.5L8.5 4H5V6H19V4Z" fill="#dc3545"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            
+            <div class="drug-card">
+              <div class="drug-info">
+                <h4>Amoxicillin 250mg</h4>
+                <p>1 viên, 2 lần/ngày, sau ăn, 7 ngày</p>
+              </div>
+              <div class="drug-actions">
+                <button class="btn-icon edit">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25ZM20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z" fill="#006eb9"/>
+                  </svg>
+                </button>
+                <button class="btn-icon delete">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM19 4H15.5L14.5 3H9.5L8.5 4H5V6H19V4Z" fill="#dc3545"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            
+            <div class="drug-card">
+              <div class="drug-info">
+                <h4>Ibuprofen 400mg</h4>
+                <p>1 viên, 2 lần/ngày, sau ăn, 5 ngày</p>
+              </div>
+              <div class="drug-actions">
+                <button class="btn-icon edit">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25ZM20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z" fill="#006eb9"/>
+                  </svg>
+                </button>
+                <button class="btn-icon delete">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM19 4H15.5L14.5 3H9.5L8.5 4H5V6H19V4Z" fill="#dc3545"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            
+            <div class="drug-card">
+              <div class="drug-info">
+                <h4>Vitamin C 500mg</h4>
+                <p>1 viên, 1 lần/ngày, sau ăn sáng, 14 ngày</p>
+              </div>
+              <div class="drug-actions">
+                <button class="btn-icon edit">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25ZM20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z" fill="#006eb9"/>
+                  </svg>
+                </button>
+                <button class="btn-icon delete">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM19 4H15.5L14.5 3H9.5L8.5 4H5V6H19V4Z" fill="#dc3545"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            
+            <div class="drug-card">
+              <div class="drug-info">
+                <h4>Probiotics</h4>
+                <p>1 gói, 1 lần/ngày, sau ăn tối, 10 ngày</p>
+              </div>
+              <div class="drug-actions">
+                <button class="btn-icon edit">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25ZM20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z" fill="#006eb9"/>
+                  </svg>
+                </button>
+                <button class="btn-icon delete">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM19 4H15.5L14.5 3H9.5L8.5 4H5V6H19V4Z" fill="#dc3545"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional Instructions Section -->
+        <div class="section">
+          <h3>Additional instructions</h3>
+          <div class="form-group">
+            <textarea class="form-control" rows="3" placeholder="Enter additional instructions">Drink plenty of water (at least 2 liters per day). Avoid alcohol and caffeine. Return to your doctor if symptoms do not improve after 3 days.</textarea>
+          </div>
+        </div>
+
+        <!-- Doctor's Signature Section -->
+        <div class="section">
+          <h3>Doctor's signature</h3>
+          <div class="signature-box">
+            <div class="signature-placeholder"></div>
+          </div>
+          
+          <div class="doctor-info">
+            <div class="doctor-avatar">DR</div>
+            <div class="doctor-details">
+              <div class="doctor-name">Dr. Nguyen Van A</div>
+              <div class="doctor-specialty">Internal Medicine Specialist</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="form-actions">
+          <button class="btn-outline">Cancel</button>
+          <button class="btn-outline">Draft</button>
+          <button class="btn-primary">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Tab switching functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      // Get patient ID from URL or from server-rendered data
+      const urlParams = new URLSearchParams(window.location.search);
+      const patientId = '{{patientId}}' || urlParams.get('patientId');
+      console.log('Patient ID:', patientId);
+      
+      // You can use the patientId to fetch additional patient data from the server if needed
+      
+      const tabButtons = document.querySelectorAll('.tab-button');
+      
+      tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          // Remove active class from all buttons
+          tabButtons.forEach(btn => btn.classList.remove('active'));
+          
+          // Add active class to clicked button
+          this.classList.add('active');
+          
+          // Here you would normally show/hide tab content
+          // But for now we'll just keep the first tab content visible
+        });
+      });
+
+      // Add hover effect to drug cards
+      const drugCards = document.querySelectorAll('.drug-card');
+      drugCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+          this.style.transform = 'translateY(-5px)';
+          this.style.boxShadow = '0 8px 15px rgba(0, 110, 185, 0.15)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+          this.style.transform = 'translateY(0)';
+          this.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.05)';
+        });
+      });
+    });
+  </script>
+</body>
+</html>
