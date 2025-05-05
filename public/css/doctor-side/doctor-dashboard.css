@@ -527,6 +527,20 @@ body {
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
 }
 
+/* No appointments message */
+.no-appointments {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 150px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin: 20px 0;
+  color: #6c757d;
+  font-style: italic;
+  border: 1px dashed #dee2e6;
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
   .content-container {

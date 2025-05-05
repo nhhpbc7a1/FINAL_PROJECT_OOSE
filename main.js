@@ -126,6 +126,32 @@ app.engine('hbs', engine({
             // Trả về chuỗi gốc nếu không cần cắt hoặc không hợp lệ
             return typeof str === 'string' ? str : ''; // Trả về rỗng nếu không phải string
         },
+        includes: function (string, substring) {
+            if (typeof string !== 'string') return false;
+            return string.includes(substring);
+        },
+        limitTo: function (array, limit) {
+            if (!Array.isArray(array)) return [];
+            return array.slice(0, limit);
+        },
+        round: function (value) {
+            return Math.round(value);
+        },
+        uniqueYears: function(appointments) {
+            if (!Array.isArray(appointments) || appointments.length === 0) {
+                return [];
+            }
+            
+            // Extract years and filter out duplicates
+            const uniqueYearsSet = new Set(
+                appointments
+                    .filter(appointment => appointment.year)
+                    .map(appointment => appointment.year)
+            );
+            
+            // Convert Set to Array and sort in descending order (newest first)
+            return Array.from(uniqueYearsSet).sort((a, b) => b - a);
+        }
     },
 }));
 
