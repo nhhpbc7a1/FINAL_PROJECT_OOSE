@@ -56,6 +56,22 @@ router.get('/notifications', async function (req, res) {
         unreadCount: unreadCount
     });
 });
+// Route cho test-requests (dữ liệu tĩnh để hình dung giao diện)
+router.get('/test-requests', async function (req, res) {
+  const testRequests = [
+      { testId: 1, patientName: 'John Doe', testType: 'Blood Test', status: 'in_progress', requestDate: '2025-05-01' },
+      { testId: 2, patientName: 'Jane Smith', testType: 'Urine Test', status: 'done', requestDate: '2025-05-02' },
+      { testId: 3, patientName: 'Michael Brown', testType: 'X-Ray', status: 'incomplete', requestDate: '2025-05-03' },
+      { testId: 4, patientName: 'Sarah Davis', testType: 'MRI', status: 'decline', requestDate: '2025-05-04' },
+      { testId: 5, patientName: 'David Wilson', testType: 'Blood Test', status: 'in_progress', requestDate: '2025-05-05' }
+  ];
+
+  res.render('vwLabtech/test_requests', {
+      title: 'Test Requests',
+      activeRoute: 'test-requests',
+      testRequests: testRequests
+  });
+});
 
 // Route mặc định redirect đến dashboard
 router.get('/', async function (req, res) {
