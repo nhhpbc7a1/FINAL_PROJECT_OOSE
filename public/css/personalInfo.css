@@ -1,23 +1,12 @@
-
-
-/* Main Content */
-
-/* User Info Header */
-/* Form Grid */
 .form-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 20px;
     margin-bottom: 30px;
 }
-.input-group{
-    display: flex;
-    justify-content: center;
-}
+
 .form-group {
     display: flex;
-    justify-content: center;
-    align-items: center;
     flex-direction: column;
 }
 
@@ -27,48 +16,36 @@
     font-size: 0.9em;
 }
 
-.form-group input[type="password"]{
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group select {
     border: 1px solid #81BAEE; /* Light blue border */
     background-color: #F2F2F2;
     border-radius: 50px;
-    margin-bottom: 20px;
     padding: 15px;
     font-size: 16px;
     color: #333;
-    width:500px;
+    width:350px;
 }
-.form-group .password-notion{
-    font-size: 14px;
-    width: 500px;
-}
-.password-group {
-    position: relative;
-}
+.form-group select{
+    appearance: none;
 
-.password-input {
+}
+.birthday-input {
     position: relative;
     display: flex;
     align-items: center;
 }
 
-.password-input input {
-    padding-right: 30px; 
-    margin-top: 20px;
-    /* Space for the eye icon */
-}
-.input-group img{
+.birthday-input img {
     position: absolute;
-    margin-right: 20px;
-    right: 5px; /* Khoảng cách từ mép phải của .birthday-input */
-    /* top: 50%; */
-    transform: translateY(-50%); /* Căn giữa dọc hình ảnh */
-    width: 20px; /* Kích thước hình ảnh */
-    height: auto;
-    pointer-events: none; 
-    margin-top: 20px;
-
+    right: 10px;
+    margin-right: 120px;
+    color: #777;
+    cursor: pointer;
 }
 
+/* Update Button */
 .update-button-container button {
     padding: 12px 24px;
     border-radius: 4px;
@@ -92,8 +69,7 @@
 }
 .update-button-container{
     display: flex;
-    justify-content: center;
-    gap: 40px;
+    justify-content: start;
 }
 .update-button:hover {
     background-color: #0b5ed7;

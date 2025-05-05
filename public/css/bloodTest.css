@@ -79,12 +79,14 @@ margin-top: 20px;
     height: 60px;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-end;
 }
 .appointment-title h5{
     color: #13467E;
     font-weight: 600;
     padding: 0px;
+    margin-right: 70px;
+    width: 500px;
 
 }
 .appointment-detail-info{
@@ -153,6 +155,7 @@ margin-top: 20px;
 .modal-body-form h5{
     padding-bottom: 0px;
     padding-top: 10px;
+    margin-left: 20px;
     
 }
 .custom-separate-line{
@@ -160,45 +163,13 @@ margin-top: 20px;
     width: 95%;
     
 }
-.modal-body-appointment-container{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-.modal-body-appointment .modal-body-time{
-    width: 50%;
-}
 .modal-body-appointment{
     margin-bottom: 20px;
     margin-left: 40px;
     margin-top: -25px;
 }
-.modal-body-time h5{
-    padding-bottom: 10px;
-    margin-right: 15px;
-    text-align: center;
-}
-.modal-body-time{
-    border: 1px solid rgb(146, 144, 144);
-    border-radius: 10px;
-    width: 300px;
-    padding:10px;
-    text-align: center;
-    font-weight: 600;
-    margin: 0px auto;
-    margin-left: 200px;
-}
 .modal-body-appointment div{
     margin-top: 20px;
-}
-.modal-body-appointment img{
-    margin-right: 20px;
-    width: 20px;
-}
-.modal-body-time img{
-    margin-right: 20px;
-    width: 25px;
-    margin-bottom: 10px;
 }
 .modal-header {
     display: flex; /* Use flexbox to control alignment */
@@ -305,7 +276,7 @@ input{
     margin-right: 30px;
     margin-top: 60px;
 
-    width: 100px; /* Đặt chiều rộng cố định cho label */
+    width: 150px; /* Đặt chiều rộng cố định cho label */
     color: #333; /* Màu chữ label */
 }
 
@@ -317,44 +288,17 @@ input{
     color: green; /* Màu xanh cho Order's No */
     font-weight: bold;
 }
-.payment-info-container{
-    background-color: #D8ECFF;
-    width:750px;
-    height: 150px;
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    margin: 0px auto;
-    margin-top: 20px;
+.modal-body-appointment-container{
+    margin-bottom: 40px;
 }
-.payment-info-container img{
-    margin-left: 20px;
-    margin-right: 30px;
+table{
+    width: 80%;
 }
-.payment-info-container .payment-img{
-    width: 30px;
-}
-.payment-fee{
-    width: 200px;
-    margin-left: 80px;
-    font-weight: 600;
-    font-size: 18px;
-}
-.payment-value{
-    margin: 0px;
-    font-size: 18px;
-    font-weight: 600;
-}
-.total-payment{
-    margin-left: 150px;
-    text-align: center;
-}
-.total-value{
-    color: #16A90F;
-    font-weight: 700;
-    font-size: 24px;
-}
-.button-action{
+.table tbody tr:nth-child(2),
+.table tbody tr:nth-child(4),
+.table tbody tr:nth-child(6) {
+  background-color: #f2f2f2; /* Màu xám nhạt */
+}.button-action{
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -370,9 +314,6 @@ input{
     font-size: 18px;
     border-radius: 5px;
 }
-.button-action a{
-    color: white;
-}
 /* .back-to-main-button{
     border: 2px solid #FF4A4D;
     color: #FF4A4D;
@@ -385,10 +326,10 @@ input{
     background-color: #FF4A4D;
 
 } */
-.blood-test-button{
+.back-button{
     border: 2px solid #FF4A4D;
-    color: white;
-    background-color: #FF4A4D;
+    color: #FF4A4D;
+    background-color: white;
 
 }
 .prescription-button{
@@ -401,4 +342,37 @@ input{
     border: 2px solid #E8B716;
     color: white;
     background-color: #E8B716;
+
+}
+/* .exam-button{
+    border: 2px solid #E8B716;
+    color: white;
+    background-color: #E8B716;
+} */
+.download-button{
+    /* width: 25px;
+    height: 15px; */
+    border: none;
+    color: white;
+    border-radius: 2px;
+    /* margin: 0px 10px; */
+    font-size: 12px;
+    height: 30px;
+    margin-right: 10px;
+}
+.download-button-container{
+    /* margin-left: 100px; */
+}
+.img-button{
+    background-color: #16A90F;
+    margin-right: 20px;
+}
+.pdf-button{
+    background-color: #FF4A4D;
+}
+.header-form{
+    display: flex; /* Biến div thành một flex container */
+    justify-content: flex-end; /* Căn các phần tử con về phía cuối (bên phải) */
+    align-items: center; /* Căn các phần tử con theo chiều dọc ở giữa */
+      
 }
