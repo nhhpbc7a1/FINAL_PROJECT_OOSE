@@ -9,7 +9,7 @@ export default {
                     db('Appointment')
                     .select('patientId', 
                            db.raw('MAX(appointmentDate) as latestDate'),
-                           'status')
+                           'patientAppointmentStatus')
                     .groupBy('patientId')
                     .as('LatestApp'), 
                     'Patient.patientId', '=', 'LatestApp.patientId'
@@ -20,8 +20,6 @@ export default {
                     'Patient.dob',
                     'Patient.gender',
                     'Patient.bloodType',
-                    'Patient.healthInsuranceNumber',
-                    'Patient.emergencyContact',
                     'Patient.medicalHistory',
                     'User.email',
                     'User.fullName',
@@ -29,7 +27,7 @@ export default {
                     'User.address',
                     'User.accountStatus',
                     'LatestApp.latestDate as lastVisitDate',
-                    'LatestApp.status as appointmentStatus'
+                    'LatestApp.patientAppointmentStatus as appointmentStatus'
                 )
                 .orderBy('User.fullName', 'asc');
                 

@@ -69,18 +69,12 @@
                       <div class="col-last-visit">{{lastVisitFormatted}}</div>
                       <div class="col-status">
                         {{#if appointmentStatus}}
-                          {{#if (eq appointmentStatus "confirmed")}}
-                            <span class="status-badge confirmed">Confirmed</span>
-                          {{else if (eq appointmentStatus "pending")}}
-                            <span class="status-badge pending">Pending</span>
+                          {{#if (eq appointmentStatus "examined")}}
+                            <span class="status-badge examined">Examined</span>
                           {{else if (eq appointmentStatus "waiting")}}
                             <span class="status-badge waiting">Waiting</span>
                           {{else if (eq appointmentStatus "examining")}}
                             <span class="status-badge examining">Examining</span>
-                          {{else if (eq appointmentStatus "completed")}}
-                            <span class="status-badge completed">Completed</span>
-                          {{else if (eq appointmentStatus "cancelled")}}
-                            <span class="status-badge cancelled">Cancelled</span>
                           {{else}}
                             <span class="status-badge">{{appointmentStatus}}</span>
                           {{/if}}

@@ -6,6 +6,29 @@
   <title>Patient Details</title>
   <link rel="stylesheet" href="/public/css/doctor-side/patientDetails.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* In the placeholder content, center the button */
+    .placeholder-content .new-prescription-btn {
+      margin: 15px auto 0;
+    }
+    
+    /* Success message styles */
+    .success-message {
+      display: flex;
+      align-items: center;
+      background-color: #E8F5E9;
+      color: #2E7D32;
+      padding: 10px 16px;
+      border-radius: 8px;
+      margin: 16px 0;
+      font-weight: 500;
+    }
+    
+    .success-message svg {
+      margin-right: 8px;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
@@ -20,6 +43,15 @@
         <div class="page-header">
           <h1 class="page-title">Patient Details</h1>
         </div>
+
+        {{#if prescriptionSuccess}}
+        <div class="success-message">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="#4CAF50"/>
+          </svg>
+          <span>{{prescriptionSuccess}}</span>
+        </div>
+        {{/if}}
 
         {{#if patient}}
         <div class="patient-details-card">
@@ -140,7 +172,7 @@
                           <td>{{doctorName}}</td>
                           <td>{{roomNumber}}</td>
                           <td>
-                            <span class="status-badge {{status}}">{{status}}</span>
+                            <span class="status-badge {{patientAppointmentStatus}}">{{patientAppointmentStatus}}</span>
                           </td>
                           <td>
                             <div class="action-buttons">
@@ -164,9 +196,9 @@
                 </div>
                 {{/if}}
               {{else}}
-                <div class="placeholder-content">
+              <div class="placeholder-content">
                   <p>No appointment history found for this patient.</p>
-                </div>
+              </div>
               {{/if}}
             </div>
 
@@ -238,9 +270,9 @@
                 </div>
                 {{/if}}
               {{else}}
-                <div class="placeholder-content">
+              <div class="placeholder-content">
                   <p>No laboratory results found for this patient.</p>
-                </div>
+              </div>
               {{/if}}
             </div>
 
@@ -248,6 +280,12 @@
               {{#if patient.prescriptions.length}}
                 <div class="section-header">
                   <h3>Prescription History</h3>
+                  <button class="new-prescription-btn" id="createNewPrescription">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z" fill="currentColor"/>
+                    </svg>
+                    Create New Prescription
+                  </button>
                 </div>
                 <div class="prescriptions-list">
                   <table class="data-table">
@@ -291,10 +329,28 @@
                   </table>
                 </div>
               {{else}}
-                <div class="placeholder-content">
+              <div class="placeholder-content">
                   <p>No prescription history found for this patient.</p>
-                </div>
+                  <button class="new-prescription-btn" id="createNewPrescription">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z" fill="currentColor"/>
+                    </svg>
+                    Create New Prescription
+                  </button>
+              </div>
               {{/if}}
+              
+              <!-- Hidden form for submitting patient data to prescription page -->
+              <form id="prescriptionForm" action="/doctor/prescription-medicine" method="GET" style="display: none;">
+                <input type="hidden" name="patientId" value="{{patient.patientId}}">
+                <input type="hidden" name="patientName" value="{{patient.fullName}}">
+                <input type="hidden" name="patientGender" value="{{patient.gender}}">
+                <input type="hidden" name="patientDob" value="{{patient.dob}}">
+                <input type="hidden" name="patientAge" value="{{patient.age}}">
+                <input type="hidden" name="patientBloodType" value="{{patient.bloodType}}">
+                <!-- Get the appointment status from the most recent appointment if available -->
+                <input type="hidden" name="patientAppointmentStatus" value="{{#if patient.appointments.[0]}}{{patient.appointments.[0].patientAppointmentStatus}}{{else}}examining{{/if}}">
+              </form>
             </div>
           </div>
         </div>
@@ -316,17 +372,17 @@
       
       // Show the active tab content on page load
       function setActiveTab(tabName) {
-        // Remove active class from all tabs and contents
-        tabs.forEach(t => t.classList.remove('active'));
-        tabContents.forEach(c => c.classList.remove('active'));
-        
+          // Remove active class from all tabs and contents
+          tabs.forEach(t => t.classList.remove('active'));
+          tabContents.forEach(c => c.classList.remove('active'));
+          
         // Add active class to selected tab
         const selectedTab = document.querySelector(`.tab[data-tab="${tabName}"]`);
         if (selectedTab) {
           selectedTab.classList.add('active');
         }
-        
-        // Show corresponding content
+          
+          // Show corresponding content
         const selectedContent = document.getElementById(tabName);
         if (selectedContent) {
           selectedContent.classList.add('active');
@@ -353,6 +409,16 @@
         const defaultTab = tabs[0].getAttribute('data-tab');
         setActiveTab(defaultTab);
       }
+      
+      // Handle Create New Prescription button click
+      const prescriptionButtons = document.querySelectorAll('#createNewPrescription');
+      prescriptionButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+          e.preventDefault();
+          // Submit the hidden form to navigate to prescription page with patient data
+          document.getElementById('prescriptionForm').submit();
+        });
+      });
     });
   </script>
 </body>

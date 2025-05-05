@@ -28,14 +28,14 @@
 
         <div class="patient-card">
           <div class="patient-avatar">
-            NL
+            {{patient.patientName.[0]}}
           </div>
           <div class="patient-info">
-            <h3>NGUYEN LE TUNG CHI</h3>
+            <h3>{{patient.patientName}}</h3>
             <div class="patient-details">
-              <span>32 years old</span>
-              <span>Female</span>
-              <span>Code: P-20250428</span>
+              <span>{{patient.patientAge}} years old</span>
+              <span>{{patient.patientGenderFormatted}}</span>
+              <span>Code: P-{{patient.patientId}}</span>
               <span class="examining-tag">Examining</span>
             </div>
           </div>
@@ -44,77 +44,210 @@
         <div class="test-request-card">
           <div class="card-header">
             <h2>Test Request Information</h2>
-            <span class="test-code">Code: LT-20250429-001</span>
+            <span class="test-code">Code: {{testRequestCode}}</span>
           </div>
 
           <div>
             <h3 style="margin-bottom: 15px; font-size: 14px; font-weight: 600; color: #006eb9;">Test Selection</h3>
             
             <div class="test-categories">
-              <div class="category-tab active">Hematology</div>
-              <div class="category-tab">Biochemistry</div>
-              <div class="category-tab">Immunology</div>
-              <div class="category-tab">Microbiology</div>
-              <div class="category-tab">Urine Analysis</div>
-              <div class="category-tab">Imaging</div>
+              <div class="category-tab active" data-category="hematology">Hematology</div>
+              <div class="category-tab" data-category="biochemistry">Biochemistry</div>
+              <div class="category-tab" data-category="immunology">Immunology</div>
+              <div class="category-tab" data-category="microbiology">Microbiology</div>
+              <div class="category-tab" data-category="urine">Urine Analysis</div>
+              <div class="category-tab" data-category="imaging">Imaging</div>
             </div>
 
-            <div class="test-options">
+      
+
+            <!-- Hematology Tests -->
+            <div class="test-options" id="hematology-tests">
               <div class="test-option">
-                <input type="checkbox" id="cbc" checked>
+                <input type="checkbox" id="cbc" data-test-name="Complete Blood Count (CBC)" class="test-checkbox">
                 <label for="cbc">Complete Blood Count (CBC)</label>
               </div>
               <div class="test-option">
-                <input type="checkbox" id="pt">
+                <input type="checkbox" id="pt" data-test-name="Prothrombin Time (PT)" class="test-checkbox">
                 <label for="pt">Prothrombin Time (PT)</label>
               </div>
               <div class="test-option">
-                <input type="checkbox" id="electro">
-                <label for="electro">Hemoglobin Electrophoresis</label>
-              </div>
-              <div class="test-option">
-                <input type="checkbox" id="esr">
-                <label for="esr">Erythrocyte Sedimentation Rate</label>
-              </div>
-              <div class="test-option">
-                <input type="checkbox" id="ptt">
+                <input type="checkbox" id="ptt" data-test-name="Partial Thromboplastin Time" class="test-checkbox">
                 <label for="ptt">Partial Thromboplastin Time</label>
               </div>
               <div class="test-option">
-                <input type="checkbox" id="retic">
+                <input type="checkbox" id="retic" data-test-name="Reticulocyte Count" class="test-checkbox">
                 <label for="retic">Reticulocyte Count</label>
               </div>
               <div class="test-option">
-                <input type="checkbox" id="bgrh">
+                <input type="checkbox" id="electro" data-test-name="Hemoglobin Electrophoresis" class="test-checkbox">
+                <label for="electro">Hemoglobin Electrophoresis</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="bgrh" data-test-name="Blood Group & Rh Factor" class="test-checkbox">
                 <label for="bgrh">Blood Group & Rh Factor</label>
               </div>
               <div class="test-option">
-                <input type="checkbox" id="inr">
+                <input type="checkbox" id="esr" data-test-name="Erythrocyte Sedimentation Rate" class="test-checkbox">
+                <label for="esr">Erythrocyte Sedimentation Rate</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="inr" data-test-name="International Normalized Ratio" class="test-checkbox">
                 <label for="inr">International Normalized Ratio</label>
               </div>
               <div class="test-option">
-                <input type="checkbox" id="pbs">
+                <input type="checkbox" id="pbs" data-test-name="Peripheral Blood Smear" class="test-checkbox">
                 <label for="pbs">Peripheral Blood Smear</label>
               </div>
             </div>
 
-            <div class="selected-tests">
-              <div class="selected-tests-header">Selected Tests (1)</div>
-              <div class="selected-test-item">
-                <span>Complete Blood Count (CBC)</span>
-                <button class="remove-test">✕</button>
+            <!-- Biochemistry Tests -->
+            <div class="test-options" id="biochemistry-tests" style="display: none;">
+              <div class="test-option">
+                <input type="checkbox" id="glucose" data-test-name="Blood Glucose" class="test-checkbox">
+                <label for="glucose">Blood Glucose</label>
               </div>
+              <div class="test-option">
+                <input type="checkbox" id="lipid" data-test-name="Lipid Profile" class="test-checkbox">
+                <label for="lipid">Lipid Profile</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="liver" data-test-name="Liver Function Test" class="test-checkbox">
+                <label for="liver">Liver Function Test</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="kidney" data-test-name="Kidney Function Test" class="test-checkbox">
+                <label for="kidney">Kidney Function Test</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="uric" data-test-name="Uric Acid" class="test-checkbox">
+                <label for="uric">Uric Acid</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="calcium" data-test-name="Calcium" class="test-checkbox">
+                <label for="calcium">Calcium</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="phosphorus" data-test-name="Phosphorus" class="test-checkbox">
+                <label for="phosphorus">Phosphorus</label>
+              </div>
+            </div>
+
+            <!-- Immunology Tests -->
+            <div class="test-options" id="immunology-tests" style="display: none;">
+              <div class="test-option">
+                <input type="checkbox" id="crp" data-test-name="C-Reactive Protein (CRP)" class="test-checkbox">
+                <label for="crp">C-Reactive Protein (CRP)</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="ana" data-test-name="Antinuclear Antibodies (ANA)" class="test-checkbox">
+                <label for="ana">Antinuclear Antibodies (ANA)</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="hiv" data-test-name="HIV Test" class="test-checkbox">
+                <label for="hiv">HIV Test</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="hbv" data-test-name="Hepatitis B Surface Antigen" class="test-checkbox">
+                <label for="hbv">Hepatitis B Surface Antigen</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="covid" data-test-name="COVID-19 Antibody Test" class="test-checkbox">
+                <label for="covid">COVID-19 Antibody Test</label>
+              </div>
+            </div>
+
+            <!-- Microbiology Tests -->
+            <div class="test-options" id="microbiology-tests" style="display: none;">
+              <div class="test-option">
+                <input type="checkbox" id="blood-culture" data-test-name="Blood Culture" class="test-checkbox">
+                <label for="blood-culture">Blood Culture</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="urine-culture" data-test-name="Urine Culture" class="test-checkbox">
+                <label for="urine-culture">Urine Culture</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="throat-culture" data-test-name="Throat Culture" class="test-checkbox">
+                <label for="throat-culture">Throat Culture</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="stool-culture" data-test-name="Stool Culture" class="test-checkbox">
+                <label for="stool-culture">Stool Culture</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="tb-test" data-test-name="Tuberculosis Test" class="test-checkbox">
+                <label for="tb-test">Tuberculosis Test</label>
+              </div>
+            </div>
+
+            <!-- Urine Analysis Tests -->
+            <div class="test-options" id="urine-tests" style="display: none;">
+              <div class="test-option">
+                <input type="checkbox" id="urinalysis" data-test-name="Urinalysis" class="test-checkbox">
+                <label for="urinalysis">Urinalysis</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="urine-protein" data-test-name="Urine Protein" class="test-checkbox">
+                <label for="urine-protein">Urine Protein</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="urine-glucose" data-test-name="Urine Glucose" class="test-checkbox">
+                <label for="urine-glucose">Urine Glucose</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="urine-ketones" data-test-name="Urine Ketones" class="test-checkbox">
+                <label for="urine-ketones">Urine Ketones</label>
+              </div>
+            </div>
+
+            <!-- Imaging Tests -->
+            <div class="test-options" id="imaging-tests" style="display: none;">
+              <div class="test-option">
+                <input type="checkbox" id="xray" data-test-name="X-Ray" class="test-checkbox">
+                <label for="xray">X-Ray</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="ct-scan" data-test-name="CT Scan" class="test-checkbox">
+                <label for="ct-scan">CT Scan</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="mri" data-test-name="MRI" class="test-checkbox">
+                <label for="mri">MRI</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="ultrasound" data-test-name="Ultrasound" class="test-checkbox">
+                <label for="ultrasound">Ultrasound</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="ecg" data-test-name="ECG/EKG" class="test-checkbox">
+                <label for="ecg">ECG/EKG</label>
+              </div>
+            </div>
+
+            <div class="selected-tests">
+              <div class="selected-tests-header">Selected Tests (0)</div>
+              <div id="selected-tests-container"></div>
             </div>
           </div>
 
           <div class="form-actions">
-            <button class="btn-cancel">Cancel</button>
-            <button class="btn-submit">Submit Request</button>
+            <button class="btn-cancel" id="cancelBtn">Cancel</button>
+            <button class="btn-submit" id="submitBtn" type="button">Submit Request</button>
           </div>
         </div>
         </div>
       </div>
   </div>
+
+  <!-- Hidden form for submitting test request -->
+  <form id="testRequestForm" method="POST" action="/doctor/test-request/submit" style="display: none;">
+    <input type="hidden" name="appointmentId" id="appointmentIdInput">
+    <input type="hidden" name="serviceId" id="serviceIdInput">
+    <input type="hidden" name="testName" id="testNameInput">
+    <input type="hidden" name="status" value="pending">
+  </form>
+
   <script>
     // Parse the URL query parameters
     function getQueryParams() {
@@ -132,65 +265,202 @@
     
     // When page loads, check for patient ID in URL
     document.addEventListener('DOMContentLoaded', function() {
-      // Check for server-provided patientId (from Handlebars)
-      const serverPatientId = '{{patientId}}';
+      // Get appointmentId from URL (needed for back link)
+      const params = getQueryParams();
+      const appointmentId = params.appointmentId || '';
       
-      // Check for URL query parameter if server didn't provide patientId
-      let patientId = serverPatientId;
-      if (!patientId || patientId === '{{patientId}}') {
-        const params = getQueryParams();
-        patientId = params.patientId || '';
+      // Set the appointment ID in the hidden form
+      document.getElementById('appointmentIdInput').value = appointmentId;
+      
+      // Update back link to include appointment ID
+      const backLink = document.querySelector('.back-link');
+      if (backLink && appointmentId) {
+        backLink.href = `/doctor/examination?appointmentId=${appointmentId}`;
+        backLink.textContent = 'Back to Examination';
       }
       
-      if (patientId) {
-        console.log('Patient ID:', patientId);
+      // Add event listener for Cancel button
+      document.getElementById('cancelBtn').addEventListener('click', function() {
+        if (appointmentId) {
+          window.location.href = `/doctor/examination?appointmentId=${appointmentId}`;
+        } else {
+          window.location.href = '/doctor/appointments';
+        }
+      });
+      
+      // Add event listener for Submit Request button
+      document.getElementById('submitBtn').addEventListener('click', function() {
+        const selectedTest = document.querySelector('.test-checkbox:checked');
         
-        // Update the patient code on the page
-        const patientCodeElement = document.querySelector('.patient-details span:nth-child(3)');
-        if (patientCodeElement) {
-          patientCodeElement.textContent = `Code: ${patientId}`;
+        if (!selectedTest) {
+          alert('Please select a test to request.');
+          return;
         }
         
-        // Update back link to include patient ID
-        const backLink = document.querySelector('.back-link');
-        if (backLink) {
-          backLink.href = `/doctor/examination?patientId=${patientId}`;
-          backLink.textContent = 'Back to Examination';
+        if (!appointmentId) {
+          alert('Missing appointment information. Please return to the examination page and try again.');
+          return;
         }
-      }
+        
+        // Get the test information
+        const testId = selectedTest.id;
+        const testName = selectedTest.getAttribute('data-test-name');
+        
+        // Map test IDs to service IDs based on the actual serviceIds in the database
+        const serviceMap = {
+          // Hematology - Map to test services from database
+          'cbc': 3,  // ECG Test (Service ID 3)
+          'pt': 6,   // Skin Biopsy (Service ID 6)
+          'ptt': 9,  // EEG Test (Service ID 9)
+          'retic': 10, // MRI Brain (Service ID 10)
+          'electro': 12, // X-Ray (Service ID 12)
+          'bgrh': 3,  // ECG Test (Service ID 3)
+          'esr': 6,   // Skin Biopsy (Service ID 6) 
+          'inr': 9,   // EEG Test (Service ID 9)
+          'pbs': 10,  // MRI Brain (Service ID 10)
+          
+          // Biochemistry
+          'glucose': 3, // ECG Test (Service ID 3)
+          'lipid': 6,   // Skin Biopsy (Service ID 6)
+          'liver': 9,   // EEG Test (Service ID 9)
+          'kidney': 10, // MRI Brain (Service ID 10)
+          'uric': 12,   // X-Ray (Service ID 12)
+          'calcium': 3, // ECG Test (Service ID 3)
+          'phosphorus': 6, // Skin Biopsy (Service ID 6)
+          
+          // Immunology
+          'crp': 9,    // EEG Test (Service ID 9)
+          'ana': 10,   // MRI Brain (Service ID 10)
+          'hiv': 12,   // X-Ray (Service ID 12)
+          'hbv': 3,    // ECG Test (Service ID 3)
+          'covid': 6,  // Skin Biopsy (Service ID 6)
+          
+          // Microbiology
+          'blood-culture': 9,  // EEG Test (Service ID 9)
+          'urine-culture': 10, // MRI Brain (Service ID 10)
+          'throat-culture': 12, // X-Ray (Service ID 12)
+          'stool-culture': 3,  // ECG Test (Service ID 3)
+          'tb-test': 6,        // Skin Biopsy (Service ID 6)
+          
+          // Urine Analysis
+          'urinalysis': 9,      // EEG Test (Service ID 9)
+          'urine-protein': 10,  // MRI Brain (Service ID 10)
+          'urine-glucose': 12,  // X-Ray (Service ID 12)
+          'urine-ketones': 3,   // ECG Test (Service ID 3)
+          
+          // Imaging
+          'xray': 12,         // X-Ray (Service ID 12)
+          'ct-scan': 10,      // MRI Brain (Service ID 10)
+          'mri': 10,          // MRI Brain (Service ID 10)
+          'ultrasound': 4,    // Echocardiogram (Service ID 4)
+          'ecg': 3,           // ECG Test (Service ID 3)
+        };
+        
+        const serviceId = serviceMap[testId] || 0;
+        
+        if (serviceId === 0) {
+          alert('Invalid test selection. Please select a different test.');
+          return;
+        }
+        
+        // Set values in the hidden form
+        document.getElementById('serviceIdInput').value = serviceId;
+        document.getElementById('testNameInput').value = testName;
+        
+        // Submit the form
+        document.getElementById('testRequestForm').submit();
     });
     
     // Add event listeners for tab switching
     const categoryTabs = document.querySelectorAll('.category-tab');
     categoryTabs.forEach(tab => {
       tab.addEventListener('click', function() {
+          // Get the category
+          const category = this.getAttribute('data-category');
+          
         // Remove active class from all tabs
         categoryTabs.forEach(t => t.classList.remove('active'));
+          
         // Add active class to clicked tab
         this.classList.add('active');
+          
+          // Hide all test option sections
+          document.querySelectorAll('.test-options').forEach(section => {
+            section.style.display = 'none';
+          });
+          
+          // Show the selected category's tests
+          document.getElementById(`${category}-tests`).style.display = 'grid';
+        });
+      });
+      
+      // Single selection behavior for checkboxes (similar to radio buttons)
+      const allCheckboxes = document.querySelectorAll('.test-checkbox');
+      allCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+          if (this.checked) {
+            // Uncheck all other checkboxes
+            allCheckboxes.forEach(cb => {
+              if (cb !== this) {
+                cb.checked = false;
+              }
+            });
+            
+            // Add the selected test
+            const testId = this.id;
+            const testName = this.getAttribute('data-test-name');
+            updateSelectedTest(testId, testName);
+          } else {
+            // Clear the selected test if unchecked
+            clearSelectedTests();
+          }
+        });
       });
     });
     
-    // Add event listener for remove test button
-    document.querySelector('.remove-test').addEventListener('click', function() {
-      // Get the test item element
-      const testItem = this.closest('.selected-test-item');
+    // Function to update the selected test (only one at a time)
+    function updateSelectedTest(testId, testName) {
+      const selectedTestsContainer = document.getElementById('selected-tests-container');
       
-      // Remove the test item
-      if (testItem) {
-        testItem.remove();
-        
-        // Update the selected tests count
-        const selectedTestsHeader = document.querySelector('.selected-tests-header');
-        if (selectedTestsHeader) {
-          const count = document.querySelectorAll('.selected-test-item').length;
-          selectedTestsHeader.textContent = `Selected Tests (${count})`;
-        }
+      // Clear current selection
+      selectedTestsContainer.innerHTML = '';
+      
+      // Create new test item
+      const testItem = document.createElement('div');
+      testItem.className = 'selected-test-item';
+      testItem.id = `selected-${testId}`;
+      
+      testItem.innerHTML = `
+        <span>${testName}</span>
+        <button class="remove-test" data-test-id="${testId}">✕</button>
+      `;
+      
+      // Add event listener to the remove button
+      testItem.querySelector('.remove-test').addEventListener('click', function() {
+        const testIdToRemove = this.getAttribute('data-test-id');
         
         // Uncheck the corresponding checkbox
-        document.getElementById('cbc').checked = false;
-      }
-    });
+        const checkbox = document.getElementById(testIdToRemove);
+        if (checkbox) {
+          checkbox.checked = false;
+        }
+        
+        // Clear the selected tests
+        clearSelectedTests();
+      });
+      
+      // Add the test item to the container
+      selectedTestsContainer.appendChild(testItem);
+      
+      // Update counter
+      document.querySelector('.selected-tests-header').textContent = 'Selected Tests (1)';
+    }
+    
+    // Function to clear all selected tests
+    function clearSelectedTests() {
+      document.getElementById('selected-tests-container').innerHTML = '';
+      document.querySelector('.selected-tests-header').textContent = 'Selected Tests (0)';
+    }
   </script>
 </body>
 </html>

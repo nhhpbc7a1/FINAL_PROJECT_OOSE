@@ -31,7 +31,8 @@ export default {
                     'Appointment.*',
                     'Specialty.name as specialtyName',
                     'DoctorUser.fullName as doctorName',
-                    'Room.roomNumber'
+                    'Room.roomNumber',
+                    'Appointment.patientAppointmentStatus'
                 )
                 .where('Appointment.patientId', patientId)
                 .orderBy('Appointment.appointmentDate', 'desc')

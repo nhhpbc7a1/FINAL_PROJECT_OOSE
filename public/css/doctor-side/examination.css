@@ -131,6 +131,20 @@ body::-webkit-scrollbar {
     justify-content: space-between;
     border-bottom: 1px solid #f1f1f1;
   }
+  .success-message {
+    display: flex;
+    align-items: center;
+    background-color: #E8F5E9;
+    color: #2E7D32;
+    padding: 10px 16px;
+    border-radius: 8px;
+    margin: 16px 0;
+    font-weight: 500;
+  }
+  
+  .success-message svg {
+    margin-right: 8px;
+  }
   
   .logo {
     font-weight: 700;

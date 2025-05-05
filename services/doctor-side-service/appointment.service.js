@@ -1,4 +1,5 @@
-import db from '../ultis/db.js';
+import db from '../../ultis/db.js';
+import moment from 'moment';
 
 export default {
     async findAll() {
@@ -14,6 +15,7 @@ export default {
                     'Appointment.*',
                     'PatientUser.fullName as patientName',
                     'PatientUser.phoneNumber as patientPhone',
+                    'PatientUser.email',
                     'Specialty.name as specialtyName',
                     'DoctorUser.fullName as doctorName',
                     'Room.roomNumber'
@@ -39,6 +41,7 @@ export default {
                     'Appointment.*',
                     'PatientUser.fullName as patientName',
                     'PatientUser.phoneNumber as patientPhone',
+                    'PatientUser.email',
                     'Patient.gender as patientGender',
                     'Patient.dob as patientDob',
                     'Specialty.name as specialtyName',
@@ -87,6 +90,7 @@ export default {
                     'Appointment.*',
                     'PatientUser.fullName as patientName',
                     'PatientUser.phoneNumber as patientPhone',
+                    'PatientUser.email',
                     'Patient.gender as patientGender',
                     'Specialty.name as specialtyName',
                     'Room.roomNumber'
@@ -102,7 +106,34 @@ export default {
 
     async findByDateRange(startDate, endDate) {
         try {
-            return await db('Appointment')
+            console.log(`[Service] Finding appointments between ${startDate} and ${endDate}`);
+            
+            if (typeof startDate === 'string' && startDate.includes('/')) {
+                // Convert DD/MM/YYYY to YYYY-MM-DD
+                const parts = startDate.split('/');
+                if (parts.length === 3) {
+                    startDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                    console.log(`[Service] Converted startDate from slash format to: ${startDate}`);
+                }
+            }
+            
+            // Same for endDate if present
+            if (typeof endDate === 'string' && endDate.includes('/')) {
+                const parts = endDate.split('/');
+                if (parts.length === 3) {
+                    endDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                    console.log(`[Service] Converted endDate from slash format to: ${endDate}`);
+                }
+            }
+            
+            // Final date check - make sure we have a valid date format
+            const formattedStartDate = moment(startDate).format('YYYY-MM-DD');
+            const formattedEndDate = endDate ? moment(endDate).format('YYYY-MM-DD') : formattedStartDate;
+            
+            console.log(`[Service] Using dates for SQL query: ${formattedStartDate} to ${formattedEndDate}`);
+            
+            // Construct and execute the query with safe date format
+            const query = db('Appointment')
                 .join('Patient', 'Appointment.patientId', '=', 'Patient.patientId')
                 .join('User as PatientUser', 'Patient.userId', '=', 'PatientUser.userId')
                 .join('Specialty', 'Appointment.specialtyId', '=', 'Specialty.specialtyId')
@@ -113,13 +144,24 @@ export default {
                     'Appointment.*',
                     'PatientUser.fullName as patientName',
                     'PatientUser.phoneNumber as patientPhone',
+                    'PatientUser.email',
                     'Specialty.name as specialtyName',
                     'DoctorUser.fullName as doctorName',
                     'Room.roomNumber'
                 )
-                .whereBetween('Appointment.appointmentDate', [startDate, endDate])
+                .whereRaw('DATE(Appointment.appointmentDate) = ?', [formattedStartDate])
                 .orderBy('Appointment.appointmentDate')
                 .orderBy('Appointment.estimatedTime');
+            
+            // Log the actual SQL for debugging
+            const sqlString = query.toString();
+            console.log(`[Service] SQL Query: ${sqlString}`);
+            
+            // Execute the query
+            const result = await query;
+            console.log(`[Service] Found ${result.length} appointments for date: ${formattedStartDate}`);
+            
+            return result;
         } catch (error) {
             console.error(`Error fetching appointments between ${startDate} and ${endDate}:`, error);
             throw new Error('Unable to find appointments by date range');
@@ -139,6 +181,7 @@ export default {
                     'Appointment.*',
                     'PatientUser.fullName as patientName',
                     'PatientUser.phoneNumber as patientPhone',
+                    'PatientUser.email',
                     'Specialty.name as specialtyName',
                     'DoctorUser.fullName as doctorName',
                     'Room.roomNumber'
@@ -149,6 +192,33 @@ export default {
         } catch (error) {
             console.error(`Error fetching appointments with status ${status}:`, error);
             throw new Error('Unable to find appointments by status');
+        }
+    },
+
+    async findByPatientAppointmentStatus(status) {
+        try {
+            return await db('Appointment')
+                .join('Patient', 'Appointment.patientId', '=', 'Patient.patientId')
+                .join('User as PatientUser', 'Patient.userId', '=', 'PatientUser.userId')
+                .join('Specialty', 'Appointment.specialtyId', '=', 'Specialty.specialtyId')
+                .leftJoin('Doctor', 'Appointment.doctorId', '=', 'Doctor.doctorId')
+                .leftJoin('User as DoctorUser', 'Doctor.userId', '=', 'DoctorUser.userId')
+                .leftJoin('Room', 'Appointment.roomId', '=', 'Room.roomId')
+                .select(
+                    'Appointment.*',
+                    'PatientUser.fullName as patientName',
+                    'PatientUser.phoneNumber as patientPhone',
+                    'PatientUser.email',
+                    'Specialty.name as specialtyName',
+                    'DoctorUser.fullName as doctorName',
+                    'Room.roomNumber'
+                )
+                .where('Appointment.patientAppointmentStatus', status)
+                .orderBy('Appointment.appointmentDate')
+                .orderBy('Appointment.estimatedTime');
+        } catch (error) {
+            console.error(`Error fetching appointments with patient appointment status ${status}:`, error);
+            throw new Error('Unable to find appointments by patient appointment status');
         }
     },
 
@@ -201,6 +271,18 @@ export default {
         } catch (error) {
             console.error(`Error updating payment status for appointment with ID ${appointmentId}:`, error);
             throw new Error('Unable to update payment status');
+        }
+    },
+
+    async updatePatientAppointmentStatus(appointmentId, status) {
+        try {
+            await db('Appointment')
+                .where('appointmentId', appointmentId)
+                .update({ patientAppointmentStatus: status });
+            return true;
+        } catch (error) {
+            console.error(`Error updating appointment status to ${status}:`, error);
+            throw new Error('Failed to update appointment status');
         }
     },
 
@@ -327,6 +409,21 @@ export default {
         } catch (error) {
             console.error(`Error counting appointments between ${startDate} and ${endDate}:`, error);
             throw new Error('Unable to count appointments by date');
+        }
+    },
+
+    async getLatestAppointmentForPatient(patientId) {
+        try {
+            const appointment = await db('Appointment')
+                .where('patientId', patientId)
+                .orderBy('appointmentDate', 'desc')
+                .orderBy('appointmentTime', 'desc')
+                .first();
+            
+            return appointment;
+        } catch (error) {
+            console.error(`Error getting latest appointment for patient ${patientId}:`, error);
+            throw new Error('Failed to get latest appointment');
         }
     }
 }; 

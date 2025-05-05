@@ -453,14 +453,31 @@ body {
   margin-right: 5px;
 }
 
+.status-indicator {
+  margin-top: 8px;
+  display: flex;
+}
+
 .status-badge {
-  display: inline-block;
-  padding: 5px 12px;
-  border-radius: 20px;
+  padding: 4px 10px;
+  border-radius: 15px;
   font-size: 12px;
-  font-weight: 500;
-  text-align: center;
-  transition: all 0.2s ease;
+  font-weight: 600;
+  color: white;
+  display: inline-block;
+  text-transform: capitalize;
+}
+
+.status-badge.examined {
+  background-color: #36B37E;
+}
+
+.status-badge.examining {
+  background-color: #FFAB00;
+}
+
+.status-badge.waiting {
+  background-color: #0D99FF;
 }
 
 /* Status specific styles */

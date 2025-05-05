@@ -169,6 +169,7 @@ CREATE TABLE IF NOT EXISTS Appointment (
     status ENUM('pending', 'confirmed', 'cancelled', 'completed', 'waiting_payment', 'paid') DEFAULT 'pending',
     emailVerified BOOLEAN DEFAULT FALSE, -- If patient's email was verified for booking
     paymentStatus ENUM('pending', 'completed', 'failed', 'refunded') DEFAULT 'pending', -- Status of payment for this appointment's services/fees
+    patientAppointmentStatus ENUM('waiting', 'examining', 'examined') DEFAULT 'waiting',
     createdDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updatedDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (patientId) REFERENCES Patient(patientId) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -214,6 +215,18 @@ CREATE TABLE IF NOT EXISTS File (
     description TEXT,
     uploadedByUserId INT, -- User who uploaded the file
     FOREIGN KEY (uploadedByUserId) REFERENCES User(userId) ON DELETE SET NULL ON UPDATE CASCADE
+);
+CREATE TABLE IF NOT EXISTS TestRequest (
+    requestId INT AUTO_INCREMENT PRIMARY KEY,
+    appointmentId INT NOT NULL,
+    serviceId INT NOT NULL,
+    requestDate DATE NOT NULL,
+    status ENUM('pending', 'completed', 'cancelled') NOT NULL,
+    notes TEXT,
+    requestedByDoctorId INT NOT NULL,
+    FOREIGN KEY (appointmentId) REFERENCES Appointment(appointmentId) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (serviceId) REFERENCES Service(serviceId) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (requestedByDoctorId) REFERENCES Doctor(doctorId) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- Create TestResult table (Links to MedicalRecord, Service, Technician, File)
@@ -333,6 +346,20 @@ CREATE TABLE IF NOT EXISTS Billing (
     -- Removed the conflicting CHECK constraint for simplicity in this sample data;
     -- in a real application, you might enforce this logic in application code
     -- or use a more complex, carefully crafted CHECK constraint.
+);
+
+-- Create TestRequest table (For test requests)
+CREATE TABLE IF NOT EXISTS TestRequest (
+    requestId INT AUTO_INCREMENT PRIMARY KEY,
+    appointmentId INT NOT NULL,
+    serviceId INT NOT NULL,
+    requestDate DATE NOT NULL,
+    status ENUM('pending', 'completed', 'cancelled') NOT NULL,
+    notes TEXT,
+    requestedByDoctorId INT NOT NULL,
+    FOREIGN KEY (appointmentId) REFERENCES Appointment(appointmentId) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (serviceId) REFERENCES Service(serviceId) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (requestedByDoctorId) REFERENCES Doctor(doctorId) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 
@@ -800,63 +827,69 @@ INSERT INTO EmailVerification (email, verificationCode, expiresAt, verified) VAL
 -- Insert sample data into Appointment table
 -- Patient IDs 1-50, Doctor IDs 1-20, Schedule IDs 1-40, Specialty IDs 1-10, Room IDs 1-20 are available
 -- Mapped original data's patientId/doctorId to the actual AUTO_INCREMENT IDs from previous inserts.
-INSERT INTO Appointment (patientId, doctorId, scheduleId, specialtyId, appointmentDate, appointmentTime, reason, status) VALUES
+INSERT INTO Appointment (
+    patientId,
+    doctorId,
+    scheduleId,
+    specialtyId,
+    appointmentDate,
+    appointmentTime,
+    reason,
+    status,
+    emailVerified,
+    paymentStatus,
+    patientAppointmentStatus,
+    queueNumber,
+    estimatedTime
+)
+VALUES
 -- Cardiology Appointments (Specialty ID 1)
--- patientId, doctorId, scheduleId, specialtyId, appointmentDate, appointmentTime, reason, status
-(1, 1, 1, 1, CURDATE() - INTERVAL 7 DAY, '07:30:00', 'Chest pain and shortness of breath', 'completed'), -- Appt ID 1 (Patient 1, Dr 1, Sched 1, Spec 1)
-(6, 1, 2, 1, CURDATE(), '07:30:00', 'Irregular heartbeat', 'pending'), -- Appt ID 2 (Patient 6, Dr 1, Sched 2, Spec 1)
-(11, 2, 4, 1, CURDATE() - INTERVAL 5 DAY, '13:30:00', 'High blood pressure follow-up', 'completed'), -- Appt ID 3 (Patient 11, Dr 2, Sched 4, Spec 1)
-(16, 2, 5, 1, CURDATE(), '07:30:00', 'Heart palpitations', 'pending'), -- Appt ID 4 (Patient 16, Dr 2, Sched 5, Spec 1)
+(1, 1, 1, 1, CURDATE() - INTERVAL 7 DAY, '07:30:00', 'Chest pain and shortness of breath', 'completed', TRUE, 'completed', 'examined', 1, '07:30:00'),
+(6, 1, 2, 1, CURDATE(), '07:30:00', 'Irregular heartbeat', 'pending', FALSE, 'pending', 'waiting', 2, '07:45:00'),
+(11, 2, 4, 1, CURDATE() - INTERVAL 5 DAY, '13:30:00', 'High blood pressure follow-up', 'completed', TRUE, 'completed', 'examined', 3, '13:30:00'),
+(16, 2, 5, 1, CURDATE(), '07:30:00', 'Heart palpitations', 'pending', FALSE, 'pending', 'waiting', 4, '07:45:00'),
 
 -- Dermatology Appointments (Specialty ID 2)
--- patientId, doctorId, scheduleId, specialtyId, appointmentDate, appointmentTime, reason, status
-(2, 3, 6, 2, CURDATE() - INTERVAL 10 DAY, '07:30:00', 'Persistent rash on arms', 'completed'), -- Appt ID 5 (Patient 2, Dr 3, Sched 6, Spec 2)
-(7, 3, 7, 2, CURDATE(), '13:30:00', 'Acne treatment follow-up', 'pending'), -- Appt ID 6 (Patient 7, Dr 3, Sched 7, Spec 2)
-(12, 4, 8, 2, CURDATE() + INTERVAL 1 DAY, '07:30:00', 'Suspicious mole on back', 'pending'), -- Appt ID 7 (Patient 12, Dr 4, Sched 8, Spec 2)
+(2, 3, 6, 2, CURDATE() - INTERVAL 10 DAY, '07:30:00', 'Persistent rash on arms', 'completed', TRUE, 'completed', 'examined', 1, '07:30:00'),
+(7, 3, 7, 2, CURDATE(), '13:30:00', 'Acne treatment follow-up', 'pending', FALSE, 'pending', 'waiting', 2, '13:45:00'),
+(12, 4, 8, 2, CURDATE() + INTERVAL 1 DAY, '07:30:00', 'Suspicious mole on back', 'pending', FALSE, 'pending', 'waiting', 3, '07:45:00'),
 
 -- Neurology Appointments (Specialty ID 3)
--- patientId, doctorId, scheduleId, specialtyId, appointmentDate, appointmentTime, reason, status
-(3, 5, 9, 3, CURDATE() - INTERVAL 14 DAY, '07:30:00', 'Frequent migraines', 'completed'), -- Appt ID 8 (Patient 3, Dr 5, Sched 9, Spec 3)
-(8, 5, 10, 3, CURDATE(), '13:30:00', 'Persistent dizziness', 'pending'), -- Appt ID 9 (Patient 8, Dr 5, Sched 10, Spec 3)
-(13, 6, 11, 3, CURDATE() + INTERVAL 1 DAY, '07:30:00', 'Numbness in left arm', 'pending'), -- Appt ID 10 (Patient 13, Dr 6, Sched 11, Spec 3)
+(3, 5, 9, 3, CURDATE() - INTERVAL 14 DAY, '07:30:00', 'Frequent migraines', 'completed', TRUE, 'completed', 'examined', 1, '07:30:00'),
+(8, 5, 10, 3, CURDATE(), '13:30:00', 'Persistent dizziness', 'pending', FALSE, 'pending', 'waiting', 2, '13:45:00'),
+(13, 6, 11, 3, CURDATE() + INTERVAL 1 DAY, '07:30:00', 'Numbness in left arm', 'pending', FALSE, 'pending', 'waiting', 3, '07:45:00'),
 
 -- Orthopedics Appointments (Specialty ID 4)
--- patientId, doctorId, scheduleId, specialtyId, appointmentDate, appointmentTime, reason, status
-(4, 7, 12, 4, CURDATE() - INTERVAL 21 DAY, '13:30:00', 'Knee pain after running', 'completed'), -- Appt ID 11 (Patient 4, Dr 7, Sched 12, Spec 4)
-(9, 7, 13, 4, CURDATE(), '07:30:00', 'Back pain evaluation', 'pending'), -- Appt ID 12 (Patient 9, Dr 7, Sched 13, Spec 4)
-(14, 8, 14, 4, CURDATE() + INTERVAL 1 DAY, '13:30:00', 'Shoulder mobility issues', 'pending'), -- Appt ID 13 (Patient 14, Dr 8, Sched 14, Spec 4)
+(4, 7, 12, 4, CURDATE() - INTERVAL 21 DAY, '13:30:00', 'Knee pain after running', 'completed', TRUE, 'completed', 'examined', 1, '13:30:00'),
+(9, 7, 13, 4, CURDATE(), '07:30:00', 'Back pain evaluation', 'pending', FALSE, 'pending', 'waiting', 2, '07:45:00'),
+(14, 8, 14, 4, CURDATE() + INTERVAL 1 DAY, '13:30:00', 'Shoulder mobility issues', 'pending', FALSE, 'pending', 'waiting', 3, '13:45:00'),
 
 -- Pediatrics Appointments (Specialty ID 5)
--- patientId, doctorId, scheduleId, specialtyId, appointmentDate, appointmentTime, reason, status
-(41, 9, 15, 5, CURDATE() - INTERVAL 3 DAY, '07:30:00', 'Annual checkup for 6-year-old', 'completed'), -- Appt ID 14 (Patient 41, Dr 9, Sched 15, Spec 5)
-(42, 9, 16, 5, CURDATE(), '13:30:00', 'Persistent cough in 3-year-old', 'pending'), -- Appt ID 15 (Patient 42, Dr 9, Sched 16, Spec 5)
-(43, 10, 17, 5, CURDATE() + INTERVAL 1 DAY, '07:30:00', 'Fever and rash in 8-year-old', 'pending'), -- Appt ID 16 (Patient 43, Dr 10, Sched 17, Spec 5)
+(41, 9, 15, 5, CURDATE() - INTERVAL 3 DAY, '07:30:00', 'Annual checkup for 6-year-old', 'completed', TRUE, 'completed', 'examined', 1, '07:30:00'),
+(42, 9, 16, 5, CURDATE(), '13:30:00', 'Persistent cough in 3-year-old', 'pending', FALSE, 'pending', 'waiting', 2, '13:45:00'),
+(43, 10, 17, 5, CURDATE() + INTERVAL 1 DAY, '07:30:00', 'Fever and rash in 8-year-old', 'pending', FALSE, 'pending', 'waiting', 3, '07:45:00'),
 
 -- Gastroenterology Appointments (Specialty ID 6)
--- patientId, doctorId, scheduleId, specialtyId, appointmentDate, appointmentTime, reason, status
-(5, 11, 18, 6, CURDATE() - INTERVAL 8 DAY, '13:30:00', 'Persistent heartburn', 'completed'), -- Appt ID 17 (Patient 5, Dr 11, Sched 18, Spec 6)
-(10, 11, 19, 6, CURDATE(), '07:30:00', 'Abdominal pain evaluation', 'pending'), -- Appt ID 18 (Patient 10, Dr 11, Sched 19, Spec 6)
-(15, 12, 20, 6, CURDATE() + INTERVAL 1 DAY, '13:30:00', 'Chronic diarrhea investigation', 'pending'), -- Appt ID 19 (Patient 15, Dr 12, Sched 20, Spec 6)
+(5, 11, 18, 6, CURDATE() - INTERVAL 8 DAY, '13:30:00', 'Persistent heartburn', 'completed', TRUE, 'completed', 'examined', 1, '13:30:00'),
+(10, 11, 19, 6, CURDATE(), '07:30:00', 'Abdominal pain evaluation', 'pending', FALSE, 'pending', 'waiting', 2, '07:45:00'),
+(15, 12, 20, 6, CURDATE() + INTERVAL 1 DAY, '13:30:00', 'Chronic diarrhea investigation', 'pending', FALSE, 'pending', 'waiting', 3, '13:45:00'),
 
 -- Ophthalmology Appointments (Specialty ID 7)
--- patientId, doctorId, scheduleId, specialtyId, appointmentDate, appointmentTime, reason, status
-(20, 13, 21, 7, CURDATE() - INTERVAL 12 DAY, '07:30:00', 'Blurry vision', 'completed'), -- Appt ID 20 (Patient 20, Dr 13, Sched 21, Spec 7)
-(25, 14, 22, 7, CURDATE(), '13:30:00', 'Eye irritation and redness', 'pending'), -- Appt ID 21 (Patient 25, Dr 14, Sched 22, Spec 7)
+(20, 13, 21, 7, CURDATE() - INTERVAL 12 DAY, '07:30:00', 'Blurry vision', 'completed', TRUE, 'completed', 'examined', 1, '07:30:00'),
+(25, 14, 22, 7, CURDATE(), '13:30:00', 'Eye irritation and redness', 'pending', FALSE, 'pending', 'waiting', 2, '13:45:00'),
 
 -- Pulmonology Appointments (Specialty ID 8)
--- patientId, doctorId, scheduleId, specialtyId, appointmentDate, appointmentTime, reason, status
-(30, 15, 23, 8, CURDATE() - INTERVAL 15 DAY, '13:30:00', 'Chronic cough, smoker', 'completed'), -- Appt ID 22 (Patient 30, Dr 15, Sched 23, Spec 8)
-(35, 16, 24, 8, CURDATE(), '07:30:00', 'Sleep apnea evaluation', 'pending'), -- Appt ID 23 (Patient 35, Dr 16, Sched 24, Spec 8)
+(30, 15, 23, 8, CURDATE() - INTERVAL 15 DAY, '13:30:00', 'Chronic cough, smoker', 'completed', TRUE, 'completed', 'examined', 1, '13:30:00'),
+(35, 16, 24, 8, CURDATE(), '07:30:00', 'Sleep apnea evaluation', 'pending', FALSE, 'pending', 'waiting', 2, '07:45:00'),
 
 -- Endocrinology Appointments (Specialty ID 9)
--- patientId, doctorId, scheduleId, specialtyId, appointmentDate, appointmentTime, reason, status
-(40, 17, 25, 9, CURDATE() - INTERVAL 9 DAY, '07:30:00', 'Type 2 diabetes follow-up', 'completed'), -- Appt ID 24 (Patient 40, Dr 17, Sched 25, Spec 9)
-(45, 18, 26, 9, CURDATE(), '13:30:00', 'Thyroid function check', 'pending'), -- Appt ID 25 (Patient 45, Dr 18, Sched 26, Spec 9)
+(40, 17, 25, 9, CURDATE() - INTERVAL 9 DAY, '07:30:00', 'Type 2 diabetes follow-up', 'completed', TRUE, 'completed', 'examined', 1, '07:30:00'),
+(45, 18, 26, 9, CURDATE(), '13:30:00', 'Thyroid function check', 'pending', FALSE, 'pending', 'waiting', 2, '13:45:00'),
 
 -- Oncology Appointments (Specialty ID 10)
--- patientId, doctorId, scheduleId, specialtyId, appointmentDate, appointmentTime, reason, status
-(50, 19, 27, 10, CURDATE() - INTERVAL 4 DAY, '13:30:00', 'Post-chemotherapy follow-up', 'completed'), -- Appt ID 26 (Patient 50, Dr 19, Sched 27, Spec 10)
-(21, 20, 28, 10, CURDATE(), '07:30:00', 'Initial consultation for breast lump', 'pending'); -- Appt ID 27 (Patient 21, Dr 20, Sched 28, Spec 10)
+(50, 19, 27, 10, CURDATE() - INTERVAL 4 DAY, '13:30:00', 'Post-chemotherapy follow-up', 'completed', TRUE, 'completed', 'examined', 1, '13:30:00'),
+(21, 20, 28, 10, CURDATE(), '07:30:00', 'Initial consultation for breast lump', 'pending', FALSE, 'pending', 'waiting', 2, '07:45:00');
+
 
 
 -- Insert sample data into AppointmentServices table
@@ -882,18 +915,32 @@ INSERT INTO MedicalRecord (appointmentId, diagnosis, notes, recommendations, fol
 (8, 'Migraine without aura', 'Frequent severe headaches, photo- and phonophobia.', 'Trigger identification, acute treatment with triptan, consider preventative therapy.', CURDATE() + INTERVAL 3 WEEK); -- Record ID 3 (for Appointment 8)
 
 
+-- Insert sample data into TestRequest table
+INSERT INTO TestRequest (appointmentId, serviceId, requestDate, status, notes, requestedByDoctorId) VALUES
+-- Requests for completed appointments
+(1, 3, CURDATE() - INTERVAL 7 DAY, 'completed', 'Test request for ECG Test', 1), -- Request ID 1 (for Appointment 1, Dr. 1)
+(5, 6, CURDATE() - INTERVAL 10 DAY, 'completed', 'Test request for Skin Biopsy', 3), -- Request ID 2 (for Appointment 5, Dr. 3)
+(8, 9, CURDATE() - INTERVAL 14 DAY, 'completed', 'Test request for EEG Test', 5), -- Request ID 3 (for Appointment 8, Dr. 5)
+
+-- Pending requests for current appointments
+(6, 3, CURDATE(), 'pending', 'Test request for ECG Test', 1), -- Request ID 4 (for Appointment 6, Dr. 1)
+(9, 10, CURDATE(), 'pending', 'Test request for MRI Brain', 5), -- Request ID 5 (for Appointment 9, Dr. 5)
+(10, 12, CURDATE(), 'pending', 'Test request for X-Ray', 11), -- Request ID 6 (for Appointment 10, Dr. 11)
+(16, 4, CURDATE(), 'pending', 'Test request for Echocardiogram', 2); -- Request ID 7 (for Appointment 16, Dr. 2)
+
+
 -- Insert sample data into TestResult table
 -- recordId, serviceId, technicianId, roomId, resultFileId, resultType, status must match existing IDs/enums
 -- technicianId refers to technicianId (AUTO_INCREMENT), not userId.
-INSERT INTO TestResult (recordId, appointmentId, serviceId, technicianId, roomId, resultText, resultFileId, resultType, normalRange, unit, interpretation, status, performedDate) VALUES
+INSERT INTO TestResult (recordId, appointmentId, requestId, serviceId, technicianId, roomId, resultText, resultFileId, resultType, normalRange, unit, interpretation, status, performedDate) VALUES
 -- ECG Test Result (for Medical Record 1, related to Appointment 1)
-(1, 1, 3, 1, 1, 'Heart rate: 78 bpm, Regular rhythm, Normal QRS complex', 1, 'file', '60-100', 'bpm', 'Normal ECG at rest. Clinical symptoms suggest exertional ischemia.', 'completed', CURDATE() - INTERVAL 7 DAY), -- Result ID 1
+(1, 1, 1, 3, 1, 1, 'Heart rate: 78 bpm, Regular rhythm, Normal QRS complex', 1, 'file', '60-100', 'bpm', 'Normal ECG at rest. Clinical symptoms suggest exertional ischemia.', 'completed', CURDATE() - INTERVAL 7 DAY), -- Result ID 1
 
 -- Skin Biopsy Result (for Medical Record 2, related to Appointment 5)
-(2, 5, 6, 2, 5, NULL, 3, 'file', NULL, NULL, 'Histology shows epidermal spongiosis and superficial perivascular inflammation consistent with acute contact dermatitis.', 'completed', CURDATE() - INTERVAL 9 DAY), -- Result ID 2
+(2, 5, 2, 6, 2, 5, NULL, 3, 'file', NULL, NULL, 'Histology shows epidermal spongiosis and superficial perivascular inflammation consistent with acute contact dermatitis.', 'completed', CURDATE() - INTERVAL 9 DAY), -- Result ID 2
 
 -- EEG Test Result (for Medical Record 3, related to Appointment 8)
-(3, 8, 9, 3, 6, 'Normal brain wave activity', 1, 'file', 'N/A', 'N/A', 'No epileptiform activity or focal slowing detected.', 'completed', CURDATE() - INTERVAL 13 DAY); -- Result ID 3
+(3, 8, 3, 9, 3, 6, 'Normal brain wave activity', 1, 'file', 'N/A', 'N/A', 'No epileptiform activity or focal slowing detected.', 'completed', CURDATE() - INTERVAL 13 DAY); -- Result ID 3
 
 -- Insert sample data into Medication table
 INSERT INTO Medication (name, description, dosage, price, category, manufacturer, sideEffects, stockQuantity) VALUES

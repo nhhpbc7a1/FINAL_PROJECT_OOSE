@@ -159,9 +159,10 @@ CREATE TABLE IF NOT EXISTS Appointment (
     doctorId INT,
     roomId INT,
     scheduleId INT,
-    status ENUM('pending', 'confirmed', 'cancelled', 'completed', 'waiting_payment', 'paid') DEFAULT 'pending',
+    status ENUM('pending', 'confirmed', 'cancelled','completed') DEFAULT 'pending',
     emailVerified BOOLEAN DEFAULT FALSE,
     paymentStatus ENUM('pending', 'completed', 'failed', 'refunded') DEFAULT 'pending',
+    patientAppointmentStatus ENUM('waiting', 'examining', 'examined') DEFAULT 'waiting',
     createdDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updatedDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (patientId) REFERENCES Patient(patientId),
@@ -205,10 +206,25 @@ CREATE TABLE IF NOT EXISTS File (
     description TEXT
 );
 
+-- Create TestRequest table
+CREATE TABLE IF NOT EXISTS TestRequest (
+    requestId INT AUTO_INCREMENT PRIMARY KEY,
+    appointmentId INT NOT NULL,
+    serviceId INT NOT NULL,
+    requestDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('pending', 'in_progress', 'completed', 'cancelled') DEFAULT 'pending',
+    notes TEXT,
+    requestedByDoctorId INT,
+    FOREIGN KEY (appointmentId) REFERENCES Appointment(appointmentId),
+    FOREIGN KEY (serviceId) REFERENCES Service(serviceId),
+    FOREIGN KEY (requestedByDoctorId) REFERENCES Doctor(doctorId)
+);
+
 -- Create TestResult table
 CREATE TABLE IF NOT EXISTS TestResult (
     resultId INT AUTO_INCREMENT PRIMARY KEY,
     recordId INT,
+    requestId INT,
     serviceId INT,
     technicianId INT,
     roomId INT,
@@ -221,6 +237,7 @@ CREATE TABLE IF NOT EXISTS TestResult (
     performedDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     status ENUM('pending', 'completed', 'cancelled') DEFAULT 'pending',
     FOREIGN KEY (recordId) REFERENCES MedicalRecord(recordId),
+    FOREIGN KEY (requestId) REFERENCES TestRequest(requestId),
     FOREIGN KEY (serviceId) REFERENCES Service(serviceId),
     FOREIGN KEY (technicianId) REFERENCES LabTechnician(technicianId),
     FOREIGN KEY (roomId) REFERENCES Room(roomId),

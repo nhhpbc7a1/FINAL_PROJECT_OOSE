@@ -142,7 +142,7 @@
             
           <section class="calendar-section">
             <div class="section-header">
-              <h2>Calendar</h2>
+              <h2>Appointment Calendar</h2>
               <a href="/doctor/schedule" class="view-all">View Schedule</a>
             </div>
             <div class="calendar-container">
@@ -178,7 +178,9 @@
                         </svg>
                         {{specialtyName}} - Room {{roomNumber}}
                       </div>
-                      <div class="status-badge">{{status}}</div>
+                      <div class="status-indicator">
+                        <span class="status-badge {{patientAppointmentStatus}}">{{patientAppointmentStatus}}</span>
+                      </div>
                     </div>
                   </div>
                 {{/each}}
@@ -192,6 +194,7 @@
         </div>
       </div>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -202,12 +205,13 @@
         headerToolbar: {
           left: 'prev,next today',
           center: 'title',
-          right: 'dayGridMonth,timeGridWeek'
+          right: 'dayGridMonth,timeGridWeek,listMonth'
         },
         buttonText: {
           today: 'Today',
           month: 'Month',
-          week: 'Week'
+          week: 'Week',
+          list: 'List'
         },
         themeSystem: 'standard',
         events: {{{calendarEvents}}},
@@ -215,6 +219,13 @@
           hour: '2-digit',
           minute: '2-digit',
           meridiem: false
+        },
+        eventDisplay: 'block',
+        eventClick: function(info) {
+          // Navigate to the appointment details when clicked
+          const appointmentId = info.event.id;
+          const date = moment(info.event.start).format('YYYY-MM-DD');
+          window.location.href = `/doctor/appointments?date=${date}&appointmentId=${appointmentId}`;
         }
       });
       calendar.render();

@@ -492,3 +492,28 @@ body {
   background-color: #e9ecef;
   color: #212529;
 } 
+.new-prescription-btn {
+  display: flex;
+  align-items: center;
+  background-color: #006eb9;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.new-prescription-btn svg {
+  margin-right: 6px;
+}
+
+.new-prescription-btn:hover {
+  background-color: #005a96;
+}
+
+/* In the placeholder content, center the button */
+.placeholder-content .new-prescription-btn {
+  margin: 15px auto 0;
+}

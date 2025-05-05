@@ -10,6 +10,7 @@ export default {
     async getDashboardData(doctorId) {
         try {
             const today = moment().format('YYYY-MM-DD');
+            console.log("Today's date for query:", today);
             
             // Check if we're in test/development mode with future dates in the database
             const isTestMode = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test';
@@ -18,25 +19,23 @@ export default {
             // So we'll include these appointments in our dashboard
             const dateFilter = isTestMode 
                 ? appointment => true  // Accept all appointments in test mode
-                : appointment => appointment.appointmentDate === today; // Only same-day in production
+                : appointment => moment(appointment.appointmentDate).format('YYYY-MM-DD') === today; // Only same-day in production
             
             // Get total patients count for this doctor
             const totalPatientsQuery = db('Appointment')
                 .countDistinct('patientId as count')
                 .where('doctorId', doctorId);
             
-            // Get all appointments for this doctor, filtered by appropriate date logic
+            // Get all appointments for this doctor
             const allAppointmentsQuery = db('Appointment')
-                .select('appointmentId', 'status', 'appointmentDate')
+                .select('appointmentId', 'patientAppointmentStatus', 'appointmentDate')
                 .where('doctorId', doctorId);
             
-            // Get today's appointment counts by status
+            // Get today's appointments specifically
             const todayAppointmentsQuery = db('Appointment')
-                .select('status')
-                .count('appointmentId as count')
+                .select('appointmentId', 'patientAppointmentStatus', 'appointmentDate', 'estimatedTime')
                 .where('doctorId', doctorId)
-                .where('appointmentDate', today)
-                .groupBy('status');
+                .where('appointmentDate', today);
             
             // Get pending test results count
             const pendingTestResultsQuery = db('TestResult')
@@ -58,29 +57,28 @@ export default {
                     'Appointment.appointmentDate',
                     'Appointment.estimatedTime',
                     'Appointment.reason',
-                    'Appointment.status',
+                    'Appointment.patientAppointmentStatus',
                     'User.fullName as patientName',
                     'Specialty.name as specialtyName',
                     'Room.roomNumber'
                 )
                 .where('Appointment.doctorId', doctorId)
+                .where('Appointment.appointmentDate', today) // Only show today's schedule
                 .orderBy('Appointment.appointmentDate')
                 .orderBy('Appointment.estimatedTime');
             
-            // Get upcoming appointments for calendar (next 30 days)
-            const calendarEndDate = moment().add(30, 'days').format('YYYY-MM-DD');
-            const upcomingAppointmentsQuery = db('Appointment')
+            // Get all appointments for calendar view (no date restriction)
+            const allAppointmentsForCalendarQuery = db('Appointment')
                 .select(
                     'Appointment.appointmentId',
                     'Appointment.appointmentDate',
                     'Appointment.estimatedTime',
-                    'Appointment.status',
+                    'Appointment.patientAppointmentStatus',
                     'User.fullName as patientName'
                 )
                 .join('Patient', 'Appointment.patientId', '=', 'Patient.patientId')
                 .join('User', 'Patient.userId', '=', 'User.userId')
                 .where('Appointment.doctorId', doctorId)
-                .whereBetween('Appointment.appointmentDate', [today, calendarEndDate])
                 .orderBy('Appointment.appointmentDate')
                 .orderBy('Appointment.estimatedTime');
             
@@ -88,82 +86,66 @@ export default {
             const [
                 totalPatientsResult,
                 allAppointments,
-                todayAppointmentsResult,
+                todayAppointments,
                 pendingTestResultsResult,
                 scheduleResults,
-                upcomingAppointments
+                allAppointmentsForCalendar
             ] = await Promise.all([
                 totalPatientsQuery,
                 allAppointmentsQuery,
                 todayAppointmentsQuery,
                 pendingTestResultsQuery,
                 scheduleQuery,
-                upcomingAppointmentsQuery
+                allAppointmentsForCalendarQuery
             ]);
+
+            console.log("Today's appointments count:", todayAppointments.length);
             
-            // Process appointment status counts with date filter
+            // Process appointment status counts with today's appointments
             const appointmentCounts = {
-                total: 0,
+                total: todayAppointments.length,
                 completed: 0,
                 examining: 0,
                 waiting: 0
             };
             
-            // Group appointments by status
-            const appointmentsByStatus = {};
-            allAppointments.filter(dateFilter).forEach(appointment => {
-                const { status } = appointment;
-                if (!appointmentsByStatus[status]) {
-                    appointmentsByStatus[status] = 0;
+            // Count today's appointments by status
+            todayAppointments.forEach(appointment => {
+                if (appointment.patientAppointmentStatus === 'examined') {
+                    appointmentCounts.completed++;
+                } else if (appointment.patientAppointmentStatus === 'examining') {
+                    appointmentCounts.examining++;
+                } else if (appointment.patientAppointmentStatus === 'waiting') {
+                    appointmentCounts.waiting++;
                 }
-                appointmentsByStatus[status]++;
-                appointmentCounts.total++;
             });
             
-            // Update counts based on status
-            if (appointmentsByStatus['completed']) {
-                appointmentCounts.completed = appointmentsByStatus['completed'];
-            }
+            // Format the schedule items
+            const formattedSchedule = scheduleResults.map(appointment => {
+                const timeFormatted = appointment.estimatedTime 
+                    ? moment(appointment.estimatedTime, 'HH:mm:ss').format('HH:mm')
+                    : 'N/A';
+                
+                let statusClass = 'waiting';
+                if (appointment.patientAppointmentStatus === 'examined') {
+                    statusClass = 'examined';
+                } else if (appointment.patientAppointmentStatus === 'waiting') {
+                    statusClass = 'waiting';
+                } else if (appointment.patientAppointmentStatus === 'examining') {
+                    statusClass = 'examining';
+                }
+                
+                return {
+                    ...appointment,
+                    timeFormatted,
+                    statusClass,
+                    dateFormatted: moment(appointment.appointmentDate).format('MMM D, YYYY'),
+                    patientAppointmentStatus: appointment.patientAppointmentStatus
+                };
+            });
             
-            // Count both confirmed and pending as waiting
-            if (appointmentsByStatus['confirmed']) {
-                appointmentCounts.waiting += appointmentsByStatus['confirmed'];
-            }
-            
-            if (appointmentsByStatus['pending']) {
-                appointmentCounts.waiting += appointmentsByStatus['pending'];
-            }
-            
-            // For examining, we'd need a dedicated status
-            if (appointmentsByStatus['examining']) {
-                appointmentCounts.examining = appointmentsByStatus['examining'];
-            }
-            
-            // Format the schedule items - filter by date for display
-            const formattedSchedule = scheduleResults
-                .filter(dateFilter) // Apply the same date filter logic
-                .map(appointment => {
-                    const timeFormatted = appointment.estimatedTime 
-                        ? moment(appointment.estimatedTime, 'HH:mm:ss').format('HH:mm')
-                        : 'N/A';
-                    
-                    let statusClass = 'waiting';
-                    if (appointment.status === 'completed') {
-                        statusClass = 'examined';
-                    } else if (appointment.status === 'confirmed') {
-                        statusClass = 'waiting';
-                    }
-                    
-                    return {
-                        ...appointment,
-                        timeFormatted,
-                        statusClass,
-                        dateFormatted: moment(appointment.appointmentDate).format('MMM D, YYYY')
-                    };
-                });
-            
-            // Format calendar events
-            const calendarEvents = upcomingAppointments.map(appointment => {
+            // Format calendar events with all appointments, not just upcoming ones
+            const calendarEvents = allAppointmentsForCalendar.map(appointment => {
                 // Format the date properly to ISO format first before concatenating with time
                 const formattedDate = moment(appointment.appointmentDate).format('YYYY-MM-DD');
                 const start = `${formattedDate}T${appointment.estimatedTime || '09:00:00'}`;
@@ -173,13 +155,13 @@ export default {
                 let backgroundColor = '#FF9800'; // Orange for pending/waiting
                 let borderColor = '#F57C00';
                 
-                if (appointment.status === 'completed') {
+                if (appointment.patientAppointmentStatus === 'examined') {
                     backgroundColor = '#28a745'; // Green
                     borderColor = '#218838';
-                } else if (appointment.status === 'confirmed') {
+                } else if (appointment.patientAppointmentStatus === 'waiting') {
                     backgroundColor = '#006eb9'; // Blue
                     borderColor = '#0056b3';
-                } else if (appointment.status === 'cancelled') {
+                } else if (appointment.patientAppointmentStatus === 'examining') {
                     backgroundColor = '#dc3545'; // Red
                     borderColor = '#c82333';
                 }
