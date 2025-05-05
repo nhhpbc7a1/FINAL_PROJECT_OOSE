@@ -3,17 +3,48 @@ import db from '../ultis/db.js';
 export default {
     async findAll() {
         try {
-            return await db('Schedule')
+            // Find all schedules with doctor info
+            const doctorSchedules = await db('Schedule')
+                .where('Schedule.doctorId', '!=', null)
                 .join('Doctor', 'Schedule.doctorId', '=', 'Doctor.doctorId')
                 .join('User', 'Doctor.userId', '=', 'User.userId')
                 .leftJoin('Room', 'Schedule.roomId', '=', 'Room.roomId')
                 .select(
                     'Schedule.*',
                     'User.fullName as doctorName',
-                    'Room.roomNumber'
-                )
-                .orderBy('Schedule.workDate')
-                .orderBy('Schedule.startTime');
+                    'Room.roomNumber',
+                    db.raw('\'doctor\' as staffType')
+                );
+                
+            let labtechSchedules = [];
+            
+            // Check if labTechnicianId column exists
+            try {
+                // Try to get schedules with lab technician info
+                labtechSchedules = await db('Schedule')
+                    .whereNotNull('Schedule.labTechnicianId')
+                    .join('LabTechnician', 'Schedule.labTechnicianId', '=', 'LabTechnician.technicianId')
+                    .join('User', 'LabTechnician.userId', '=', 'User.userId')
+                    .leftJoin('Room', 'Schedule.roomId', '=', 'Room.roomId')
+                    .select(
+                        'Schedule.*',
+                        'User.fullName as labTechnicianName',
+                        'Room.roomNumber',
+                        db.raw('\'labTechnician\' as staffType')
+                    );
+            } catch (error) {
+                // If error occurs, it likely means the column doesn't exist yet
+                console.log("Could not fetch lab technician schedules, labTechnicianId might not exist:", error.message);
+            }
+                
+            // Combine and sort by date and time
+            return [...doctorSchedules, ...labtechSchedules]
+                .sort((a, b) => {
+                    if (a.workDate !== b.workDate) {
+                        return a.workDate > b.workDate ? 1 : -1;
+                    }
+                    return a.startTime > b.startTime ? 1 : -1;
+                });
         } catch (error) {
             console.error('Error fetching schedules:', error);
             throw new Error('Unable to load schedules');
@@ -22,18 +53,63 @@ export default {
 
     async findById(scheduleId) {
         try {
+            // Find schedule by ID
             const schedule = await db('Schedule')
-                .join('Doctor', 'Schedule.doctorId', '=', 'Doctor.doctorId')
-                .join('User', 'Doctor.userId', '=', 'User.userId')
-                .leftJoin('Room', 'Schedule.roomId', '=', 'Room.roomId')
-                .select(
-                    'Schedule.*',
-                    'User.fullName as doctorName',
-                    'Room.roomNumber'
-                )
                 .where('Schedule.scheduleId', scheduleId)
                 .first();
-            return schedule || null;
+                
+            if (!schedule) {
+                return null;
+            }
+            
+            // Add staff details based on whether it's a doctor
+            if (schedule.doctorId) {
+                const doctorDetails = await db('Doctor')
+                    .join('User', 'Doctor.userId', '=', 'User.userId')
+                    .join('Specialty', 'Doctor.specialtyId', '=', 'Specialty.specialtyId')
+                    .leftJoin('Room', 'Schedule.roomId', '=', 'Room.roomId')
+                    .select(
+                        'User.fullName as doctorName',
+                        'User.email',
+                        'User.phoneNumber',
+                        'Doctor.experience',
+                        'Doctor.licenseNumber',
+                        'Specialty.name as specialtyName',
+                        'Room.roomNumber',
+                        'Room.name as roomName'
+                    )
+                    .where('Doctor.doctorId', schedule.doctorId)
+                    .first();
+                    
+                return { ...schedule, ...doctorDetails, staffType: 'doctor' };
+            }
+            
+            // Check if labTechnicianId exists in the schedule
+            if (schedule.hasOwnProperty('labTechnicianId') && schedule.labTechnicianId) {
+                try {
+                    const labtechDetails = await db('LabTechnician')
+                        .join('User', 'LabTechnician.userId', '=', 'User.userId')
+                        .join('Specialty', 'LabTechnician.specialtyId', '=', 'Specialty.specialtyId')
+                        .leftJoin('Room', 'Schedule.roomId', '=', 'Room.roomId')
+                        .select(
+                            'User.fullName as labTechnicianName',
+                            'User.email',
+                            'User.phoneNumber',
+                            'LabTechnician.specialization',
+                            'Specialty.name as specialtyName',
+                            'Room.roomNumber',
+                            'Room.name as roomName'
+                        )
+                        .where('LabTechnician.technicianId', schedule.labTechnicianId)
+                        .first();
+                        
+                    return { ...schedule, ...labtechDetails, staffType: 'labTechnician' };
+                } catch (error) {
+                    console.log("Error fetching lab technician details:", error.message);
+                }
+            }
+            
+            return schedule;
         } catch (error) {
             console.error(`Error fetching schedule with ID ${scheduleId}:`, error);
             throw new Error('Unable to find schedule');
@@ -77,18 +153,104 @@ export default {
 
     async findByDateRange(startDate, endDate) {
         try {
-            return await db('Schedule')
+            console.log(`Finding schedules between ${startDate} and ${endDate}`);
+            
+            // Find all schedules with doctor info
+            const doctorSchedules = await db('Schedule')
+                .whereNotNull('Schedule.doctorId')
+                .whereBetween('Schedule.workDate', [startDate, endDate])
                 .join('Doctor', 'Schedule.doctorId', '=', 'Doctor.doctorId')
                 .join('User', 'Doctor.userId', '=', 'User.userId')
+                .join('Specialty', 'Doctor.specialtyId', '=', 'Specialty.specialtyId')
                 .leftJoin('Room', 'Schedule.roomId', '=', 'Room.roomId')
                 .select(
                     'Schedule.*',
                     'User.fullName as doctorName',
-                    'Room.roomNumber'
-                )
-                .whereBetween('Schedule.workDate', [startDate, endDate])
-                .orderBy('Schedule.workDate')
-                .orderBy('Schedule.startTime');
+                    'Room.roomNumber',
+                    'Specialty.name as specialtyName',
+                    'Specialty.specialtyId',
+                    db.raw('\'doctor\' as staffType')
+                );
+            
+            console.log(`Found ${doctorSchedules.length} doctor schedules`);
+                
+            let labtechSchedules = [];
+            
+            // Check if labTechnicianId column exists
+            try {
+                // Try to get schedules with lab technician info
+                labtechSchedules = await db('Schedule')
+                    .whereNotNull('Schedule.labTechnicianId')
+                    .whereBetween('Schedule.workDate', [startDate, endDate])
+                    .join('LabTechnician', 'Schedule.labTechnicianId', '=', 'LabTechnician.technicianId')
+                    .join('User', 'LabTechnician.userId', '=', 'User.userId')
+                    .join('Specialty', 'LabTechnician.specialtyId', '=', 'Specialty.specialtyId')
+                    .leftJoin('Room', 'Schedule.roomId', '=', 'Room.roomId')
+                    .select(
+                        'Schedule.*',
+                        'User.fullName as labTechnicianName',
+                        'Room.roomNumber',
+                        'Specialty.name as specialtyName',
+                        'Specialty.specialtyId',
+                        db.raw('\'labTechnician\' as staffType')
+                    );
+                    
+                console.log(`Found ${labtechSchedules.length} lab technician schedules`);
+            } catch (error) {
+                // If error occurs, it likely means the column doesn't exist yet
+                console.log("Could not fetch lab technician schedules, labTechnicianId might not exist:", error.message);
+            }
+            
+            // Make sure all schedules have the proper data types for filtering
+            doctorSchedules.forEach(schedule => {
+                schedule.specialtyId = parseInt(schedule.specialtyId);
+                schedule.doctorId = parseInt(schedule.doctorId);
+                if (schedule.roomId) schedule.roomId = parseInt(schedule.roomId);
+            });
+            
+            labtechSchedules.forEach(schedule => {
+                schedule.specialtyId = parseInt(schedule.specialtyId);
+                schedule.labTechnicianId = parseInt(schedule.labTechnicianId);
+                if (schedule.roomId) schedule.roomId = parseInt(schedule.roomId);
+            });
+                
+            // Combine and sort by date and time
+            const allSchedules = [...doctorSchedules, ...labtechSchedules]
+                .sort((a, b) => {
+                    if (a.workDate !== b.workDate) {
+                        return a.workDate > b.workDate ? 1 : -1;
+                    }
+                    return a.startTime > b.startTime ? 1 : -1;
+                });
+                
+            console.log(`Returning ${allSchedules.length} total schedules`);
+            if (allSchedules.length > 0) {
+                // Log a sample of each type to verify structure
+                const doctorSample = allSchedules.find(s => s.staffType === 'doctor');
+                const labtechSample = allSchedules.find(s => s.staffType === 'labTechnician');
+                
+                if (doctorSample) {
+                    console.log('Sample doctor schedule structure:', {
+                        scheduleId: doctorSample.scheduleId,
+                        doctorId: doctorSample.doctorId,
+                        staffType: doctorSample.staffType,
+                        specialtyId: doctorSample.specialtyId,
+                        specialtyName: doctorSample.specialtyName
+                    });
+                }
+                
+                if (labtechSample) {
+                    console.log('Sample labtech schedule structure:', {
+                        scheduleId: labtechSample.scheduleId,
+                        labTechnicianId: labtechSample.labTechnicianId,
+                        staffType: labtechSample.staffType,
+                        specialtyId: labtechSample.specialtyId,
+                        specialtyName: labtechSample.specialtyName
+                    });
+                }
+            }
+            
+            return allSchedules;
         } catch (error) {
             console.error(`Error fetching schedules between ${startDate} and ${endDate}:`, error);
             throw new Error('Unable to find schedules by date range');

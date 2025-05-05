@@ -1,0 +1,222 @@
+{{!-- Patient List View --}}
+<link rel="stylesheet" href="/public/css/admin-side/doctor-list.css"> {{!-- Reuse list styling --}}
+
+<div class="patient-list-container">
+    <div class="filters-bar">
+        {{!-- Search Input (Client-side filtering) --}}
+        <div class="search-box flex-grow-1 mr-2">
+            <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="Search by name, email, phone,..." value="">
+            <i class="fas fa-search"></i>
+        </div>
+         <a href="#" class="btn btn-sm btn-secondary" id="clearSearchBtn" title="Clear Search"><i class="fas fa-times"></i></a>
+
+        {{!-- No Add Button as per requirements --}}
+        {{!-- <a href="/admin/manage_patient/add" class="add-new-btn ml-auto">
+            <i class="fas fa-plus"></i> Add New Patient
+        </a> --}}
+    </div>
+
+    {{!-- Error display (if passed from server on initial load) --}}
+    {{#if error}}
+    <div class="alert alert-danger alert-dismissible fade show mt-3 mx-3" role="alert">
+        {{error}}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">×</span>
+        </button>
+    </div>
+    {{/if}}
+
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">Patient</th>
+                    <th scope="col">DOB/Gender</th>
+                    <th scope="col">Contact Info</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody id="patient-table-body">
+                {{#each patients}}
+                <tr class="patient-row"
+                    data-id="{{patientId}}"
+                    data-name="{{toLowerCase fullName}}"
+                    data-email="{{toLowerCase email}}"
+                    data-phone="{{toLowerCase phoneNumber}}"
+                    data-address="{{toLowerCase address}}"
+                    data-status="{{toLowerCase accountStatus}}"
+                >
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-circle">
+                                <span>{{initials}}</span>
+                            </div>
+                            <div class="ml-3">
+                                <div class="patient-name">{{fullName}}</div>
+                                <div class="patient-details">{{email}}</div> {{!-- Email shown here --}}
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                         {{#if dob}}{{formatDate dob 'DD/MM/YYYY'}}{{else}}N/A{{/if}} <br>
+                         {{#if gender}}{{toUpperCase (truncate gender)}}{{else}}?{{/if}} {{!-- M/F/O or ? --}}
+                    </td>
+                     <td>
+                         {{#if phoneNumber}}{{phoneNumber}}{{else}}N/A{{/if}}<br>
+                         {{#if address}}{{truncate address 50}}{{else}}N/A{{/if}}
+                     </td>
+                    <td>
+                        <span class="status-badge status-{{toLowerCase accountStatus}}">{{accountStatus}}</span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            {{!-- View Button --}}
+                            <a href="/admin/manage_patient/view/{{patientId}}" class="btn btn-icon" title="View Patient">
+                                <i class="fas fa-eye mr-2       "></i> View
+                            </a>
+                            {{!-- No Edit/Delete buttons --}}
+                        </div>
+                    </td>
+                </tr>
+                {{/each}}
+                {{!-- Rows for no results / initial empty state --}}
+                <tr id="no-results-row" style="display: none;">
+                    <td colspan="6"> {{!-- Adjust colspan --}}
+                         <div class="empty-state">
+                            <i class="fas fa-search"></i> <h5>No patients found</h5>
+                            <p>No patients match your filter criteria. Try adjusting your search.</p>
+                        </div>
+                    </td>
+                </tr>
+                 <tr id="no-data-row" style="display: {{#if patients}}none{{else}}table-row{{/if}};">
+                    <td colspan="6"> {{!-- Adjust colspan --}}
+                         <div class="empty-state">
+                            <i class="fas fa-users"></i> <h5>No patients registered yet</h5>
+                            <p>Patient accounts are created upon registration or first appointment.</p>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-container">
+        <div class="page-info">
+            Showing <span id="showing-start">1</span> to <span id="showing-end">10</span> of <span id="total-items">{{patients.length}}</span> patients
+        </div>
+        <ul class="pagination" id="pagination">
+            <!-- Pagination generated by JS -->
+        </ul>
+    </div>
+</div>
+
+{{!-- No Delete Modal needed --}}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Store all patient data rows
+        const allPatients = Array.from(document.querySelectorAll('.patient-row'));
+
+        // Pagination config
+        const itemsPerPage = 10;
+        let currentPage = 1;
+        let filteredPatients = [...allPatients];
+
+        // DOM elements
+        const searchInput = document.getElementById('searchInput');
+        const clearSearchBtn = document.getElementById('clearSearchBtn');
+        const patientTableBody = document.getElementById('patient-table-body');
+        const noResultsRow = document.getElementById('no-results-row');
+        const noDataRow = document.getElementById('no-data-row');
+        const pagination = document.getElementById('pagination');
+        const showingStart = document.getElementById('showing-start');
+        const showingEnd = document.getElementById('showing-end');
+        const totalItems = document.getElementById('total-items');
+
+        // --- Alert Function --- (Optional, copy if needed)
+         function showAlert(type, message) { /* ... copy from previous if needed ... */ }
+
+        // --- Filter Function ---
+        function applyFilters() {
+            const searchTerm = searchInput.value.trim().toLowerCase();
+
+            filteredPatients = allPatients.filter(row => {
+                if (!searchTerm) return true;
+
+                const name = row.getAttribute('data-name') || '';
+                const email = row.getAttribute('data-email') || '';
+                const phone = row.getAttribute('data-phone') || '';
+                const address = row.getAttribute('data-address') || '';
+                const status = row.getAttribute('data-status') || ''; // Can search status too
+
+                return name.includes(searchTerm) ||
+                       email.includes(searchTerm) ||
+                       phone.includes(searchTerm) ||
+                       address.includes(searchTerm) ||
+                       status.includes(searchTerm);
+            });
+
+            currentPage = 1;
+            updateDisplay();
+        }
+
+        // --- Display Update Function ---
+        function updateDisplay() {
+            allPatients.forEach(row => { row.style.display = 'none'; });
+             if(noDataRow) noDataRow.style.display = 'none'; // Hide initial empty state
+
+            if (filteredPatients.length === 0) {
+                noResultsRow.style.display = 'table-row';
+                showingStart.textContent='0'; showingEnd.textContent='0'; totalItems.textContent='0';
+                pagination.innerHTML = ''; return;
+            } else { noResultsRow.style.display = 'none'; }
+
+            const totalFiltered = filteredPatients.length;
+            const totalPages = Math.ceil(totalFiltered / itemsPerPage);
+            if (currentPage > totalPages) currentPage = totalPages > 0 ? totalPages : 1;
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = Math.min(start + itemsPerPage, totalFiltered);
+
+            for (let i = start; i < end; i++) { if (filteredPatients[i]) filteredPatients[i].style.display = 'table-row'; }
+
+            showingStart.textContent = totalFiltered ? start + 1 : 0; showingEnd.textContent = end; totalItems.textContent = totalFiltered;
+            updatePagination();
+        }
+
+        // --- Pagination Update Function --- (Same logic)
+        function updatePagination() { /* ... copy from previous list views ... */
+            const totalPages = Math.ceil(filteredPatients.length / itemsPerPage);
+            let paginationHTML = '';
+            paginationHTML += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}"><a class="page-link" href="#" data-page="${currentPage - 1}">Previous</a></li>`;
+            let startPage = Math.max(1, currentPage - 2), endPage = Math.min(totalPages, currentPage + 2);
+            if(totalPages <= 5){ startPage=1; endPage=totalPages; } else if(currentPage<=3){ endPage=5; } else if(currentPage>=totalPages-2){ startPage=totalPages-4; }
+            if(startPage>1){ paginationHTML += `<li class="page-item"><a class="page-link" href="#" data-page="1">1</a></li>`; if(startPage>2) paginationHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`; }
+            for(let i=startPage; i<=endPage; i++){ paginationHTML += `<li class="page-item ${i===currentPage?'active':''}"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`; }
+            if(endPage<totalPages){ if(endPage<totalPages-1) paginationHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`; paginationHTML += `<li class="page-item"><a class="page-link" href="#" data-page="${totalPages}">${totalPages}</a></li>`; }
+            paginationHTML += `<li class="page-item ${currentPage===totalPages||totalPages===0?'disabled':''}"><a class="page-link" href="#" data-page="${currentPage + 1}">Next</a></li>`;
+            pagination.innerHTML = paginationHTML;
+
+            document.querySelectorAll('.pagination .page-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault(); const pageNum = this.getAttribute('data-page');
+                    if (!this.parentElement.classList.contains('disabled') && pageNum) { currentPage = parseInt(pageNum); updateDisplay(); }
+                });
+            });
+        }
+
+        // --- Event Listeners ---
+        let searchTimeout;
+        searchInput.addEventListener('input', () => { clearTimeout(searchTimeout); searchTimeout = setTimeout(applyFilters, 300); });
+        clearSearchBtn.addEventListener('click', (e) => { e.preventDefault(); searchInput.value = ''; applyFilters(); });
+
+        // --- No Delete Functionality ---
+
+
+        // --- Initial Display ---
+        updateDisplay();
+         if(noDataRow) noDataRow.style.display = (allPatients.length === 0) ? 'table-row' : 'none';
+
+    });
+</script>

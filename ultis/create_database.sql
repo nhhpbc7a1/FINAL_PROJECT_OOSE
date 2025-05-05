@@ -56,8 +56,6 @@ CREATE TABLE IF NOT EXISTS Patient (
     dob DATE NOT NULL,
     gender ENUM('male', 'female', 'other') NOT NULL,
     bloodType VARCHAR(10),
-    healthInsuranceNumber VARCHAR(50),
-    emergencyContact VARCHAR(100),
     medicalHistory TEXT,
     FOREIGN KEY (userId) REFERENCES User(userId)
 );
@@ -110,16 +108,28 @@ CREATE TABLE IF NOT EXISTS Doctor (
 ALTER TABLE Specialty
 ADD FOREIGN KEY (headDoctorId) REFERENCES Doctor(doctorId);
 
+-- Create LabTechnician table
+CREATE TABLE IF NOT EXISTS LabTechnician (
+    technicianId INT AUTO_INCREMENT PRIMARY KEY,
+    userId INT UNIQUE,
+    specialization VARCHAR(100),
+    specialtyId INT,
+    FOREIGN KEY (userId) REFERENCES User(userId),
+    FOREIGN KEY (specialtyId) REFERENCES Specialty(specialtyId)
+);
+
 -- Create Schedule table
 CREATE TABLE IF NOT EXISTS Schedule (
     scheduleId INT AUTO_INCREMENT PRIMARY KEY,
     doctorId INT,
+    labTechnicianId INT,
     roomId INT,
     workDate DATE NOT NULL,
     startTime TIME NOT NULL,
     endTime TIME NOT NULL,
     status ENUM('available', 'booked', 'unavailable') DEFAULT 'available',
     FOREIGN KEY (doctorId) REFERENCES Doctor(doctorId),
+    FOREIGN KEY (labTechnicianId) REFERENCES LabTechnician(technicianId),
     FOREIGN KEY (roomId) REFERENCES Room(roomId)
 );
 
@@ -182,16 +192,6 @@ CREATE TABLE IF NOT EXISTS MedicalRecord (
     createdDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     followupDate DATE,
     FOREIGN KEY (appointmentId) REFERENCES Appointment(appointmentId)
-);
-
--- Create LabTechnician table
-CREATE TABLE IF NOT EXISTS LabTechnician (
-    technicianId INT AUTO_INCREMENT PRIMARY KEY,
-    userId INT UNIQUE,
-    specialization VARCHAR(100),
-    specialtyId INT,
-    FOREIGN KEY (userId) REFERENCES User(userId),
-    FOREIGN KEY (specialtyId) REFERENCES Specialty(specialtyId)
 );
 
 -- Create File table for storing files

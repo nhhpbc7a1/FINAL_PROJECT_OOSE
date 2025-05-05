@@ -1,0 +1,505 @@
+{{!-- Add Work Schedule --}}
+<link rel="stylesheet" href="/public/css/admin-side/schedule.css">
+
+<div class="content-header">
+    <div>
+        <h1 class="page-title">Add Work Schedule</h1>
+        <p class="page-subtitle">Create new work schedule for doctors and laboratory technicians</p>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="/admin/schedule">Work Schedule</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Add Schedule</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+{{!-- Error/Success Messages --}}
+{{#if error}}
+<div class="alert alert-danger alert-dismissible fade show mt-3">
+    <i class="fas fa-exclamation-circle"></i> <span>{{error}}</span>
+    <button type="button" class="close" data-dismiss="alert">×</button>
+</div>
+{{/if}}
+
+{{#if flashMessage}}
+<div class="alert alert-{{flashMessage.type}} alert-dismissible fade show mt-3">
+    <i class="fas fa-{{#if (eq flashMessage.type 'success')}}check-circle{{else}}exclamation-circle{{/if}}"></i> <span>{{flashMessage.message}}</span>
+    <button type="button" class="close" data-dismiss="alert">×</button>
+</div>
+{{/if}}
+
+<div class="card mb-4">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">New Schedule Details</h5>
+        <a href="/admin/schedule" class="btn btn-sm btn-secondary">
+            <i class="fas fa-arrow-left mr-1"></i> Back to Schedule
+        </a>
+    </div>
+    <div class="card-body">
+        <form id="add-schedule-form" action="/admin/schedule/add" method="POST">
+            <!-- Type Selection -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="form-group">
+                        <label class="form-label font-weight-bold">Schedule Type</label>
+                        <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
+                            <label class="btn btn-outline-primary active">
+                                <input type="radio" name="staffType" value="doctor" checked> Doctor Schedule
+                            </label>
+                            <label class="btn btn-outline-primary">
+                                <input type="radio" name="staffType" value="labTechnician"> Lab Technician Schedule
+                            </label>
+                        </div>
+                        <small class="form-text text-muted">Select the type of staff you want to schedule</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Basic Information -->
+            <div class="row">
+                <!-- Specialty Selection -->
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="specialtyId" class="form-label font-weight-bold">Specialty <span class="text-danger">*</span></label>
+                        <select id="specialtyId" name="specialtyId" class="form-control" required>
+                            <option value="">Select Specialty</option>
+                            {{#each specialties}}
+                            <option value="{{specialtyId}}">{{name}}</option>
+                            {{/each}}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Staff Selection (Doctor or Lab Tech depending on type) -->
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label id="staffLabel" for="staffId" class="form-label font-weight-bold">Doctor <span class="text-danger">*</span></label>
+                        <select id="staffId" name="doctorId" class="form-control" required disabled>
+                            <option value="">Select a specialty first</option>
+                        </select>
+                        <div class="spinner-border spinner-border-sm text-primary mt-2 d-none" id="staff-loading" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Schedule Pattern -->
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label font-weight-bold">Schedule Pattern <span class="text-danger">*</span></label>
+                        <div class="custom-control custom-radio">
+                            <input type="radio" id="singleDay" name="schedulePattern" class="custom-control-input" value="single" checked>
+                            <label class="custom-control-label" for="singleDay">Single Day</label>
+                        </div>
+                        <div class="custom-control custom-radio">
+                            <input type="radio" id="recurring" name="schedulePattern" class="custom-control-input" value="recurring">
+                            <label class="custom-control-label" for="recurring">Recurring Weekly</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Room Selection -->
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="roomId" class="form-label font-weight-bold">Room <span class="text-danger">*</span></label>
+                        <select id="roomId" name="roomId" class="form-control" required>
+                            <option value="">Select Room</option>
+                            {{#each rooms}}
+                            <option value="{{roomId}}">{{roomNumber}}{{#if name}} - {{name}}{{/if}}</option>
+                            {{/each}}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Single Day Selection (Shown when Single Day is selected) -->
+            <div id="singleDaySection" class="schedule-pattern-section">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="scheduleDate" class="form-label font-weight-bold">Date <span class="text-danger">*</span></label>
+                            <input type="date" id="scheduleDate" name="startDate" class="form-control" required min="{{formatDate (now) 'YYYY-MM-DD'}}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recurring Schedule Section (Shown when Recurring is selected) -->
+            <div id="recurringSection" class="schedule-pattern-section d-none">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <label class="form-label font-weight-bold">Weekly Days <span class="text-danger">*</span></label>
+                        <div class="weekday-selector">
+                            <div class="weekday-item">
+                                <input type="checkbox" id="monday" name="workingDays" value="1" class="weekday-checkbox">
+                                <label for="monday" class="weekday-label">Mon</label>
+                            </div>
+                            <div class="weekday-item">
+                                <input type="checkbox" id="tuesday" name="workingDays" value="2" class="weekday-checkbox">
+                                <label for="tuesday" class="weekday-label">Tue</label>
+                            </div>
+                            <div class="weekday-item">
+                                <input type="checkbox" id="wednesday" name="workingDays" value="3" class="weekday-checkbox">
+                                <label for="wednesday" class="weekday-label">Wed</label>
+                            </div>
+                            <div class="weekday-item">
+                                <input type="checkbox" id="thursday" name="workingDays" value="4" class="weekday-checkbox">
+                                <label for="thursday" class="weekday-label">Thu</label>
+                            </div>
+                            <div class="weekday-item">
+                                <input type="checkbox" id="friday" name="workingDays" value="5" class="weekday-checkbox">
+                                <label for="friday" class="weekday-label">Fri</label>
+                            </div>
+                            <div class="weekday-item">
+                                <input type="checkbox" id="saturday" name="workingDays" value="6" class="weekday-checkbox">
+                                <label for="saturday" class="weekday-label">Sat</label>
+                            </div>
+                            <div class="weekday-item">
+                                <input type="checkbox" id="sunday" name="workingDays" value="0" class="weekday-checkbox">
+                                <label for="sunday" class="weekday-label">Sun</label>
+                            </div>
+                        </div>
+                        <small class="form-text text-muted">Select the days of the week for recurring schedule</small>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="startDate" class="form-label font-weight-bold">Start Date <span class="text-danger">*</span></label>
+                            <input type="date" id="startDate" name="startDate" class="form-control" min="{{formatDate (now) 'YYYY-MM-DD'}}">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="endDate" class="form-label font-weight-bold">End Date <span class="text-danger">*</span></label>
+                            <input type="date" id="endDate" name="endDate" class="form-control">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Time Slot Selection (Common for both patterns) -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="form-group">
+                        <label class="form-label font-weight-bold">Work Shift <span class="text-danger">*</span></label>
+                        <div class="time-slot-options">
+                            <div class="custom-control custom-radio">
+                                <input type="radio" id="morningShift" name="shift" class="custom-control-input" value="morning" checked>
+                                <label class="custom-control-label" for="morningShift">
+                                    <strong>Morning Shift</strong> (7:00 - 11:30)
+                                </label>
+                            </div>
+                            <div class="custom-control custom-radio mt-2">
+                                <input type="radio" id="afternoonShift" name="shift" class="custom-control-input" value="afternoon">
+                                <label class="custom-control-label" for="afternoonShift">
+                                    <strong>Afternoon Shift</strong> (13:00 - 16:30)
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Hidden time inputs that will be set based on shift selection -->
+                        <input type="hidden" id="startTime" name="startTime" value="07:00">
+                        <input type="hidden" id="endTime" name="endTime" value="11:30">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Selection -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="form-group">
+                        <label class="form-label font-weight-bold">Status</label>
+                        <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
+                            <label class="btn btn-outline-success active">
+                                <input type="radio" name="status" value="available" checked> Available
+                            </label>
+                            <label class="btn btn-outline-danger">
+                                <input type="radio" name="status" value="unavailable"> Unavailable
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="mt-4 d-flex justify-content-end">
+                <button type="button" id="clear-form" class="btn btn-light mr-2">
+                    <i class="fas fa-redo"></i> Clear
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Create Schedule
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Elements
+        const specialtySelect = document.getElementById('specialtyId');
+        const staffSelect = document.getElementById('staffId');
+        const staffTypeRadios = document.querySelectorAll('input[name="staffType"]');
+        const staffLabel = document.getElementById('staffLabel');
+        const staffLoading = document.getElementById('staff-loading');
+        const schedulePatternRadios = document.querySelectorAll('input[name="schedulePattern"]');
+        const singleDaySection = document.getElementById('singleDaySection');
+        const recurringSection = document.getElementById('recurringSection');
+        const startTimeInput = document.getElementById('startTime');
+        const endTimeInput = document.getElementById('endTime');
+        const clearFormButton = document.getElementById('clear-form');
+        const addScheduleForm = document.getElementById('add-schedule-form');
+        
+        // Handle staff type change
+        staffTypeRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                const staffType = this.value;
+                staffLabel.textContent = staffType === 'doctor' ? 'Doctor ' : 'Lab Technician ';
+                staffLabel.innerHTML += '<span class="text-danger">*</span>';
+                
+                // Update the name attribute of the select for proper form submission
+                if (staffType === 'doctor') {
+                    staffSelect.name = 'doctorId';
+                } else {
+                    staffSelect.name = 'staffId'; // Using staffId as a generic field
+                }
+                
+                // Reset the staff select
+                staffSelect.innerHTML = '<option value="">Select a specialty first</option>';
+                staffSelect.disabled = true;
+                
+                // If specialty is already selected, load the appropriate staff
+                if (specialtySelect.value) {
+                    loadStaffBySpecialty(specialtySelect.value, staffType);
+                }
+            });
+        });
+        
+        // Handle specialty change
+        specialtySelect.addEventListener('change', function() {
+            const specialtyId = this.value;
+            const staffType = document.querySelector('input[name="staffType"]:checked').value;
+            
+            if (specialtyId) {
+                // Load staff by specialty
+                loadStaffBySpecialty(specialtyId, staffType);
+                
+                // Load rooms by specialty
+                loadRoomsBySpecialty(specialtyId);
+            } else {
+                staffSelect.innerHTML = '<option value="">Select a specialty first</option>';
+                staffSelect.disabled = true;
+                
+                // Reset room select to show all rooms
+                document.getElementById('roomId').innerHTML = '<option value="">Select Room</option>';
+                {{#each rooms}}
+                document.getElementById('roomId').innerHTML += `<option value="{{roomId}}">{{roomNumber}}{{#if name}} - {{name}}{{/if}}</option>`;
+                {{/each}}
+            }
+        });
+        
+        // Load rooms by specialty
+        function loadRoomsBySpecialty(specialtyId) {
+            const roomSelect = document.getElementById('roomId');
+            const roomLoading = document.createElement('span');
+            roomLoading.className = 'spinner-border spinner-border-sm text-primary ml-2';
+            roomLoading.role = 'status';
+            roomSelect.parentNode.appendChild(roomLoading);
+            
+            // Fetch rooms by specialty
+            fetch(`/admin/schedule/api/rooms-by-specialty/${specialtyId}`)
+                .then(response => response.json())
+                .then(data => {
+                    roomSelect.innerHTML = '';
+                    
+                    if (!data.success || !data.rooms || data.rooms.length === 0) {
+                        roomSelect.innerHTML = '<option value="">No rooms available</option>';
+                    } else {
+                        roomSelect.innerHTML = '<option value="">Select Room</option>';
+                        
+                        data.rooms.forEach(room => {
+                            const option = document.createElement('option');
+                            option.value = room.roomId;
+                            option.textContent = `${room.roomNumber} ${room.name ? '- ' + room.name : ''}`;
+                            roomSelect.appendChild(option);
+                        });
+                    }
+                    
+                    if (roomLoading.parentNode) {
+                        roomLoading.parentNode.removeChild(roomLoading);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading rooms:', error);
+                    roomSelect.innerHTML = '<option value="">Error loading rooms</option>';
+                    
+                    if (roomLoading.parentNode) {
+                        roomLoading.parentNode.removeChild(roomLoading);
+                    }
+                });
+        }
+        
+        // Load staff by specialty
+        function loadStaffBySpecialty(specialtyId, staffType) {
+            staffSelect.disabled = true;
+            staffLoading.classList.remove('d-none');
+            
+            // Determine the endpoint based on staff type
+            const endpoint = staffType === 'doctor' 
+                ? `/admin/schedule/api/doctors-by-specialty/${specialtyId}`
+                : `/admin/schedule/api/labtechs-by-specialty/${specialtyId}`;
+            
+            fetch(endpoint)
+                .then(response => response.json())
+                .then(data => {
+                    staffSelect.innerHTML = '';
+                    
+                    const staffList = staffType === 'doctor' ? data.doctors : data.labTechnicians;
+                    
+                    if (!staffList || staffList.length === 0) {
+                        staffSelect.innerHTML = `<option value="">No ${staffType === 'doctor' ? 'doctors' : 'lab technicians'} found</option>`;
+                    } else {
+                        staffSelect.innerHTML = `<option value="">Select ${staffType === 'doctor' ? 'a doctor' : 'a lab technician'}</option>`;
+                        
+                        staffList.forEach(staff => {
+                            const option = document.createElement('option');
+                            option.value = staffType === 'doctor' ? staff.doctorId : staff.technicianId;
+                            option.textContent = staff.fullName;
+                            staffSelect.appendChild(option);
+                        });
+                    }
+                    
+                    staffSelect.disabled = false;
+                    staffLoading.classList.add('d-none');
+                })
+                .catch(error => {
+                    console.error('Error loading staff:', error);
+                    staffSelect.innerHTML = `<option value="">Error loading ${staffType === 'doctor' ? 'doctors' : 'lab technicians'}</option>`;
+                    staffSelect.disabled = true;
+                    staffLoading.classList.add('d-none');
+                });
+        }
+        
+        // Handle schedule pattern change
+        schedulePatternRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                const pattern = this.value;
+                
+                if (pattern === 'single') {
+                    singleDaySection.classList.remove('d-none');
+                    recurringSection.classList.add('d-none');
+                    document.getElementById('scheduleDate').setAttribute('required', '');
+                    document.querySelectorAll('input[name="workingDays"]').forEach(cb => cb.removeAttribute('required'));
+                    document.getElementById('startDate').removeAttribute('required');
+                    document.getElementById('endDate').removeAttribute('required');
+                } else {
+                    singleDaySection.classList.add('d-none');
+                    recurringSection.classList.remove('d-none');
+                    document.getElementById('scheduleDate').removeAttribute('required');
+                    document.getElementById('startDate').setAttribute('required', '');
+                    document.getElementById('endDate').setAttribute('required', '');
+                    
+                    // At least one weekday must be selected
+                    const weekdayCheckboxes = document.querySelectorAll('input[name="workingDays"]');
+                    weekdayCheckboxes.forEach(cb => {
+                        cb.addEventListener('change', validateWeekdays);
+                    });
+                }
+            });
+        });
+        
+        // Validate time inputs
+        startTimeInput.addEventListener('change', validateTimes);
+        endTimeInput.addEventListener('change', validateTimes);
+        
+        function validateTimes() {
+            const startTime = startTimeInput.value;
+            const endTime = endTimeInput.value;
+            
+            if (startTime && endTime && startTime >= endTime) {
+                alert('End time must be later than start time');
+                endTimeInput.value = '';
+            }
+        }
+        
+        // Validate at least one weekday is selected for recurring schedules
+        function validateWeekdays() {
+            const checked = document.querySelectorAll('input[name="workingDays"]:checked').length > 0;
+            const weekdayCheckboxes = document.querySelectorAll('input[name="workingDays"]');
+            
+            if (!checked) {
+                weekdayCheckboxes[0].setCustomValidity('Please select at least one day of the week');
+            } else {
+                weekdayCheckboxes.forEach(cb => cb.setCustomValidity(''));
+            }
+        }
+        
+        // Clear form
+        clearFormButton.addEventListener('click', function() {
+            addScheduleForm.reset();
+            
+            // Reset any custom validations
+            document.querySelectorAll('input[name="workingDays"]').forEach(cb => {
+                cb.setCustomValidity('');
+            });
+            
+            // Reset staff select
+            staffSelect.innerHTML = '<option value="">Select a specialty first</option>';
+            staffSelect.disabled = true;
+            
+            // Reset sections visibility
+            singleDaySection.classList.remove('d-none');
+            recurringSection.classList.add('d-none');
+            
+            // Reset staff label
+            staffLabel.textContent = 'Doctor ';
+            staffLabel.innerHTML += '<span class="text-danger">*</span>';
+        });
+        
+        // Handle shift change
+        document.querySelectorAll('input[name="shift"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.value === 'morning') {
+                    startTimeInput.value = '07:00';
+                    endTimeInput.value = '11:30';
+                } else {
+                    startTimeInput.value = '13:00';
+                    endTimeInput.value = '16:30';
+                }
+            });
+        });
+        
+        // Form submission - validate required fields
+        addScheduleForm.addEventListener('submit', function(e) {
+            const staffType = document.querySelector('input[name="staffType"]:checked').value;
+            const staffSelect = document.getElementById('staffId');
+            const selectedStaff = staffSelect.value;
+            
+            // Check if staff is selected
+            if (!selectedStaff) {
+                e.preventDefault();
+                alert('Please select a ' + (staffType === 'doctor' ? 'doctor' : 'lab technician'));
+                return false;
+            }
+            
+            // For recurring schedules, check if at least one weekday is selected
+            const schedulePattern = document.querySelector('input[name="schedulePattern"]:checked').value;
+            if (schedulePattern === 'recurring') {
+                const checkedDays = document.querySelectorAll('input[name="workingDays"]:checked').length;
+                if (checkedDays === 0) {
+                    e.preventDefault();
+                    alert('Please select at least one day of the week for recurring schedule');
+                    return false;
+                }
+            }
+            
+            return true;
+        });
+    });
+</script> 

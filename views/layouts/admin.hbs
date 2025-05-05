@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="/public/css/admin-side/admin-layout.css">
+    {{{_sections.css}}}
 </head>
 <body>
     <!-- Sidebar -->
@@ -80,11 +81,11 @@
                 <i class="fas fa-chevron-down ml-auto"></i>
             </div>
             <div class="collapse" id="patientServices">
-                <a href="/admin/patients" class="menu-subitem {{#if (eq currentRoute 'patients')}}active{{/if}}">
+                <a href="/admin/manage_patient" class="menu-subitem {{#if (eq currentRoute 'patients')}}active{{/if}}">
                     <i class="fas fa-user-injured"></i>
                     Patient Management
                 </a>
-                <a href="/admin/appointments" class="menu-subitem {{#if (eq currentRoute 'appointments')}}active{{/if}}">
+                <a href="/admin/manage_appointment" class="menu-subitem {{#if (eq currentRoute 'appointments')}}active{{/if}}">
                     <i class="fas fa-calendar-check"></i>
                     Appointment Management
                 </a>
@@ -127,13 +128,27 @@
                     <input type="text" placeholder="Search across the system...">
                 </div>
             </div>
-            <div class="user-profile">
-                <div class="user-avatar">
-                    <i class="fas fa-user-shield"></i>
+            <div class="user-profile dropdown">
+                <div class="d-flex align-items-center" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <div class="user-avatar">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <div class="user-info ml-2">
+                        <div class="user-name">Admin User</div>
+                        <div class="user-role">Administrator</div>
+                    </div>
+                    <i class="fas fa-chevron-down ml-2"></i>
                 </div>
-                <div class="user-info">
-                    <div class="user-name">Admin User</div>
-                    <div class="user-role">Administrator</div>
+                <div class="dropdown-menu dropdown-menu-right">
+                    <a class="dropdown-item" href="/admin/profile">
+                        <i class="fas fa-user mr-2"></i>
+                        Profile
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item text-danger" href="/auth/logout">
+                        <i class="fas fa-sign-out-alt mr-2"></i>
+                        Logout
+                    </a>
                 </div>
             </div>
         </div>
@@ -188,5 +203,57 @@
             });
         });
     </script>
+    {{{_sections.js}}}
 </body>
 </html>
+
+<style>
+.user-profile {
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.user-profile:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.dropdown-menu {
+    margin-top: 10px;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 8px 0;
+}
+
+.dropdown-item {
+    padding: 8px 20px;
+    color: #333;
+    transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+    color: #007bff;
+}
+
+.dropdown-item.text-danger:hover {
+    background-color: #fff5f5;
+    color: #dc3545;
+}
+
+.dropdown-divider {
+    margin: 4px 0;
+}
+
+.fa-chevron-down {
+    font-size: 12px;
+    color: #666;
+    transition: transform 0.2s ease;
+}
+
+.show .fa-chevron-down {
+    transform: rotate(180deg);
+}
+</style>
