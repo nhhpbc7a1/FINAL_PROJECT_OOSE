@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS User (
     address VARCHAR(255),
     gender ENUM('male', 'female', 'other') NOT NULL,
     dob DATE,
-    profileImage VARCHAR(255),
+    profileImage VARCHAR(255) DEFAULT '/public/images/default-avatar.jpg',
     accountStatus ENUM('active', 'inactive', 'pending') DEFAULT 'pending',
     createdDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     roleId INT NOT NULL,
@@ -75,6 +75,7 @@ CREATE TABLE IF NOT EXISTS Specialty (
     description TEXT,
     hospitalId INT,
     headDoctorId INT,
+    icon VARCHAR(255) default '/public/images/specialties/default-specialty.jpg',
     FOREIGN KEY (hospitalId) REFERENCES Hospital(hospitalId)
 );
 
@@ -139,11 +140,12 @@ CREATE TABLE IF NOT EXISTS Service (
     name VARCHAR(100) NOT NULL,
     description TEXT,
     price DECIMAL(10, 2) NOT NULL,
-    duration INT,  -- in minutes
+    duration INT NOT NULL, -- in minutes
     type ENUM('service', 'test') NOT NULL,
-    category VARCHAR(100),
+    category VARCHAR(50) NOT NULL,
     specialtyId INT,
     status ENUM('active', 'inactive') DEFAULT 'active',
+    image VARCHAR(255) DEFAULT '/public/images/services/default-service.jpg',
     FOREIGN KEY (specialtyId) REFERENCES Specialty(specialtyId)
 );
 
@@ -153,6 +155,7 @@ CREATE TABLE IF NOT EXISTS Appointment (
     patientId INT,
     specialtyId INT,
     appointmentDate DATE NOT NULL,
+    appointmentTime DATE NOT NULL,
     reason TEXT,
     queueNumber INT,
     estimatedTime TIME,
@@ -208,6 +211,7 @@ CREATE TABLE IF NOT EXISTS File (
 -- Create TestResult table
 CREATE TABLE IF NOT EXISTS TestResult (
     resultId INT AUTO_INCREMENT PRIMARY KEY,
+    appointmentId INT,
     recordId INT,
     serviceId INT,
     technicianId INT,
@@ -224,7 +228,8 @@ CREATE TABLE IF NOT EXISTS TestResult (
     FOREIGN KEY (serviceId) REFERENCES Service(serviceId),
     FOREIGN KEY (technicianId) REFERENCES LabTechnician(technicianId),
     FOREIGN KEY (roomId) REFERENCES Room(roomId),
-    FOREIGN KEY (resultFileId) REFERENCES File(fileId)
+    FOREIGN KEY (resultFileId) REFERENCES File(fileId),
+    FOREIGN KEY (appointmentId) REFERENCES Appointment(appointmentId)
 );
 
 -- Create Medication table

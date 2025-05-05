@@ -1,4 +1,4 @@
-import db from '../ultis/db.js';
+import db from '../../ultis/db.js';
 
 export default {
     async getDashboardStats() {
@@ -155,13 +155,11 @@ export default {
                         .andOn('Appointment.appointmentDate', '>=', db.raw('DATE_FORMAT(NOW(), "%Y-%m-01")'))
                         .andOn('Appointment.status', '=', db.raw('"completed"'));
                 })
-                .leftJoin('Review', 'Appointment.appointmentId', '=', 'Review.appointmentId')
                 .select(
                     'Doctor.doctorId',
                     'User.fullName',
                     'Specialty.name as specialtyName',
                     db.raw('COUNT(DISTINCT Appointment.appointmentId) as appointmentCount'),
-                    db.raw('COALESCE(AVG(Review.rating), 0) as averageRating')
                 )
                 .where('User.accountStatus', '=', 'active')
                 .groupBy('Doctor.doctorId', 'User.fullName', 'Specialty.name')

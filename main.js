@@ -8,6 +8,7 @@ import moment from 'moment';
 import session from 'express-session';
 import fileUpload from 'express-fileupload';
 import { authAdmin, authDoctor, authLabtech, authPatient } from './middlewares/auth.route.js';
+import { formatDate, formatDay, times, arrayFind, removeFilterUrl, eq, lte, subtract, or } from './views/helpers/hbs_helpers.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
@@ -38,9 +39,7 @@ app.engine('hbs', engine({
             this._sections[name] = options.fn(this);
             return null;
         },
-        eq: function(v1, v2) {
-            return v1 === v2;
-        },
+        eq: eq,
         ne: function(v1, v2) {
             return v1 !== v2;
         },
@@ -50,29 +49,20 @@ app.engine('hbs', engine({
         gt: function(v1, v2) {
             return v1 > v2;
         },
-        lte: function(v1, v2) {
-            return v1 <= v2;
-        },
+        lte: lte,
         gte: function(v1, v2) {
             return v1 >= v2;
         },
         and: function() {
             return Array.prototype.slice.call(arguments, 0, -1).every(Boolean);
         },
-        or: function() {
-            return Array.prototype.slice.call(arguments, 0, -1).some(Boolean);
-        },
-        formatDate: function(date, format) {
-            if (!date) return '';
-
-            // Kiểm tra xem date có phải là đối tượng Date hay không
-            try {
-                return moment(date).format(format || 'DD/MM/YYYY');
-            } catch (error) {
-                console.error('Error formatting date:', error);
-                return 'Invalid date';
-            }
-        },
+        or: or,
+        formatDate: formatDate,
+        formatDay: formatDay,
+        times: times,
+        arrayFind: arrayFind,
+        removeFilterUrl: removeFilterUrl,
+        subtract: subtract,
         formatDateTime: function(date, format) {
             if (!date) return '';
 
@@ -130,9 +120,6 @@ app.engine('hbs', engine({
         },
         add: function(a, b) {
             return a + b;
-        },
-        subtract: function(a, b) {
-            return a - b;
         },
         multiply: function(a, b) {
             return a * b;

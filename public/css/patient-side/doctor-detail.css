@@ -1,0 +1,407 @@
+.doctor-detail-page {
+  padding: 40px 0;
+}
+
+/* Doctor Header */
+.doctor-header {
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  margin-bottom: 30px;
+}
+
+.doctor-image {
+  width: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.doctor-image img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.doctor-info {
+  padding-left: 15px;
+}
+
+.doctor-info h1 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+  font-weight: 700;
+}
+
+.specialties {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.specialty-badge {
+  background-color: #e8f4fd;
+  color: #3498db;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+}
+
+.specialty-badge i {
+  margin-right: 5px;
+}
+
+.doctor-stats {
+  display: flex;
+  gap: 25px;
+  margin-bottom: 20px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  color: #34495e;
+}
+
+.stat-item i {
+  margin-right: 8px;
+  color: #3498db;
+}
+
+.doctor-contact {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+}
+
+.contact-item i {
+  width: 20px;
+  margin-right: 10px;
+  color: #7f8c8d;
+}
+
+.doctor-actions .btn {
+  padding: 10px 20px;
+}
+
+/* Tabs */
+.doctor-tabs {
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.nav-tabs {
+  background-color: #f9f9f9;
+  border-bottom: none;
+  padding: 0 15px;
+}
+
+.nav-tabs .nav-link {
+  border: none;
+  color: #7f8c8d;
+  font-weight: 600;
+  padding: 15px 20px;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.nav-tabs .nav-link:hover {
+  color: #3498db;
+  border-color: #3498db;
+}
+
+.nav-tabs .nav-link.active {
+  color: #3498db;
+  background-color: transparent;
+  border-color: #3498db;
+}
+
+.tab-content {
+  padding: 30px;
+}
+
+.tab-section {
+  margin-bottom: 30px;
+}
+
+.tab-section h3 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+  font-weight: 600;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+/* Schedule Styles */
+.schedule-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.schedule-day {
+  flex: 1;
+  min-width: 250px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.day-header {
+  background-color: #3498db;
+  color: white;
+  padding: 10px 15px;
+  text-align: center;
+}
+
+.day-header h4 {
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+
+.time-slots {
+  padding: 15px;
+}
+
+.time-slot {
+  background-color: white;
+  border-radius: 5px;
+  padding: 10px 15px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.time-slot:last-child {
+  margin-bottom: 0;
+}
+
+.time-slot .time {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.time-slot .status {
+  font-size: 0.9rem;
+}
+
+.status-available {
+  border-left: 4px solid #2ecc71;
+}
+
+.status-available .status {
+  color: #2ecc71;
+}
+
+.status-booked {
+  border-left: 4px solid #e74c3c;
+}
+
+.status-booked .status {
+  color: #e74c3c;
+}
+
+.no-slots {
+  text-align: center;
+  padding: 15px;
+  color: #7f8c8d;
+}
+
+/* Service Cards */
+.service-card {
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.service-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.service-image {
+  position: relative;
+  height: 150px;
+  overflow: hidden;
+}
+
+.service-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.service-type {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 3px 10px;
+  text-transform: capitalize;
+  font-size: 0.8rem;
+}
+
+.service-info {
+  padding: 15px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.service-info h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #2c3e50;
+}
+
+.service-info .description {
+  color: #7f8c8d;
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+  flex-grow: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.service-info .price {
+  font-size: 0.95rem;
+  margin-bottom: 15px;
+  color: #16a085;
+}
+
+/* Reviews */
+.reviews-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.average-rating {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.rating-number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2c3e50;
+  line-height: 1;
+}
+
+.stars {
+  margin: 5px 0;
+}
+
+.stars i {
+  color: #f1c40f;
+  font-size: 1.2rem;
+}
+
+.review-count {
+  font-size: 0.9rem;
+  color: #7f8c8d;
+}
+
+.reviews-list {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.review-item {
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.reviewer .name {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.reviewer .date {
+  font-size: 0.85rem;
+  color: #7f8c8d;
+  margin-left: 10px;
+}
+
+.review-content p {
+  margin-bottom: 0;
+  color: #34495e;
+}
+
+/* Empty States */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #7f8c8d;
+}
+
+.empty-icon {
+  font-size: 50px;
+  color: #bdc3c7;
+  margin-bottom: 15px;
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+  .doctor-header .row {
+    flex-direction: column;
+  }
+  
+  .doctor-image {
+    margin-bottom: 20px;
+    max-width: 200px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .doctor-info {
+    padding-left: 0;
+  }
+  
+  .doctor-stats {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .schedule-wrapper {
+    flex-direction: column;
+  }
+  
+  .tab-section h3 {
+    text-align: center;
+  }
+  
+  .reviews-header {
+    flex-direction: column;
+    gap: 15px;
+  }
+}
