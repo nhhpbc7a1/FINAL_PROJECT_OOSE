@@ -1,0 +1,466 @@
+{{!-- Link to the same CSS file, assuming styles are reusable --}}
+<link rel="stylesheet" href="/public/css/admin-side/doctor-list.css">
+
+<div class="patient-list-container"> {{!-- Consider renaming class to labtech-list-container for clarity --}}
+    <div class="filters-bar">
+        <div class="filters-group">
+            <select class="form-control form-control-sm" id="specialtyFilter">
+                <option value="">All Specialties</option>
+                {{#each specialties}}
+                <option value="{{specialtyId}}">{{name}}</option>
+                {{/each}}
+            </select>
+
+            <select class="form-control form-control-sm" id="statusFilter">
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="pending">Pending</option> {{!-- Added pending status based on User schema --}}
+            </select>
+        </div>
+
+        <div>
+            <div class="search-box">
+                <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="Search technicians...">
+                <i class="fas fa-search"></i>
+            </div>
+        </div>
+
+        <a href="/admin/manage_labtech/add" class="add-new-btn">
+            <i class="fas fa-plus"></i> Add New Technician
+        </a>
+    </div>
+
+    <!-- Lab Technician Table -->
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">Technician</th>
+                    <th scope="col">Specialization</th> {{!-- Changed from ID/License --}}
+                    <th scope="col">Assigned Specialty</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody id="labtech-table-body">
+                {{#each labTechnicians}}
+                <tr class="labtech-row" {{!-- Changed class --}}
+                    data-id="{{technicianId}}" {{!-- Changed ID --}}
+                    data-specialty="{{specialtyId}}"
+                    data-status="{{toLowerCase accountStatus}}"
+                    data-name="{{toLowerCase fullName}}"
+                    data-email="{{toLowerCase email}}"
+                    data-specialization="{{toLowerCase specialization}}"> {{!-- Added specialization data --}}
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-circle">    
+                                <span>{{initials}}</span>
+                            </div>
+                            <div class="ml-3">
+                                <div class="patient-name">{{fullName}}</div> {{!-- Keep class name or change to technician-name --}}
+                                <div class="patient-details">{{email}} • {{phoneNumber}}</div> {{!-- Keep class name or change --}}
+                            </div>
+                        </div>
+                    </td>
+                    <td>{{#if specialization}}{{specialization}}{{else}}N/A{{/if}}</td> {{!-- Display specialization or N/A --}}
+                    <td>{{specialtyName}}</td>
+                    <td>
+                        <span class="status-badge status-{{toLowerCase accountStatus}}">{{accountStatus}}</span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            {{!-- Optional View button if needed --}}
+                            {{!-- <a href="/admin/manage_labtech/view/{{technicianId}}" class="btn btn-icon" title="View Profile">
+                                <i class="fas fa-eye"></i>
+                            </a> --}}
+                            <a href="/admin/manage_labtech/edit/{{technicianId}}" class="btn btn-icon" title="Edit Technician">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="#" class="btn btn-icon delete-labtech" title="Delete Technician" data-toggle="modal" data-target="#deleteModal" data-id="{{technicianId}}"> {{!-- Changed class and ID --}}
+                                <i class="fas fa-trash-alt text-danger"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {{/each}}
+                <tr id="no-results-row" style="display: none;">
+                    <td colspan="5"> {{!-- Changed colspan to 5 --}}
+                        <div class="empty-state">
+                            <i class="fas fa-search"></i>
+                            <h5>No technicians found</h5> {{!-- Changed text --}}
+                            <p>No technicians match your search criteria. Try adjusting your filters.</p> {{!-- Changed text --}}
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-container">
+        <div class="page-info">
+            Showing <span id="showing-start">1</span> to <span id="showing-end">10</span> of <span id="total-items">{{totalLabTechnicians}}</span> technicians {{!-- Changed text and variable --}}
+        </div>
+        <ul class="pagination" id="pagination">
+            <!-- Pagination will be generated by JavaScript -->
+        </ul>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this technician? This action cannot be undone.</p> {{!-- Changed text --}}
+                <p class="text-danger font-weight-bold">Warning: This will also deactivate the technician's user account.</p> {{!-- Changed text --}}
+                <p id="labtechToDeleteInfo" class="mt-3 font-weight-bold"></p> {{!-- Changed ID --}}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{#if error}}
+<div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+    {{error}}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">×</span>
+    </button>
+</div>
+{{/if}}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Lưu trữ tất cả dữ liệu kỹ thuật viên
+        const allLabTechnicians = Array.from(document.querySelectorAll('.labtech-row')); // Changed variable and selector
+
+        // Cấu hình phân trang
+        const itemsPerPage = 10;
+        let currentPage = 1;
+        let filteredLabTechnicians = [...allLabTechnicians]; // Changed variable
+
+        // Function to show alerts (same as before)
+        function showAlert(type, message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.role = 'alert';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            `;
+            const container = document.querySelector('.content-card') || document.querySelector('.patient-list-container'); // Fallback container
+            if (container) {
+                 container.insertBefore(alertDiv, container.firstChild);
+                 setTimeout(() => {
+                    alertDiv.classList.remove('show');
+                    setTimeout(() => alertDiv.remove(), 150);
+                }, 5000);
+            } else {
+                console.error("Alert container not found.")
+            }
+
+        }
+
+        // DOM elements
+        const specialtyFilter = document.getElementById('specialtyFilter');
+        const statusFilter = document.getElementById('statusFilter');
+        const searchInput = document.getElementById('searchInput');
+        const labtechTableBody = document.getElementById('labtech-table-body'); // Changed ID
+        const noResultsRow = document.getElementById('no-results-row');
+        const pagination = document.getElementById('pagination');
+        const showingStart = document.getElementById('showing-start');
+        const showingEnd = document.getElementById('showing-end');
+        const totalItems = document.getElementById('total-items');
+
+        // Apply filter khi người dùng thay đổi
+        specialtyFilter.addEventListener('change', applyFilters);
+        statusFilter.addEventListener('change', applyFilters);
+
+        // Tìm kiếm theo thời gian thực khi người dùng nhập
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(applyFilters, 300);
+        });
+
+        // Xử lý xóa kỹ thuật viên
+        let technicianIdToDelete = null; // Changed variable name
+        const confirmDeleteBtn = document.getElementById('confirmDelete');
+
+        document.querySelectorAll('.delete-labtech').forEach(btn => { // Changed selector
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                technicianIdToDelete = this.getAttribute('data-id'); // Changed variable name
+
+                // Find the technician row to get the name
+                const labtechRow = document.querySelector(`.labtech-row[data-id="${technicianIdToDelete}"]`); // Changed selector
+                if (labtechRow) {
+                    const techName = labtechRow.querySelector('.patient-name').textContent; // Assuming class name is kept
+                    const techDetails = labtechRow.querySelector('.patient-details').textContent.split('•'); // Assuming class name is kept
+                    const techEmail = techDetails[0] ? techDetails[0].trim() : 'N/A';
+                    const techSpecialty = labtechRow.cells[2].textContent; // Specialty is in the 3rd cell (index 2)
+
+                    // Update the modal with technician info
+                    document.getElementById('labtechToDeleteInfo').innerHTML = `
+                        Technician: ${techName}<br>
+                        Email: ${techEmail}<br>
+                        Assigned Specialty: ${techSpecialty}
+                    `; // Changed ID and text
+                }
+            });
+        });
+
+        confirmDeleteBtn.addEventListener('click', function() {
+            if (technicianIdToDelete) { // Changed variable name
+                // Show loading state
+                confirmDeleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Deleting...';
+                confirmDeleteBtn.disabled = true;
+
+                // Send AJAX request to delete the technician
+                fetch(`/admin/manage_labtech/delete/${technicianIdToDelete}`, { // Changed URL and variable
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Reset button state
+                    confirmDeleteBtn.innerHTML = 'Delete';
+                    confirmDeleteBtn.disabled = false;
+
+                    // Close the modal
+                    $('#deleteModal').modal('hide');
+
+                    if (data.success) {
+                        // Show success message
+                        showAlert('success', data.message || 'Technician deleted successfully.'); // Changed default text
+
+                        // Remove the row from the table
+                        const labtechRow = document.querySelector(`.labtech-row[data-id="${technicianIdToDelete}"]`); // Changed selector and variable
+                        if (labtechRow) {
+                            labtechRow.remove();
+
+                             // Remove from the original list as well to keep counts correct
+                            const indexInAll = allLabTechnicians.findIndex(row => row.getAttribute('data-id') === technicianIdToDelete);
+                            if (indexInAll > -1) {
+                                allLabTechnicians.splice(indexInAll, 1);
+                            }
+
+                            // Update the filtered technicians list
+                            filteredLabTechnicians = filteredLabTechnicians.filter(row =>
+                                row.getAttribute('data-id') !== technicianIdToDelete // Changed variable
+                            );
+
+                            // Update pagination and display
+                            currentPage = 1; // Go back to first page after delete might be confusing, maybe stay or adjust
+                            updateDisplay(); // This will recalculate pagination based on filtered list
+                        }
+                    } else {
+                        // Show error message
+                        showAlert('danger', data.message || 'Error deleting technician.'); // Changed default text
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting technician:', error); // Changed text
+
+                    // Reset button state
+                    confirmDeleteBtn.innerHTML = 'Delete';
+                    confirmDeleteBtn.disabled = false;
+
+                    // Close the modal
+                    $('#deleteModal').modal('hide');
+
+                    // Show error message
+                    let errorMessage = 'An error occurred while deleting the technician. Please try again later.'; // Changed text
+
+                    showAlert('danger', errorMessage);
+                });
+            }
+        });
+
+        // Hàm filter dữ liệu
+        function applyFilters() {
+            const specialty = specialtyFilter.value.toLowerCase();
+            const status = statusFilter.value.toLowerCase();
+            const searchTerm = searchInput.value.trim().toLowerCase();
+
+            // Filter dữ liệu kỹ thuật viên dựa trên các tiêu chí
+            filteredLabTechnicians = allLabTechnicians.filter(row => { // Changed variable
+                // Filter theo specialty
+                if (specialty && row.getAttribute('data-specialty') !== specialty) {
+                    return false;
+                }
+
+                // Filter theo status
+                if (status && row.getAttribute('data-status') !== status) {
+                    return false;
+                }
+
+                // Filter theo từ khóa tìm kiếm
+                if (searchTerm) {
+                    const techName = row.getAttribute('data-name') || '';
+                    const techEmail = row.getAttribute('data-email') || '';
+                    const techSpecialization = row.getAttribute('data-specialization') || ''; // Added specialization search
+
+                    return techName.includes(searchTerm) ||
+                           techEmail.includes(searchTerm) ||
+                           techSpecialization.includes(searchTerm); // Added specialization search
+                }
+
+                return true;
+            });
+
+            // Reset về trang đầu tiên khi filter
+            currentPage = 1;
+
+            // Cập nhật hiển thị
+            updateDisplay();
+        }
+
+        // Cập nhật hiển thị bảng và phân trang
+        function updateDisplay() {
+            // Ẩn tất cả các hàng kỹ thuật viên
+            allLabTechnicians.forEach(row => { // Changed variable
+                row.style.display = 'none';
+            });
+
+            // Hiển thị thông báo "Không tìm thấy" nếu không có kết quả
+            if (filteredLabTechnicians.length === 0) { // Changed variable
+                noResultsRow.style.display = 'table-row';
+
+                // Cập nhật thông tin phân trang
+                showingStart.textContent = '0';
+                showingEnd.textContent = '0';
+                totalItems.textContent = '0'; // Display 0 instead of original total
+
+                // Xóa phân trang
+                pagination.innerHTML = '';
+                return;
+            } else {
+                noResultsRow.style.display = 'none';
+            }
+
+            // Tính toán phân trang
+            const totalFilteredItems = filteredLabTechnicians.length; // Changed variable
+            const totalPages = Math.ceil(totalFilteredItems / itemsPerPage);
+
+             // Adjust current page if it's now out of bounds after filtering/deletion
+            if (currentPage > totalPages) {
+                currentPage = totalPages > 0 ? totalPages : 1;
+            }
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, totalFilteredItems);
+
+            // Hiển thị các hàng cho trang hiện tại
+            for (let i = startIndex; i < endIndex; i++) {
+                filteredLabTechnicians[i].style.display = 'table-row'; // Changed variable
+            }
+
+            // Cập nhật thông tin phân trang
+            showingStart.textContent = totalFilteredItems ? startIndex + 1 : 0;
+            showingEnd.textContent = endIndex;
+            totalItems.textContent = totalFilteredItems; // Update total to filtered count
+
+            // Cập nhật UI phân trang
+            updatePagination();
+        }
+
+        // Cập nhật UI phân trang
+        function updatePagination() {
+            // Tính tổng số trang
+            const totalPages = Math.ceil(filteredLabTechnicians.length / itemsPerPage); // Changed variable
+
+            // Tạo HTML cho phân trang
+            let paginationHTML = '';
+
+            // Nút Previous
+            paginationHTML += `
+                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" data-page="${currentPage - 1}" ${currentPage === 1 ? 'aria-disabled="true"' : ''}>Previous</a>
+                </li>
+            `;
+
+            // Logic for generating page number links (simplified example)
+             // Determine page range to display (e.g., show max 5 page numbers around current)
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, currentPage + 2);
+
+            if (currentPage <= 3) {
+                endPage = Math.min(totalPages, 5);
+            }
+            if (currentPage >= totalPages - 2) {
+                startPage = Math.max(1, totalPages - 4);
+            }
+
+            // Ellipsis at the beginning?
+            if (startPage > 1) {
+                paginationHTML += `<li class="page-item"><a class="page-link" href="#" data-page="1">1</a></li>`;
+                if (startPage > 2) {
+                    paginationHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                }
+            }
+
+            // Page number links
+            for (let i = startPage; i <= endPage; i++) {
+                paginationHTML += `
+                    <li class="page-item ${i === currentPage ? 'active' : ''}">
+                        <a class="page-link" href="#" data-page="${i}">${i}</a>
+                    </li>
+                `;
+            }
+
+             // Ellipsis at the end?
+            if (endPage < totalPages) {
+                 if (endPage < totalPages - 1) {
+                    paginationHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                }
+                paginationHTML += `<li class="page-item"><a class="page-link" href="#" data-page="${totalPages}">${totalPages}</a></li>`;
+            }
+
+
+            // Nút Next
+            paginationHTML += `
+                <li class="page-item ${currentPage === totalPages || totalPages === 0 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" data-page="${currentPage + 1}" ${currentPage === totalPages || totalPages === 0 ? 'aria-disabled="true"' : ''}>Next</a>
+                </li>
+            `;
+
+            // Cập nhật HTML phân trang
+            pagination.innerHTML = paginationHTML;
+
+            // Thêm event listeners cho các nút phân trang
+            document.querySelectorAll('.pagination .page-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const pageNum = this.getAttribute('data-page');
+                    // Chỉ xử lý khi nút không bị disabled và có data-page
+                    if (!this.parentElement.classList.contains('disabled') && pageNum) {
+                        currentPage = parseInt(pageNum);
+                        updateDisplay();
+                         // Optional: Scroll to top of table after page change
+                        const tableTop = document.querySelector('.table-responsive');
+                         if(tableTop) tableTop.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            });
+        }
+
+        // Khởi tạo hiển thị ban đầu
+        updateDisplay();
+    });
+</script>

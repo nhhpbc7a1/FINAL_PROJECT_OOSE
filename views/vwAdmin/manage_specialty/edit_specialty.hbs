@@ -1,0 +1,197 @@
+<link rel="stylesheet" href="/public/css/admin-side/add-doctor.css"> {{!-- Reuse form styling --}}
+
+<div class="content-header">
+    <div>
+        <h1 class="page-title">{{pageTitle}}</h1>
+        <p class="page-subtitle">Update the specialty details below.</p>
+    </div>
+    <div class="header-actions">
+        <a href="/admin/manage_specialty" class="btn btn-outline">
+            <i class="fas fa-arrow-left"></i> Back to Specialties
+        </a>
+    </div>
+</div>
+
+{{#if error}}
+<div class="alert alert-danger alert-dismissible fade show">
+    <i class="fas fa-exclamation-circle"></i>
+    <span>{{error}}</span>
+    <button type="button" class="close" data-dismiss="alert">×</button>
+</div>
+{{/if}}
+
+{{#if flashMessage}}
+<div class="alert alert-{{flashMessage.type}} alert-dismissible fade show">
+    <i class="fas fa-{{#if (eq flashMessage.type 'success')}}check-circle{{else}}exclamation-circle{{/if}}"></i>
+    <span>{{flashMessage.message}}</span>
+    <button type="button" class="close" data-dismiss="alert">×</button>
+</div>
+{{/if}}
+
+<div class="card form-card">
+    <div class="card-body">
+        <form id="specialtyForm" action="/admin/manage_specialty/update/{{specialty.specialtyId}}" method="POST" novalidate>
+            <input type="hidden" id="specialtyId" value="{{specialty.specialtyId}}"> {{!-- For JS --}}
+            <div class="form-section">
+                 <h3 class="section-title">Specialty Details</h3>
+
+                 <div class="form-group">
+                    <label for="name">Specialty Name <span class="required">*</span></label>
+                    <input type="text" class="form-control" id="name" name="name" value="{{specialty.name}}" required aria-describedby="name-feedback">
+                    <small class="form-text text-muted">The official name of the specialty.</small>
+                     <div id="name-feedback"></div>
+                    <div class="invalid-feedback">Please enter the specialty name.</div>
+                </div>
+
+                 <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="3">{{specialty.description}}</textarea>
+                    <small class="form-text text-muted">A brief description of the specialty (optional).</small>
+                </div>
+
+                 <div class="form-row">
+                     {{!-- Hospital Selection - Uncomment and adapt if needed
+                     <div class="form-group col-md-6">
+                        <label for="hospitalId">Hospital</label>
+                        <select class="form-control" id="hospitalId" name="hospitalId">
+                            <option value="">-- Select Hospital --</option>
+                            {{#each hospitals}}
+                            <option value="{{hospitalId}}" {{#if (eq ../specialty.hospitalId hospitalId)}}selected{{/if}}>{{name}}</option>
+                            {{/each}}
+                        </select>
+                     </div>
+                    --}}
+
+                      <div class="form-group col-md-6">
+                        <label for="headDoctorId">Head Doctor</label>
+                        <select class="form-control" id="headDoctorId" name="headDoctorId">
+                            <option value="">-- Assign Head Doctor (Optional) --</option>
+                            {{#each doctors}}
+                            {{!-- Check against current specialty's headDoctorId --}}
+                            <option value="{{doctorId}}" {{#if (eq ../specialty.headDoctorId doctorId)}}selected{{/if}}>{{fullName}} (ID: {{doctorId}})</option>
+                            {{/each}}
+                        </select>
+                        <small class="form-text text-muted">Select an active doctor to lead this specialty.</small>
+                    </div>
+                 </div>
+             </div>
+
+
+            <div class="form-actions">
+                <button type="button" class="btn btn-outline-secondary" onclick="location.href='/admin/manage_specialty'">
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+     document.addEventListener('DOMContentLoaded', function() {
+         const specialtyForm = document.getElementById('specialtyForm');
+         const nameInput = document.getElementById('name');
+         const nameFeedbackEl = document.getElementById('name-feedback');
+         const specialtyIdInput = document.getElementById('specialtyId'); // Hidden input
+
+         const originalName = nameInput.value.trim();
+         let isNameAvailable = true; // Assume available initially
+         let nameCheckTimeout = null;
+
+         const checkNameAvailability = async () => {
+             const name = nameInput.value.trim();
+             const excludeId = specialtyIdInput.value; // Get the ID to exclude
+             nameFeedbackEl.innerHTML = '';
+             nameInput.classList.remove('is-invalid', 'is-valid');
+
+             if (!name) {
+                 isNameAvailable = false; // Cannot submit empty name
+                 return;
+             }
+
+             // If name hasn't changed, it's valid
+             if (name === originalName) {
+                  isNameAvailable = true;
+                  nameInput.classList.add('is-valid');
+                  return;
+             }
+
+              nameFeedbackEl.innerHTML = '<small class="text-muted">Checking name...</small>';
+
+             try {
+                 // Include excludeId in the query
+                 const response = await fetch(`/admin/manage_specialty/api/check-name?name=${encodeURIComponent(name)}&excludeId=${excludeId}`);
+                 const data = await response.json();
+
+                  if (response.ok) {
+                    if (data.isUnique) {
+                         nameFeedbackEl.innerHTML = '<small class="text-success">Name is available!</small>';
+                         nameInput.classList.add('is-valid');
+                         isNameAvailable = true;
+                     } else {
+                         nameFeedbackEl.innerHTML = '<small class="text-danger">This specialty name already exists.</small>';
+                         nameInput.classList.add('is-invalid');
+                         isNameAvailable = false;
+                     }
+                 } else {
+                     console.error("Name check failed:", data.message);
+                     nameFeedbackEl.innerHTML = '<small class="text-warning">Could not verify name uniqueness.</small>';
+                      // Allow submission even if check fails, rely on server validation
+                     isNameAvailable = true;
+                 }
+             } catch (error) {
+                 console.error('Error checking name:', error);
+                  nameFeedbackEl.innerHTML = '<small class="text-warning">Network error checking name.</small>';
+                 // Allow submission even if check fails, rely on server validation
+                  isNameAvailable = true;
+             }
+         };
+
+         // Check name on blur
+         nameInput.addEventListener('blur', checkNameAvailability);
+
+          // Optional: Check name while typing
+         nameInput.addEventListener('input', () => {
+             clearTimeout(nameCheckTimeout);
+             nameInput.classList.remove('is-invalid', 'is-valid');
+             nameFeedbackEl.innerHTML = '';
+             isNameAvailable = false; // Reset
+             nameCheckTimeout = setTimeout(checkNameAvailability, 1000);
+         });
+
+
+         // Form Submission
+         specialtyForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+
+             await checkNameAvailability(); // Final check
+
+             const isFormValid = specialtyForm.checkValidity();
+             specialtyForm.classList.add('was-validated');
+
+
+             if (isFormValid && isNameAvailable) {
+                 console.log('Form is valid, submitting...');
+                  const submitButton = specialtyForm.querySelector('button[type="submit"]');
+                  if(submitButton) {
+                     submitButton.disabled = true;
+                     submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
+                  }
+                 specialtyForm.submit();
+             } else {
+                 console.log('Form validation failed.');
+                  let firstInvalidField = specialtyForm.querySelector(':invalid');
+                  if (!isNameAvailable && (!firstInvalidField || firstInvalidField !== nameInput)) {
+                      firstInvalidField = nameInput;
+                  }
+                  if (firstInvalidField) {
+                     firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                     firstInvalidField.focus({ preventScroll: true });
+                 }
+             }
+         });
+     });
+</script>

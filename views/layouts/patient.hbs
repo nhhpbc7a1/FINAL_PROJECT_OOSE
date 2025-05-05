@@ -11,15 +11,17 @@
     {{!-- swiperjs --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <link rel="stylesheet" href="/public/css/patient.css">
+    <link rel="stylesheet" href="/public/css/patient-side/patient.css">
+    {{{_sections.css}}}
 </head>
 <body>
-    {{!-- <header>
+    <header>
        <div class="container_upHeader" style="background-color: black">H</div>
        <div class="container_downHeader mt-3">
-            <div class="logo">
-                <img src="logo.png" alt="Logo">
-            </div>
+            <a class="logo d-flex" href="/">     
+                    <img src="/public/images/logo.png" alt="Logo">
+                    <div class="logo-text">EternalCare</div>
+            </a>
             <div class="search-bar">
                 <input type="text" placeholder="Search...">
                 <button type="submit" class="search-button">
@@ -27,9 +29,15 @@
                 </button>
             </div>
             <div class="actions">
-                <button class="sign-in">Sign in</button>
-                <button class="sign-up">Sign up</button>
-                <button class="book-appointment">Book Appointment</button>
+                <button class="sign-in">
+                    <a href="/account/login" class="btn-a">Sign in</a>
+                </button>
+                <button class="sign-up">
+                    <a href="/account/signup" class="btn-a" style="color:#0d47a1">Sign up</a>
+                </button>
+                <button class="book-appointment">
+                    <a href="/patient/book-appointment" class="btn-a">Book Appointment</a>
+                </button>
             </div>
         </div>
         <nav style="background-color: white;" class="mt-2">
@@ -58,15 +66,18 @@
                 </ul>
             </div>
         </nav>
-    </header> --}}
+    </header>
     
-    <main>
+    <main class="container-fluid">
         {{{body}}}
     </main>
-    {{!-- <footer>
+     <footer>
         <div class="footer-top">
             <div class="footer-logo">
-                <img src="logo-footer.png" alt="Logo Bệnh viện">
+                <a class="logo d-flex" href="/">     
+                    <img src="/public/images/logo.png" alt="Logo">
+                    <div class="logo-text">EternalCare</div>
+                </a>
             </div>
             <div class="footer-policy">
                 <h5>Policy</h5>
@@ -100,7 +111,7 @@
                 <a href="#">Contact Us</a>
             </div>
         </div>
-    </footer> --}}
-    
+    </footer> 
+    {{{_sections.js}}}
 </body>
 </html>

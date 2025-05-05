@@ -1,0 +1,140 @@
+<link rel="stylesheet" href="/public/css/admin-side/add-doctor.css"> {{!-- Reuse form styling --}}
+
+<div class="content-header">
+     <div><h1 class="page-title">{{pageTitle}}</h1><p class="page-subtitle">Update the room details below.</p></div>
+    <div class="header-actions"><a href="/admin/manage_room" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back to Rooms</a></div>
+</div>
+
+
+<div class="card form-card">
+    <div class="card-body">
+        <form id="roomForm" action="/admin/manage_room/update/{{room.roomId}}" method="POST" novalidate>
+             <input type="hidden" id="roomId" value="{{room.roomId}}"> {{!-- For JS --}}
+            <div class="form-section">
+                 <h3 class="section-title">Room Details</h3>
+
+                 <div class="form-row">
+                     <div class="form-group col-md-6">
+                        <label for="roomNumber">Room Number/Name <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="roomNumber" name="roomNumber" value="{{room.roomNumber}}" required aria-describedby="number-feedback">
+                        <small class="form-text text-muted">Unique identifier for the room.</small>
+                         <div id="number-feedback"></div>
+                        <div class="invalid-feedback">Please enter the room number/name.</div>
+                    </div>
+                      <div class="form-group col-md-6">
+                        <label for="roomType">Room Type <span class="required">*</span></label>
+                        <select class="form-control" id="roomType" name="roomType" required>
+                            <option value="" disabled>Select Type</option>
+                            <option value="examination" {{#if (eq room.roomType "examination")}}selected{{/if}}>Examination</option>
+                            <option value="operation" {{#if (eq room.roomType "operation")}}selected{{/if}}>Operation</option>
+                            <option value="laboratory" {{#if (eq room.roomType "laboratory")}}selected{{/if}}>Laboratory</option>
+                            <option value="consultation" {{#if (eq room.roomType "consultation")}}selected{{/if}}>Consultation</option>
+                            <option value="emergency" {{#if (eq room.roomType "emergency")}}selected{{/if}}>Emergency</option>
+                            <option value="general" {{#if (eq room.roomType "general")}}selected{{/if}}>General</option>
+                        </select>
+                         <div class="invalid-feedback">Please select a room type.</div>
+                    </div>
+                </div>
+
+                 <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="specialtyId">Assigned Specialty</label>
+                        <select class="form-control" id="specialtyId" name="specialtyId">
+                            <option value="">-- General / None --</option> {{!-- Allow unsetting --}}
+                            {{#each specialties}}
+                            <option value="{{specialtyId}}" {{#if (eq ../room.specialtyId specialtyId)}}selected{{/if}}>{{name}}</option>
+                            {{/each}}
+                        </select>
+                         <small class="form-text text-muted">Assign to a specialty if applicable.</small>
+                    </div>
+                     <div class="form-group col-md-3">
+                        <label for="capacity">Capacity</label>
+                        <input type="number" min="0" class="form-control" id="capacity" name="capacity" value="{{room.capacity}}">
+                        <small class="form-text text-muted">Max occupancy (optional).</small>
+                        <div class="invalid-feedback">Capacity must be a non-negative number.</div>
+                    </div>
+                    <div class="form-group col-md-3">
+                         <label for="status">Status <span class="required">*</span></label>
+                         <select class="form-control" id="status" name="status" required>
+                             <option value="available" {{#if (eq room.status "available")}}selected{{/if}}>Available</option>
+                             <option value="occupied" {{#if (eq room.status "occupied")}}selected{{/if}}>Occupied</option>
+                             <option value="maintenance" {{#if (eq room.status "maintenance")}}selected{{/if}}>Maintenance</option>
+                         </select>
+                          <div class="invalid-feedback">Please select a status.</div>
+                     </div>
+                </div>
+
+                 <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="3">{{room.description}}</textarea>
+                    <small class="form-text text-muted">Notes about the room's equipment or purpose (optional).</small>
+                </div>
+             </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn btn-outline-secondary" onclick="location.href='/admin/manage_room'">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+     document.addEventListener('DOMContentLoaded', function() {
+         const roomForm = document.getElementById('roomForm');
+         const roomNumberInput = document.getElementById('roomNumber');
+         const numberFeedbackEl = document.getElementById('number-feedback');
+         const roomIdInput = document.getElementById('roomId'); // Hidden input
+         const capacityInput = document.getElementById('capacity');
+
+         const originalNumber = roomNumberInput.value.trim();
+         let isNumberAvailable = true; let numberCheckTimeout = null;
+
+         const checkNumberAvailability = async () => {
+             const number = roomNumberInput.value.trim();
+             const excludeId = roomIdInput.value;
+             numberFeedbackEl.innerHTML = ''; roomNumberInput.classList.remove('is-invalid', 'is-valid');
+             if (!number) { isNumberAvailable = false; return; }
+             if (number.toLowerCase() === originalNumber.toLowerCase()) { isNumberAvailable = true; roomNumberInput.classList.add('is-valid'); return; } // Skip check
+             numberFeedbackEl.innerHTML = '<small class="text-muted">Checking number...</small>';
+             try {
+                 const response = await fetch(`/admin/manage_room/api/check-number?roomNumber=${encodeURIComponent(number)}&excludeId=${excludeId}`); // API path
+                 const data = await response.json();
+                  if (response.ok) {
+                     if (data.isUnique) { numberFeedbackEl.innerHTML = '<small class="text-success">Number is available!</small>'; roomNumberInput.classList.add('is-valid'); isNumberAvailable = true; }
+                     else { numberFeedbackEl.innerHTML = '<small class="text-danger">This room number already exists.</small>'; roomNumberInput.classList.add('is-invalid'); isNumberAvailable = false; }
+                 } else { numberFeedbackEl.innerHTML = '<small class="text-warning">Could not verify number uniqueness.</small>'; isNumberAvailable = true; }
+             } catch (error) { numberFeedbackEl.innerHTML = '<small class="text-warning">Network error checking number.</small>'; isNumberAvailable = true; }
+         };
+
+         roomNumberInput.addEventListener('blur', checkNumberAvailability);
+         roomNumberInput.addEventListener('input', () => { clearTimeout(numberCheckTimeout); roomNumberInput.classList.remove('is-invalid', 'is-valid'); numberFeedbackEl.innerHTML = ''; isNumberAvailable = false; numberCheckTimeout = setTimeout(checkNumberAvailability, 1000); });
+
+         roomForm.addEventListener('submit', async function(event) {
+             event.preventDefault(); event.stopPropagation();
+             await checkNumberAvailability();
+
+             const capacityValue = capacityInput.value ? parseInt(capacityInput.value, 10) : null;
+             let isCapacityValid = capacityValue === null || (!isNaN(capacityValue) && capacityValue >= 0);
+             if (!isCapacityValid) capacityInput.classList.add('is-invalid'); else capacityInput.classList.remove('is-invalid');
+
+             const isFormValid = roomForm.checkValidity();
+             roomForm.classList.add('was-validated');
+
+             if (isFormValid && isNumberAvailable && isCapacityValid) {
+                 console.log('Form is valid, submitting...');
+                 const btn=roomForm.querySelector('button[type="submit"]'); if(btn){btn.disabled=true;btn.innerHTML='<span class="spinner-border spinner-border-sm"></span> Saving...';}
+                 roomForm.submit();
+             } else {
+                 console.log('Form validation failed.');
+                 let firstInvalidField = roomForm.querySelector(':invalid');
+                  if (!isNumberAvailable && (!firstInvalidField || firstInvalidField !== roomNumberInput)) { firstInvalidField = roomNumberInput; }
+                  if (!isCapacityValid && (!firstInvalidField || firstInvalidField !== capacityInput)) { firstInvalidField = capacityInput; }
+                 if (firstInvalidField) { firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' }); firstInvalidField.focus({ preventScroll: true }); }
+             }
+         });
+          // Clear invalid state for capacity on input
+         capacityInput.addEventListener('input', function() { const v = this.value ? parseInt(this.value, 10) : null; if (v === null || (!isNaN(v) && v >= 0)) this.classList.remove('is-invalid'); });
+
+     });
+</script>
