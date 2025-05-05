@@ -1,0 +1,76 @@
+<div class="profile-container">
+    <aside class="sidebar">
+        <div class="sidebar-item-container"> 
+            <button class="sidebar-item ">
+                <img src="/public/images/icon/icons8-user-32 (1).png" alt="">
+                <span>Profile</span>
+            </button>
+            <button class="sidebar-item">
+                <img src="/public/images/icon/icons8-password-32 (1).png" alt="">
+                <span>Password</span>
+            </button>
+            <button class="sidebar-item">
+                <img src="/public/images/icon/icons8-exam-32.png" alt="">
+                <span>History Exam</span>
+            </button>
+            <button class="sidebar-item logout">
+                <img src="/public/images/icon/icons8-logout-32.png" alt="">
+                <span>Log out</span>
+            </button>
+        </div>
+    </aside>
+    <div class="main-content-container">
+        <div class="user-info-header ">
+            <div class="avatar">
+                <img src="placeholder-avatar.png" alt=" ">
+            </div>
+            <div class="user-details mt-2">
+                <h5 class="username">Lavender Blue 
+                    <img src="/public/images/icon/icons8-edit-32.png" alt="">
+                </h5>
+                <p class="email">lthuong10112003@gmail.com</p>
+            </div>
+        </div>
+        <main class="main-content">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="full-name">Full Name</label>
+                    <input type="text" id="full-name" value="Le Thi Thu Huong">
+                </div>
+                <div class="form-group">
+                    <label for="phone-number">Phone number</label>
+                    <input type="text" id="phone-number" value="Le Thi Thu Huong">
+                </div>
+                <div class="form-group">
+                    <label for="birthday">Birthday</label>
+                    <div class="birthday-input">
+                        <input type="text" id="birthday" value="10/11/2004">
+                        <img src="/public/images/icon/icons8-calendar-32.png" alt="" width="20px">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" value="Le Thi Thu Huong">
+                </div>
+                <div class="form-group">
+                    <label for="gender">Gender</label>
+                    <select id="gender">
+                        <option value="" disabled selected>Gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                    </select>
+                    {{!-- <img src="/public/images/icon/icons8-arrow-down-24 (3).png" alt="" width="20px"> --}}
+
+                </div>
+                <div class="form-group">
+                    <label for="address">Address</label>
+                    <input type="text" id="address" value="Le Thi Thu Huong">
+                </div>
+            </div>
+            <div class="update-button-container">
+                <button class="update-button">Update</button>
+            </div>
+        </main>
+    </div>
+</div>

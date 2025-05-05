@@ -1,0 +1,99 @@
+{{#section 'css'}}
+    <link rel="stylesheet" href="/public/css/patient-side/bookAppointment.css">
+{{/section}}
+<div class="book-appointment-container">
+    <div class="modal-header">
+        <h2>BOOK AN</h2>
+        <h1>Appointment</h1>
+    </div>
+    <div class="book-appointment-modal-container">
+        <div class="book-appointment-modal">
+            <div class="modal-body">
+                <div class="input-group">
+                    <input type="text" id="name" placeholder="Name">
+                </div>
+                <div class="input-group">
+                    <input type="tel" id="phone" placeholder="Phone Number">
+                </div>
+                <div class="input-group">
+                    <div class="birthday-input">
+                        <input type="text" id="birthday" placeholder="Birthday">
+                        <img src="/public/images/icon/icons8-calendar-32.png" alt="" width="20px">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <input type="email" id="email" placeholder="Email">
+                </div>
+                    <div class="input-group">
+                    <div class="appoinment-date-input">
+                        <input type="text" id="appointment-date" placeholder="Appointment Date">
+                        <img src="/public/images/icon/icons8-calendar-32.png" alt="" width="20px">
+                    </div>
+                </div>
+                    <div class="input-group">
+                    <input type="text" id="id" placeholder="ID">
+                </div>
+                <div class="input-group">
+                    <div class="select-wrapper">
+                        <select id="gender">
+                            <option value="" disabled selected>Gender</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <img src="/public/images/icon/icons8-arrow-down-24 (3).png" alt="">
+
+                    </div>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="address" placeholder="Address">
+                </div>
+            </div>
+            <div class="input-group">
+                <div class="select-wrapper-service ">
+                    <select id="service">
+                        <option value="" disabled selected>Service</option>
+                        <option value="Hematology - Blood Transfusion">Hematology</option>
+                        <option value="Neurology">Neurology</option>
+                        <option value="Rheumatology">Rheumatology</option>
+                        <option value="Pediatrics">Pediatrics</option>
+                        <option value="Cardiology">Cardiology</option>
+                    </select>
+                    <img src="/public/images/icon/icons8-arrow-down-24 (3).png" alt="">
+                </div>
+            </div>
+            <div class="input-group symptom">
+                <input type="text" id="symptom" placeholder="Symptom">
+            </div>
+            <div>
+                <label for="specialty" class="lbl-department">Department</label>
+                    <div class="radio-options">
+                    <label>
+                        <input type="radio" name="department" value="pediatric">
+                        <span class="radio-label-text">Pediatric</span>
+                    </label>
+                    <label>
+                        <input type="radio" name="department" value="obstetrics" checked>
+                        <span class="radio-label-text">Rheumatology</span>
+                    </label>
+                    <label>
+                        <input type="radio" name="department" value="cardiology">
+                        <span class="radio-label-text">Cardiology</span>
+                    </label>
+                    <label>
+                        <input type="radio" name="department" value="neurology">
+                        <span class="radio-label-text">Neurology</span>
+                    </label>
+                    <label>
+                        <input type="radio" name="department" value="psychiatry">
+                        <span class="radio-label-text">Hematology</span>
+                    </label>
+                </div>
+            </div>
+            <div class="button-group">
+                <button class="back-button">Back</button>
+                <button class="submit-button">Submit</button>
+            </div>
+        </div>
+    </div>
+ </div>

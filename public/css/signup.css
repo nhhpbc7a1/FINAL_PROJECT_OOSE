@@ -1,31 +1,32 @@
+
 /* Register */
-.signin-modal{
+.register-container{
     font-family: sans-serif;
     display: flex;
     flex-direction: column; 
-    background-color: white; /* Light blue background */
+    min-height: 100vh;
+    background-color: #FBFBFB; /* Light blue background */
     margin-bottom: 30px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    padding: 10px 30px;
-    width: 750px; 
-
 }
-.signin-modal-container{
+.signup-modal-container{
     flex-grow: 1; /* Cho phép container form chiếm không gian còn lại */
     display: flex;
     justify-content: center; /* Căn giữa form theo chiều ngang */
     align-items: center;
     background-color: #FBFBFB;
-    margin-bottom: 30px;
 
 }
-.modal-body-container{
-    display: flex;
-    flex-direction: column;
-    align-items: center; 
-    justify-content: center;
+.signup-modal {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 10px 30px;
+    width: 750px; 
+
+    /* Adjust width as needed */
+
 }
+
 .modal-header {
     display: flex; /* Use flexbox to control alignment */
     flex-direction: column; /* Stack the headings vertically */
@@ -49,21 +50,6 @@
     /* margin: 0 0 0 5px; */
     font-weight: 600;
 }
-.button-gmail-signin{
-    width: 500px;
-    margin: 10px;
-    border: 1px solid #81BAEE; /* Light blue border */
-    background-color: #F2F2F2;
-    border-radius: 50px;
-    padding: 15px;
-    display: flex; /* Enable flexbox for alignment */
-    align-items: center; /* Vertically align icon and text */
-    gap: 190px;
-     /* Center icon and text horizontally */
-}
-.button-gmail-signin img{
-    width: 25px;
-}
 .modal-footer{
     border: none;
     font-weight: 500;
@@ -85,33 +71,81 @@
 }
 
 .modal-body {
-    padding-top: 0px;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 15px;
-    justify-content: center;
-    align-items: center;
+    padding-top: 0px;
 
 }
+
+.input-group {
+    display: flex;
+    position: relative;
+    flex-direction: column;
+}
+
+
 .input-group input[type="text"],
+.input-group input[type="tel"],
+.input-group input[type="email"],
 .input-group input[type="password"] {
     border: 1px solid #81BAEE; /* Light blue border */
     background-color: #F2F2F2;
     border-radius: 50px;
     padding: 15px;
     font-size: 16px;
-    color: #13467E;
+    color: #333;
+    
 }
 
 .input-group input::placeholder {
     color: #13467E; /* Light blue placeholder */
 }
 
+.birthday-input {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
 input{
-    width: 500px;
-    margin-bottom: 10px;
-    margin-left: 10px;
+    width: 300px;
+    margin: 10px;
+}
+.input-group img{
+    position: absolute;
+    margin-right: 20px;
+    right: 5px; /* Khoảng cách từ mép phải của .birthday-input */
+    top: 50%;
+    transform: translateY(-50%); /* Căn giữa dọc hình ảnh */
+    width: 20px; /* Kích thước hình ảnh */
+    height: auto;
+    pointer-events: none; 
 
+}
+.birthday-input input {
+    padding-right: 30px; /* Space for the icon */
+
+}
+.select-wrapper {
+    position: relative;
+    background-color: #F2F2F2;
+    border: 1px solid #81BAEE; /* Light blue border */
+    border-radius: 50px;
+    overflow: hidden;
+    width: 300px;
+    margin: 10px;
+}
+
+.select-wrapper select {
+    width: 100%;
+    padding: 15px;
+    background-color: #F2F2F2;
+    border-radius: 50px;
+    border: 1px solid #8baac7; /* Light blue border */
+    color: #13467E;
+    border: none;
+    appearance: none;
+    /* cursor: pointer; */
 }
 .password-group {
     position: relative;
@@ -123,49 +157,44 @@ input{
     align-items: center;
 }
 
-.password-input img{
-    position: absolute;
-    right: 20px; /* Khoảng cách từ mép phải của input */
-    height: 20px;
-    cursor: pointer;
-    pointer-events: none;
-    margin-bottom: 10px;
+.password-input input {
+    padding-right: 30px; /* Space for the eye icon */
 }
 .button-group{
     display: flex;
-    gap: 20px; /* Khoảng cách giữa hai nút */
+    gap: 30px; /* Khoảng cách giữa hai nút */
     justify-content: center;
 }
-.forgot-button{
+.back-button{
     background-color: white; /* Blue button */
     color: #13467E;
     border: 2px solid #13467E;
     border-radius: 6px;
     padding: 12px 0px;
-    font-size: 18px;
+    font-size: 1.1em;
     cursor: pointer;
     margin: 30px 0px;
-    width: 240px;
+    width: 200px;
     /* display: flex;
     justify-content: center;
     align-items: center; */
 
 }
-.login-button {
+.create-button {
     background-color: #13467E; /* Blue button */
     color: white;
     border: 2px solid #13467E;
     border-radius: 6px;
     padding: 12px 0px;
-    font-size: 18px;
+    font-size: 1.1em;
     cursor: pointer;
     margin: 30px 0px;
-    width: 240px;
+    width: 200px;
     /* display: flex;
     justify-content: center;
     align-items: center; */
 }
-.login-group button:hover{
+.button-group button:hover{
     background-color: #4AABF2;
 }
 
