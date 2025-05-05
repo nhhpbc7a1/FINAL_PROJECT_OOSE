@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patient Details</title>
+  <link rel="stylesheet" href="/public/css/doctor-side/patientDetails.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="content-container">
+      <div class="column">
+        <a href="/doctor/appointments" class="back-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="#6c757d"/>
+          </svg>
+          Back to Appointments
+        </a>
+        <div class="page-header">
+          <h1 class="page-title">Patient Details</h1>
+        </div>
+
+        <div class="patient-details-card">
+          <div class="patient-header">
+            <div class="patient-avatar">
+              <span>NK</span>
+            </div>
+            <div class="patient-header-info">
+              <h2>NGUYEN LE TUNG CHI</h2>
+              <div class="patient-meta">
+                <span>32 years old</span>
+                <span>Female</span>
+                <span>Last visit: Apr 29, 2025</span>
+                <span>Code: P-20250428</span>
+              </div>
+            </div>
+            <div class="patient-action">
+              <button class="message-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H6L4 18V4H20V16Z" fill="white"/>
+                </svg>
+                Message
+              </button>
+            </div>
+          </div>
+
+          <div class="tabs-container">
+            <div class="tabs-header">
+              <div class="tab active" data-tab="overview">Overview</div>
+              <div class="tab" data-tab="appointment">Appointment</div>
+              <div class="tab" data-tab="lab-results">Lab Results</div>
+              <div class="tab" data-tab="prescription">Prescription</div>
+            </div>
+
+            <div class="tab-content active" id="overview">
+              <div class="section-header">
+                <h3>Patient Information</h3>
+                <button class="edit-btn">Edit</button>
+              </div>
+
+              <div class="info-grid">
+                <div class="info-field">
+                  <div class="field-label">Full Name</div>
+                  <div class="field-value">Nguyen Le Tung Chi</div>
+                </div>
+
+                <div class="info-field">
+                  <div class="field-label">Date of Birth</div>
+                  <div class="field-value">April 15, 1993</div>
+                </div>
+
+                <div class="info-field">
+                  <div class="field-label">Phone number</div>
+                  <div class="field-value">+84 912 345 678</div>
+                </div>
+
+                <div class="info-field">
+                  <div class="field-label">Email</div>
+                  <div class="field-value">chi.nguyen@example.com</div>
+                </div>
+
+                <div class="info-field">
+                  <div class="field-label">Address</div>
+                  <div class="field-value">123 Nguyen Hue Street, District 1, Ho Chi Minh City</div>
+                </div>
+
+                <div class="info-field">
+                  <div class="field-label">Blood Type</div>
+                  <div class="field-value">B+</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="tab-content" id="appointment">
+              <!-- Appointment content here -->
+              <div class="placeholder-content">
+                <p>Appointment history will be displayed here.</p>
+              </div>
+            </div>
+
+            <div class="tab-content" id="lab-results">
+              <!-- Lab Results content here -->
+              <div class="placeholder-content">
+                <p>Laboratory test results will be displayed here.</p>
+              </div>
+            </div>
+
+            <div class="tab-content" id="prescription">
+              <!-- Prescription content here -->
+              <div class="placeholder-content">
+                <p>Prescription history will be displayed here.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Simple tab switching functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      const tabs = document.querySelectorAll('.tab');
+      const tabContents = document.querySelectorAll('.tab-content');
+      
+      tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+          // Remove active class from all tabs and contents
+          tabs.forEach(t => t.classList.remove('active'));
+          tabContents.forEach(c => c.classList.remove('active'));
+          
+          // Add active class to clicked tab
+          this.classList.add('active');
+          
+          // Show corresponding content
+          const tabName = this.getAttribute('data-tab');
+          document.getElementById(tabName).classList.add('active');
+        });
+      });
+    });
+  </script>
+</body>
+</html>
