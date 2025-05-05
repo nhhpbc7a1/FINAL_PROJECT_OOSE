@@ -229,7 +229,7 @@ CREATE TABLE IF NOT EXISTS TestRequest (
     FOREIGN KEY (requestedByDoctorId) REFERENCES Doctor(doctorId) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
--- Create TestResult table (Links to MedicalRecord, Service, Technician, File)
+-- Create TestResult table (Links to MedicalRecord, Service, Technician, File)dsadasd
 CREATE TABLE IF NOT EXISTS TestResult (
     resultId INT AUTO_INCREMENT PRIMARY KEY,
     recordId INT, -- Links to a medical record (can be NULL if test is not tied to a specific doctor visit record)
