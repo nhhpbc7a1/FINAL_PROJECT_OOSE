@@ -1,4 +1,19 @@
 /* General Styles */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+
+html::-webkit-scrollbar, 
+body::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+
 * {
     margin: 0;
     padding: 0;
@@ -13,6 +28,9 @@
   .container {
     display: flex;
     min-height: 100vh;
+    height: 100vh;
+    width: 100%;
+    overflow: hidden;
   }
   
   /* Sidebar Styles */
@@ -34,9 +52,19 @@
   .column {
     flex: 1;
     display: flex;
-    flex-direction: column; /* Sắp xếp nội dung bên trong theo chiều dọc */
+    flex-direction: column;
     padding: 20px;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
   }
+  
+.column::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+  
   .sidebar {
     width: 260px;
     background-color: #fff;
@@ -222,9 +250,6 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    height: 100%;
-    width: 100%;
-    overflow: hidden;
   }
   
   .header {
@@ -308,80 +333,272 @@
     transform: scale(1.1);
     box-shadow: 0 0 0 3px rgba(13, 153, 255, 0.2);
   }
+  
+  .content-container {
+    display: flex;
+    flex: 1;
+    padding: 20px;
+    gap: 20px;
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+  
+.content-container::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
 
-  /* CSS từ file doctor.hbs cho menu items với thẻ a */
-  .menu li a {
+  /* Appointment Page Styles */
+  .back-link {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    color: #6c757d;
     text-decoration: none;
-    color: inherit;
+    margin-bottom: 15px;
+    font-size: 14px;
+  }
+  
+  .back-link svg {
+    margin-right: 8px;
+  }
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  
+  .page-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #212529;
+    margin-right: auto;
+  }
+
+  .test-request-btn {
+    background-color: #fff;
+    color: #006eb9;
+    border: 1px solid #006eb9;
+    border-radius: 20px;
+    padding: 8px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+  
+  .test-request-btn:hover{
+    background-color: #f0f9ff;
+    color: #006eb9;
+  }
+  
+  .patient-card {
+    background-color: #006eb9;
+    border-radius: 8px;
+    padding: 20px;
+    color: #fff;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    box-shadow: 0 4px 8px rgba(0, 110, 185, 0.2);
+  }
+  
+  .patient-initials {
+    width: 60px;
+    height: 60px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 600;
+    margin-right: 20px;
+  }
+  
+  .patient-info h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 5px;
+  }
+  
+  .patient-info .patient-details {
+    display: flex;
+    font-size: 14px;
+    opacity: 0.9;
+  }
+  
+  .patient-details span {
+    display: flex;
+    align-items: center;
+    margin-right: 20px;
+  }
+  
+  .patient-details .badge {
+    background-color: #FFC107;
+    color: #212529;
+    font-weight: 500;
+    margin-left: 20px;
+    border-radius: 15px;
+    padding: 2px 10px;
+  }
+  
+  .exam-info-card {
+    background-color: #fff;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .exam-info-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 20px;
+    background: linear-gradient(to right, #006eb9, #0095ff);
+    color: white;
+    font-weight: 600;
+  }
+  
+  .vital-signs {
+    padding: 20px;
+    width: 100%;
+    overflow-y: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+  
+.vital-signs::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+  
+  .vital-signs-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #006eb9;
+    margin-bottom: 15px;
+  }
+  
+  .vital-signs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
     width: 100%;
   }
   
-  .sidebar.collapsed .menu li a {
-    justify-content: center;
+  .vital-sign-item {
+    background-color: #006eb9;
+    border-radius: 8px;
+    padding: 15px;
+    color: white;
   }
   
-  .menu li a:hover {
-    text-decoration: none;
-    color: inherit;
+  .vital-sign-label {
+    font-size: 14px;
+    color: white;
+    margin-bottom: 10px;
   }
   
-  .sidebar.collapsed .menu ul li a span:last-child,
-  .sidebar.collapsed .menu ul li a span:first-child span {
-    display: none;
-  }
-
-  /* CSS cho content container */
-  .content-container {
-    flex: 1;
+  .vital-sign-value {
     display: flex;
-    height: calc(100vh - 80px); /* Adjust height to account for header */
-    overflow: auto;
+    align-items: center;
+  }
+  
+  .vital-sign-input {
+    width: 60px;
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+    text-align: center;
+    margin-right: 10px;
+    font-weight: 600;
+    background-color: white;
+    color: #006eb9;
+  }
+  
+  .vital-sign-unit {
+    font-size: 16px;
+    color: white;
+    font-weight: 600;
+  }
+  
+  .examination-section {
     padding: 20px;
+    width: 100%;
+    overflow-y: auto;
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE and Edge */
   }
   
-  /* Hide scrollbar for Chrome, Safari and Opera */
-  .content-container::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* Ensure left and right columns take appropriate space */
-  .left-column, .right-column {
-    flex: 1;
-    min-width: 0; /* Prevents overflow issues */
-    overflow: auto;
-    height: 100%;
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE and Edge */
+.examination-section::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
   }
   
-  /* Hide scrollbar for Chrome, Safari and Opera */
-  .left-column::-webkit-scrollbar,
-  .right-column::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* Make appointment container fill the column */
-  .appointment-container, .appointment-details {
-    height: 100%;
-    overflow: auto;
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE and Edge */
+  .examination-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #006eb9;
+    margin-bottom: 15px;
   }
   
-  /* Hide scrollbar for Chrome, Safari and Opera */
-  .appointment-container::-webkit-scrollbar,
-  .appointment-details::-webkit-scrollbar {
-    display: none;
+  .examination-textarea {
+    width: 100%;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    min-height: 100px;
+    font-size: 14px;
+    resize: vertical;
+    outline: none;
+    color: #212529;
+    background-color: #f8f9fa;
   }
-
-  /* Responsive styles */
-  @media (max-width: 1200px) {
-    .content-container {
-      flex-direction: column;
-    }
+  
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    padding-bottom: 20px;
+    padding-right: 20px;
+  }
+  
+  .btn {
+    padding: 8px 20px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-outline {
+    background-color: #fff;
+    color: #006eb9;
+    border: 1px solid #006eb9;
+    border-radius: 20px;
+  }
+  
+  .btn-outline:hover {
+    background-color: #f0f9ff;
+  }
+  
+  .btn-primary {
+    background: linear-gradient(to right, #006eb9, #0095ff);
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 2px 4px rgba(0, 110, 185, 0.3);
+  }
+  
+  .btn-primary:hover {
+    background-color: #0095ff;
+    box-shadow: 0 4px 8px rgba(0, 110, 185, 0.4);
   }
