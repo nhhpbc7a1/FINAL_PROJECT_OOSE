@@ -1,8 +1,32 @@
 import express from 'express';
 import serviceService from '../../services/service.service.js';
 import specialtyService from '../../services/specialty.service.js'; // Needed for dropdown
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import fs from 'fs/promises';
 
 const router = express.Router();
+
+// Define __dirname for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const UPLOAD_DIR = path.join(__dirname, '../../public/images/services/');
+
+// Ensure upload directory exists
+const ensureUploadDirExists = async () => {
+  try {
+    await fs.access(UPLOAD_DIR);
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      await fs.mkdir(UPLOAD_DIR, { recursive: true });
+      console.log(`Created upload directory: ${UPLOAD_DIR}`);
+    } else {
+      console.error('Error checking/creating upload directory:', error);
+    }
+  }
+};
+ensureUploadDirExists();
 
 // Middleware for layout and current route
 router.use((req, res, next) => {
@@ -72,8 +96,9 @@ router.get('/add', async function (req, res) {
 });
 
 // POST: Handle adding a new service
-router.post('/add', async function (req, res, next) {
-  req.session.returnTo = '/admin/manage_service/add'; // For error redirection
+router.post('/add', async function (req, res) {
+  let imagePath = null;
+  req.session.returnTo = '/admin/manage_service/add';
 
   try {
     const { name, description, price, duration, type, category, specialtyId, status } = req.body;
@@ -96,6 +121,32 @@ router.post('/add', async function (req, res, next) {
         throw new Error(`Service name "${name.trim()}" already exists.`);
     }
 
+    // --- File Upload Handling ---
+    if (req.files && req.files.image) {
+      const image = req.files.image;
+      
+      // Check file type
+      const fileExtension = path.extname(image.name).toLowerCase();
+      const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif'];
+      
+      if (!allowedExtensions.includes(fileExtension)) {
+        throw new Error('Only JPG, JPEG, PNG or GIF files are allowed.');
+      }
+      
+      // Check file size (2MB limit)
+      if (image.size > 2 * 1024 * 1024) {
+        throw new Error('File size cannot exceed 2MB.');
+      }
+      
+      const timestamp = Date.now();
+      const safeName = name.replace(/[^a-zA-Z0-9]/g, '_');
+      const filename = `service-${safeName}_${timestamp}${fileExtension}`;
+      const uploadPath = path.join(UPLOAD_DIR, filename);
+
+      await image.mv(uploadPath);
+      imagePath = `/public/images/services/${filename}`;
+    }
+
     // --- Prepare Data ---
     const serviceData = {
         name: name.trim(),
@@ -105,7 +156,8 @@ router.post('/add', async function (req, res, next) {
         type: type,
         category: category ? category.trim() : null,
         specialtyId: specialtyId || null, // Allow null specialty
-        status: status || 'active'
+        status: status || 'active',
+        image: imagePath || '/public/images/services/default-service.jpg'
     };
 
     // --- Database Operation ---
@@ -117,7 +169,19 @@ router.post('/add', async function (req, res, next) {
 
   } catch (error) {
     console.error('Error adding service:', error);
-    req.session.formData = req.body; // Save form data
+
+    // Clean up uploaded file if exists
+    if (imagePath) {
+      try {
+        const fullPath = path.join(__dirname, '../../', imagePath);
+        await fs.unlink(fullPath);
+        console.log('Cleaned up uploaded file after error:', imagePath);
+      } catch (unlinkError) {
+        console.error('Error cleaning up file:', unlinkError);
+      }
+    }
+
+    req.session.formData = req.body;
     req.session.flashMessage = { type: 'danger', message: error.message || 'Could not add service.' };
     res.redirect(req.session.returnTo);
   }
@@ -137,6 +201,12 @@ router.get('/edit/:serviceId', async function (req, res) {
       return res.redirect('/admin/manage_service');
     }
 
+    // Make sure image path is absolute
+    if (service.image && !service.image.startsWith('http')) {
+      // Ensure the image property is properly formatted for display
+      service.image = service.image.startsWith('/') ? service.image : `/${service.image}`;
+    }
+
     const specialties = await specialtyService.findAll(); // Get all specialties for dropdown
 
     let error = null;
@@ -144,6 +214,8 @@ router.get('/edit/:serviceId', async function (req, res) {
       error = req.session.flashMessage.message;
       delete req.session.flashMessage;
     }
+
+    console.log('Service data being passed to template:', service);
 
     res.render('vwAdmin/manage_service/edit_service', {
       service,
@@ -159,9 +231,10 @@ router.get('/edit/:serviceId', async function (req, res) {
 });
 
 // POST: Handle updating an existing service
-router.post('/update/:serviceId', async function (req, res, next) {
+router.post('/update/:serviceId', async function (req, res) {
   const serviceId = parseInt(req.params.serviceId, 10);
-  req.session.returnTo = `/admin/manage_service/edit/${serviceId}`; // For error redirection
+  let imagePath = null;
+  let oldImagePath = null;
 
   if (isNaN(serviceId)) {
       req.session.flashMessage = { type: 'danger', message: 'Invalid Service ID.' };
@@ -169,7 +242,7 @@ router.post('/update/:serviceId', async function (req, res, next) {
   }
 
   try {
-     const { name, description, price, duration, type, category, specialtyId, status } = req.body;
+    const { name, description, price, duration, type, category, specialtyId, status } = req.body;
 
     // --- Validation ---
     if (!name || name.trim() === '') throw new Error('Please enter the service name.');
@@ -184,16 +257,61 @@ router.post('/update/:serviceId', async function (req, res, next) {
      }
     if (!status) throw new Error('Please select a status.');
 
-
     // Check uniqueness (excluding current ID)
     const isUnique = await serviceService.isNameUnique(name.trim(), serviceId);
     if (!isUnique) {
         throw new Error(`Service name "${name.trim()}" already exists.`);
     }
 
+    // Get current service data to get existing image path
+    const currentService = await serviceService.findById(serviceId);
+    if (!currentService) {
+        throw new Error('Service not found for update.');
+    }
+    oldImagePath = currentService.image;
+
+    // --- File Upload Handling (if new file provided) ---
+    if (req.files && req.files.image) {
+      const image = req.files.image;
+      
+      // Check file type
+      const fileExtension = path.extname(image.name).toLowerCase();
+      const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif'];
+      
+      if (!allowedExtensions.includes(fileExtension)) {
+        throw new Error('Only JPG, JPEG, PNG or GIF files are allowed.');
+      }
+      
+      // Check file size (2MB limit)
+      if (image.size > 2 * 1024 * 1024) {
+        throw new Error('File size cannot exceed 2MB.');
+      }
+      
+      const timestamp = Date.now();
+      const safeName = name.replace(/[^a-zA-Z0-9]/g, '_');
+      const filename = `service-${safeName}_${timestamp}${fileExtension}`;
+      const uploadPath = path.join(UPLOAD_DIR, filename);
+
+      await image.mv(uploadPath);
+      imagePath = `/public/images/services/${filename}`;
+
+      // Delete old image if it exists and is not the default image
+      if (oldImagePath && oldImagePath !== '/public/images/services/default-service.jpg') {
+        try {
+          const fullOldPath = path.join(__dirname, '../../', oldImagePath);
+          await fs.unlink(fullOldPath);
+          console.log('Deleted old service image:', oldImagePath);
+        } catch (unlinkError) {
+          console.error('Error deleting old service image:', unlinkError);
+        }
+      }
+    } else {
+      // No new file uploaded, keep the old path
+      imagePath = oldImagePath;
+    }
+
     // --- Prepare Data ---
-    // Service update method handles which fields were actually submitted
-     const serviceData = {
+    const serviceData = {
         name: name.trim(),
         description: description ? description.trim() : null,
         price: numericPrice,
@@ -201,24 +319,35 @@ router.post('/update/:serviceId', async function (req, res, next) {
         type: type,
         category: category ? category.trim() : null,
         specialtyId: specialtyId || null,
-        status: status
+        status: status,
+        image: imagePath
     };
 
     // --- Database Operation ---
-    const updated = await serviceService.update(serviceId, serviceData);
+    await serviceService.update(serviceId, serviceData);
 
     // --- Success Response ---
     req.session.flashMessage = { type: 'success', message: 'Service updated successfully!' };
     res.redirect('/admin/manage_service');
 
   } catch (error) {
-    console.error(`Error updating service ID ${serviceId}:`, error);
-    req.session.formData = req.body; // Save potentially incorrect data for repopulation
+    console.error(`Error updating service (serviceId: ${serviceId}):`, error);
+
+    // Clean up new uploaded file if exists and update failed
+    if (imagePath && imagePath !== oldImagePath) {
+      try {
+        const fullPath = path.join(__dirname, '../../', imagePath);
+        await fs.unlink(fullPath);
+        console.log('Cleaned up new uploaded file after error:', imagePath);
+      } catch (unlinkError) {
+        console.error('Error cleaning up file:', unlinkError);
+      }
+    }
+
     req.session.flashMessage = { type: 'danger', message: error.message || 'Could not update service.' };
-    res.redirect(req.session.returnTo); // Redirect back to edit form
+    res.redirect(`/admin/manage_service/edit/${serviceId}`);
   }
 });
-
 
 // DELETE: Handle service deletion
 router.delete('/delete/:serviceId', async function (req, res) {
@@ -229,9 +358,14 @@ router.delete('/delete/:serviceId', async function (req, res) {
       return res.status(400).json({ success: false, message: 'Invalid Service ID' });
     }
 
-    // *** CRUCIAL: Dependency Check ***
-    const hasDependencies = await serviceService.checkDependencies(serviceId);
+    // Get service to find the image path
+    const service = await serviceService.findById(serviceId);
+    if (!service) {
+      return res.status(404).json({ success: false, message: 'Service not found' });
+    }
 
+    // Check dependencies
+    const hasDependencies = await serviceService.checkDependencies(serviceId);
     if (hasDependencies) {
         return res.status(400).json({
             success: false,
@@ -239,11 +373,22 @@ router.delete('/delete/:serviceId', async function (req, res) {
         });
     }
 
-    // If checks pass, proceed with deletion
+    // Delete the service
     const deleted = await serviceService.delete(serviceId);
 
     if (!deleted) {
         return res.status(404).json({ success: false, message: 'Service not found or already deleted.' });
+    }
+
+    // Delete associated image if it's not the default image
+    if (service.image && service.image !== '/public/images/services/default-service.jpg') {
+      try {
+        const fullPath = path.join(__dirname, '../../', service.image);
+        await fs.unlink(fullPath);
+        console.log('Deleted service image:', service.image);
+      } catch (unlinkError) {
+        console.error('Error deleting service image:', unlinkError);
+      }
     }
 
     // Return success response
@@ -279,6 +424,5 @@ router.get('/api/check-name', async (req, res) => {
          res.status(500).json({ isUnique: false, message: 'Server error checking name.' });
      }
  });
-
 
 export default router;
