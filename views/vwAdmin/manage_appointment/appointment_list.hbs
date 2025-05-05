@@ -1,0 +1,299 @@
+{{!-- Appointment List View --}}
+<link rel="stylesheet" href="/public/css/admin-side/doctor-list.css"> {{!-- Reuse list styling --}}
+
+<div class="content-header">
+    <div>
+        <h1 class="page-title">Appointment Management</h1>
+        <p class="page-subtitle">View and manage all appointments in the system</p>
+    </div>
+</div>
+
+<div class="appointment-list-container">
+    <div class="filters-bar">
+        {{!-- Search Input --}}
+        <div class="search-box flex-grow-1 mr-2">
+            <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="Search by patient, doctor, specialty..." value="{{searchQuery}}">
+            <i class="fas fa-search"></i>
+        </div>
+        <a href="#" class="btn btn-sm btn-secondary" id="clearSearchBtn" title="Clear Search"><i class="fas fa-times"></i></a>
+
+        {{!-- Status filter dropdown --}}
+        <div class="dropdown ml-2">
+            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="statusDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                {{#if statusFilter}}{{statusFilter}}{{else}}All Status{{/if}}
+            </button>
+            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="statusDropdown">
+                <a class="dropdown-item {{#unless statusFilter}}active{{/unless}}" href="?status=">All Status</a>
+                <a class="dropdown-item {{#if (eq statusFilter 'pending')}}active{{/if}}" href="?status=pending">Pending <span class="badge badge-pill badge-secondary">{{lookup statusCounts 'pending'}}</span></a>
+                <a class="dropdown-item {{#if (eq statusFilter 'confirmed')}}active{{/if}}" href="?status=confirmed">Confirmed <span class="badge badge-pill badge-info">{{lookup statusCounts 'confirmed'}}</span></a>
+                <a class="dropdown-item {{#if (eq statusFilter 'completed')}}active{{/if}}" href="?status=completed">Completed <span class="badge badge-pill badge-success">{{lookup statusCounts 'completed'}}</span></a>
+                <a class="dropdown-item {{#if (eq statusFilter 'cancelled')}}active{{/if}}" href="?status=cancelled">Cancelled <span class="badge badge-pill badge-danger">{{lookup statusCounts 'cancelled'}}</span></a>
+                <a class="dropdown-item {{#if (eq statusFilter 'waiting_payment')}}active{{/if}}" href="?status=waiting_payment">Waiting Payment <span class="badge badge-pill badge-warning">{{lookup statusCounts 'waiting_payment'}}</span></a>
+                <a class="dropdown-item {{#if (eq statusFilter 'paid')}}active{{/if}}" href="?status=paid">Paid <span class="badge badge-pill badge-primary">{{lookup statusCounts 'paid'}}</span></a>
+            </div>
+        </div>
+    </div>
+
+    {{!-- Error display (if passed from server on initial load) --}}
+    {{#if error}}
+    <div class="alert alert-danger alert-dismissible fade show mt-3 mx-3" role="alert">
+        {{error}}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">×</span>
+        </button>
+    </div>
+    {{/if}}
+
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">Appointment</th>
+                    <th scope="col">Patient</th>
+                    <th scope="col">Date & Time</th>
+                    <th scope="col">Specialty/Doctor</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody id="appointment-table-body">
+                {{#each appointments}}
+                <tr class="appointment-row"
+                    data-id="{{appointmentId}}"
+                    data-patient="{{toLowerCase patientName}}"
+                    data-doctor="{{toLowerCase doctorName}}"
+                    data-specialty="{{toLowerCase specialtyName}}"
+                    data-status="{{toLowerCase status}}"
+                    data-date="{{appointmentDate}}"
+                >
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="appointment-id">#{{appointmentId}}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div>
+                                <div class="patient-name">{{patientName}}</div>
+                                <div class="patient-details">{{patientPhone}}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="appointment-date">{{formatDate appointmentDate 'DD/MM/YYYY'}}</div>
+                        <div class="appointment-time">{{#if estimatedTime}}{{formatTime estimatedTime 'HH:mm'}}{{else}}N/A{{/if}}</div>
+                    </td>
+                    <td>
+                        <div class="specialty-name">{{specialtyName}}</div>
+                        <div class="doctor-name">{{#if doctorName}}Dr. {{doctorName}}{{else}}Not Assigned{{/if}}</div>
+                    </td>
+                    <td>
+                        <span class="status-badge status-{{toLowerCase status}}">{{status}}</span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            {{!-- View Button --}}
+                            <a href="/admin/manage_appointment/view/{{appointmentId}}" class="btn btn-icon" title="View Appointment">
+                                <i class="fas fa-eye mr-2"></i> View
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {{/each}}
+                {{!-- Rows for no results / initial empty state --}}
+                <tr id="no-results-row" style="display: none;">
+                    <td colspan="6">
+                         <div class="empty-state">
+                            <i class="fas fa-search"></i> <h5>No appointments found</h5>
+                            <p>No appointments match your filter criteria. Try adjusting your search.</p>
+                        </div>
+                    </td>
+                </tr>
+                 <tr id="no-data-row" style="display: {{#if appointments}}none{{else}}table-row{{/if}};">
+                    <td colspan="6">
+                         <div class="empty-state">
+                            <i class="fas fa-calendar-check"></i> <h5>No appointments found</h5>
+                            <p>There are no appointments in the system matching your filters.</p>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-container">
+        <div class="page-info">
+            Showing <span id="showing-start">1</span> to <span id="showing-end">10</span> of <span id="total-items">{{totalAppointments}}</span> appointments
+        </div>
+        <ul class="pagination" id="pagination">
+            <!-- Pagination generated by JS -->
+        </ul>
+    </div>
+</div>
+
+<style>
+    /* Additional styling for appointments */
+    .appointment-id {
+        font-weight: 600;
+        color: #3498db;
+    }
+    
+    .appointment-date {
+        font-weight: 500;
+    }
+    
+    .appointment-time {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+    }
+    
+    .specialty-name {
+        font-weight: 500;
+    }
+    
+    .doctor-name {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+    }
+    
+    /* Status badge styling */
+    .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: uppercase;
+    }
+    
+    .status-pending {
+        background-color: rgba(149, 165, 166, 0.2);
+        color: #7f8c8d;
+    }
+    
+    .status-confirmed {
+        background-color: rgba(52, 152, 219, 0.2);
+        color: #3498db;
+    }
+    
+    .status-completed {
+        background-color: rgba(46, 204, 113, 0.2);
+        color: #27ae60;
+    }
+    
+    .status-cancelled {
+        background-color: rgba(231, 76, 60, 0.2);
+        color: #e74c3c;
+    }
+    
+    .status-waiting_payment {
+        background-color: rgba(241, 196, 15, 0.2);
+        color: #f39c12;
+    }
+    
+    .status-paid {
+        background-color: rgba(156, 89, 182, 0.2);
+        color: #9b59b6;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Store all appointment data rows
+        const allAppointments = Array.from(document.querySelectorAll('.appointment-row'));
+
+        // Pagination config
+        const itemsPerPage = 10;
+        let currentPage = 1;
+        let filteredAppointments = [...allAppointments];
+
+        // DOM elements
+        const searchInput = document.getElementById('searchInput');
+        const clearSearchBtn = document.getElementById('clearSearchBtn');
+        const appointmentTableBody = document.getElementById('appointment-table-body');
+        const noResultsRow = document.getElementById('no-results-row');
+        const noDataRow = document.getElementById('no-data-row');
+        const pagination = document.getElementById('pagination');
+        const showingStart = document.getElementById('showing-start');
+        const showingEnd = document.getElementById('showing-end');
+        const totalItems = document.getElementById('total-items');
+
+        // --- Filter Function ---
+        function applyFilters() {
+            const searchTerm = searchInput.value.trim().toLowerCase();
+
+            filteredAppointments = allAppointments.filter(row => {
+                if (!searchTerm) return true;
+
+                const patient = row.getAttribute('data-patient') || '';
+                const doctor = row.getAttribute('data-doctor') || '';
+                const specialty = row.getAttribute('data-specialty') || '';
+                const status = row.getAttribute('data-status') || '';
+                const id = row.getAttribute('data-id') || '';
+
+                return patient.includes(searchTerm) ||
+                       doctor.includes(searchTerm) ||
+                       specialty.includes(searchTerm) ||
+                       status.includes(searchTerm) ||
+                       id.includes(searchTerm);
+            });
+
+            currentPage = 1;
+            updateDisplay();
+        }
+
+        // --- Display Update Function ---
+        function updateDisplay() {
+            allAppointments.forEach(row => { row.style.display = 'none'; });
+            if(noDataRow) noDataRow.style.display = 'none'; // Hide initial empty state
+
+            if (filteredAppointments.length === 0) {
+                noResultsRow.style.display = 'table-row';
+                showingStart.textContent='0'; showingEnd.textContent='0'; totalItems.textContent='0';
+                pagination.innerHTML = ''; return;
+            } else { noResultsRow.style.display = 'none'; }
+
+            const totalFiltered = filteredAppointments.length;
+            const totalPages = Math.ceil(totalFiltered / itemsPerPage);
+            if (currentPage > totalPages) currentPage = totalPages > 0 ? totalPages : 1;
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = Math.min(start + itemsPerPage, totalFiltered);
+
+            for (let i = start; i < end; i++) { if (filteredAppointments[i]) filteredAppointments[i].style.display = 'table-row'; }
+
+            showingStart.textContent = totalFiltered ? start + 1 : 0; showingEnd.textContent = end; totalItems.textContent = totalFiltered;
+            updatePagination();
+        }
+
+        // --- Pagination Update Function ---
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredAppointments.length / itemsPerPage);
+            let paginationHTML = '';
+            paginationHTML += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}"><a class="page-link" href="#" data-page="${currentPage - 1}">Previous</a></li>`;
+            let startPage = Math.max(1, currentPage - 2), endPage = Math.min(totalPages, currentPage + 2);
+            if(totalPages <= 5){ startPage=1; endPage=totalPages; } else if(currentPage<=3){ endPage=5; } else if(currentPage>=totalPages-2){ startPage=totalPages-4; }
+            if(startPage>1){ paginationHTML += `<li class="page-item"><a class="page-link" href="#" data-page="1">1</a></li>`; if(startPage>2) paginationHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`; }
+            for(let i=startPage; i<=endPage; i++){ paginationHTML += `<li class="page-item ${i===currentPage?'active':''}"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`; }
+            if(endPage<totalPages){ if(endPage<totalPages-1) paginationHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`; paginationHTML += `<li class="page-item"><a class="page-link" href="#" data-page="${totalPages}">${totalPages}</a></li>`; }
+            paginationHTML += `<li class="page-item ${currentPage===totalPages||totalPages===0?'disabled':''}"><a class="page-link" href="#" data-page="${currentPage + 1}">Next</a></li>`;
+            pagination.innerHTML = paginationHTML;
+
+            document.querySelectorAll('.pagination .page-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault(); const pageNum = this.getAttribute('data-page');
+                    if (!this.parentElement.classList.contains('disabled') && pageNum) { currentPage = parseInt(pageNum); updateDisplay(); }
+                });
+            });
+        }
+
+        // --- Event Listeners ---
+        let searchTimeout;
+        searchInput.addEventListener('input', () => { clearTimeout(searchTimeout); searchTimeout = setTimeout(applyFilters, 300); });
+        clearSearchBtn.addEventListener('click', (e) => { e.preventDefault(); searchInput.value = ''; applyFilters(); });
+
+        // --- Initial Display ---
+        updateDisplay();
+        if(noDataRow) noDataRow.style.display = (allAppointments.length === 0) ? 'table-row' : 'none';
+    });
+</script> 

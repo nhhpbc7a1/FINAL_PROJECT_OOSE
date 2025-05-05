@@ -1,0 +1,510 @@
+{{#section 'css'}}
+<link rel="stylesheet" href="/public/css/admin-side/dashboard.css">
+<style>
+    .quick-stat-card {
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .quick-stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .upcoming-appointment-card {
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s ease;
+    }
+    
+    .upcoming-appointment-card:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 300px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .activity-feed-item {
+        border-left: 2px solid #e9ecef;
+        padding-left: 20px;
+        position: relative;
+        padding-bottom: 20px;
+    }
+    
+    .activity-feed-item::before {
+        content: '';
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #4e73df;
+        position: absolute;
+        left: -7px;
+        top: 0;
+    }
+    
+    .activity-time {
+        font-size: 0.75rem;
+        color: #6c757d;
+    }
+    
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 50rem;
+    }
+    
+    .status-available {
+        background-color: #28a745;
+        color: white;
+    }
+    
+    .status-booked {
+        background-color: #007bff;
+        color: white;
+    }
+    
+    .status-unavailable {
+        background-color: #dc3545;
+        color: white;
+    }
+    
+    .status-completed {
+        background-color: #6c757d;
+        color: white;
+    }
+    
+    .status-cancelled {
+        background-color: #ffc107;
+        color: black;
+    }
+</style>
+{{/section}}
+
+<div class="content-header">
+    <div>
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-subtitle">Overview of clinic activities</p>
+    </div>
+</div>
+
+{{!-- Error/Success Messages --}}
+{{#if error}}
+<div class="alert alert-danger alert-dismissible fade show mt-3">
+    <i class="fas fa-exclamation-circle"></i> <span>{{error}}</span>
+    <button type="button" class="close" data-dismiss="alert">×</button>
+</div>
+{{/if}}
+
+{{#if flashMessage}}
+<div class="alert alert-{{flashMessage.type}} alert-dismissible fade show mt-3">
+    <i class="fas fa-{{#if (eq flashMessage.type 'success')}}check-circle{{else}}exclamation-circle{{/if}}"></i> <span>{{flashMessage.message}}</span>
+    <button type="button" class="close" data-dismiss="alert">×</button>
+</div>
+{{/if}}
+
+<!-- Dashboard Content -->
+<div class="container-fluid mt-4">
+    <!-- Quick Stats Row -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="quick-stat-card bg-white p-3">
+                <div class="card-body p-0">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h5 class="text-primary font-weight-bold">Today's Appointments</h5>
+                            <h2 class="mt-2 mb-0 font-weight-bold">{{todayAppointments}}</h2>
+                        </div>
+                        <div class="p-3 rounded-circle bg-primary text-white">
+                            <i class="fas fa-calendar-check fa-2x"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <span class="text-{{appointmentTrend}}">
+                            <i class="fas fa-arrow-{{appointmentTrendIcon}}"></i> {{appointmentPercentage}}% 
+                        </span>
+                        <span class="text-muted">compared to last week</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="quick-stat-card bg-white p-3">
+                <div class="card-body p-0">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h5 class="text-success font-weight-bold">New Patients</h5>
+                            <h2 class="mt-2 mb-0 font-weight-bold">{{newPatients}}</h2>
+                        </div>
+                        <div class="p-3 rounded-circle bg-success text-white">
+                            <i class="fas fa-user-plus fa-2x"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <span class="text-{{patientTrend}}">
+                            <i class="fas fa-arrow-{{patientTrendIcon}}"></i> {{patientPercentage}}% 
+                        </span>
+                        <span class="text-muted">compared to last month</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="quick-stat-card bg-white p-3">
+                <div class="card-body p-0">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h5 class="text-info font-weight-bold">Doctor Schedules</h5>
+                            <h2 class="mt-2 mb-0 font-weight-bold">{{doctorSchedules}}</h2>
+                        </div>
+                        <div class="p-3 rounded-circle bg-info text-white">
+                            <i class="fas fa-user-md fa-2x"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <span class="text-muted">
+                            <i class="fas fa-calendar-alt"></i> This week
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="quick-stat-card bg-white p-3">
+                <div class="card-body p-0">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h5 class="text-warning font-weight-bold">Monthly Revenue</h5>
+                            <h2 class="mt-2 mb-0 font-weight-bold">${{monthlyRevenue}}K</h2>
+                        </div>
+                        <div class="p-3 rounded-circle bg-warning text-white">
+                            <i class="fas fa-money-bill-wave fa-2x"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <span class="text-{{revenueTrend}}">
+                            <i class="fas fa-arrow-{{revenueTrendIcon}}"></i> {{revenuePercentage}}% 
+                        </span>
+                        <span class="text-muted">compared to last month</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Appointments by Month</h6>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="appointmentChartOptions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Last 6 months
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="appointmentChartOptions">
+                            <a class="dropdown-item" href="#" data-months="3">Last 3 months</a>
+                            <a class="dropdown-item active" href="#" data-months="6">Last 6 months</a>
+                            <a class="dropdown-item" href="#" data-months="12">Last 12 months</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="appointmentsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Specialty Distribution</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="specialtiesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Appointments and Activities Row -->
+    <div class="row">
+        <div class="col-lg-12 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Upcoming Appointments</h6>
+                    <a href="/admin/manage_appointment" class="btn btn-sm btn-primary">
+                        View all
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>Doctor</th>
+                                    <th>Date & Time</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="upcoming-appointment-card">
+                                    <td>John Smith</td>
+                                    <td>Dr. Michael Brown</td>
+                                    <td>11/20/2023, 09:00</td>
+                                    <td>General checkup</td>
+                                    <td><span class="status-badge status-booked">Booked</span></td>
+                                </tr>
+                                <tr class="upcoming-appointment-card">
+                                    <td>Emily Davis</td>
+                                    <td>Dr. Sarah Wilson</td>
+                                    <td>11/20/2023, 10:30</td>
+                                    <td>Follow-up</td>
+                                    <td><span class="status-badge status-booked">Booked</span></td>
+                                </tr>
+                                <tr class="upcoming-appointment-card">
+                                    <td>Robert Johnson</td>
+                                    <td>Dr. David Lee</td>
+                                    <td>11/20/2023, 13:00</td>
+                                    <td>Blood test</td>
+                                    <td><span class="status-badge status-booked">Booked</span></td>
+                                </tr>
+                                <tr class="upcoming-appointment-card">
+                                    <td>Jessica Williams</td>
+                                    <td>Dr. Lisa Chen</td>
+                                    <td>11/20/2023, 15:00</td>
+                                    <td>Ultrasound</td>
+                                    <td><span class="status-badge status-booked">Booked</span></td>
+                                </tr>
+                                <tr class="upcoming-appointment-card">
+                                    <td>Daniel Taylor</td>
+                                    <td>Dr. Michael Brown</td>
+                                    <td>11/21/2023, 08:00</td>
+                                    <td>General checkup</td>
+                                    <td><span class="status-badge status-booked">Booked</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    
+    <!-- Staff Stats Row -->
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Active Doctors</h6>
+                    <a href="/admin/manage_doctor" class="btn btn-sm btn-primary">
+                        View all
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Doctor</th>
+                                    <th>Specialty</th>
+                                    <th>Appointments this month</th>
+                                    <th>Rating</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{#each activeDoctors}}
+                                <tr>
+                                    <td>{{fullName}}</td>
+                                    <td>{{specialtyName}}</td>
+                                    <td>{{appointmentCount}}</td>
+                                    <td>
+                                        <span>{{averageRating}}</span>
+                                        <i class="fas fa-star text-warning"></i>
+                                    </td>
+                                </tr>
+                                {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Popular Services</h6>
+                    <a href="/admin/manage_service" class="btn btn-sm btn-primary">
+                        View all
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Service</th>
+                                    <th>Specialty</th>
+                                    <th>Performed</th>
+                                    <th>Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{#each popularServices}}
+                                <tr>
+                                    <td>{{serviceName}}</td>
+                                    <td>{{specialtyName}}</td>
+                                    <td>{{performedCount}}</td>
+                                    <td>${{divide totalRevenue 1000}}K</td>
+                                </tr>
+                                {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{#section 'js'}}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Initializing charts...');
+        
+        // Log the chart data
+        const appointmentData = {
+            labels: {{{json appointmentLabels}}},
+            completed: {{{json completedAppointments}}},
+            cancelled: {{{json cancelledAppointments}}}
+        };
+        console.log('Appointment chart data:', appointmentData);
+        
+        const specialtyData = {
+            labels: {{{json specialtyLabels}}},
+            data: {{{json specialtyData}}}
+        };
+        console.log('Specialty chart data:', specialtyData);
+        
+        // Appointments Chart
+        const appointmentsCtx = document.getElementById('appointmentsChart').getContext('2d');
+        console.log('Appointments canvas context:', appointmentsCtx);
+        
+        const appointmentsChart = new Chart(appointmentsCtx, {
+            type: 'bar',
+            data: {
+                labels: appointmentData.labels,
+                datasets: [
+                    {
+                        label: 'Completed',
+                        data: appointmentData.completed,
+                        backgroundColor: '#4e73df',
+                        borderColor: '#4e73df',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Cancelled',
+                        data: appointmentData.cancelled,
+                        backgroundColor: '#e74a3b',
+                        borderColor: '#e74a3b',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Count'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Month'
+                        }
+                    }
+                }
+            }
+        });
+        console.log('Appointments chart initialized:', appointmentsChart);
+        
+        // Specialties Chart
+        const specialtiesCtx = document.getElementById('specialtiesChart').getContext('2d');
+        console.log('Specialties canvas context:', specialtiesCtx);
+        
+        const specialtiesChart = new Chart(specialtiesCtx, {
+            type: 'doughnut',
+            data: {
+                labels: specialtyData.labels,
+                datasets: [
+                    {
+                        data: specialtyData.data,
+                        backgroundColor: [
+                            '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796'
+                        ],
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+        console.log('Specialties chart initialized:', specialtiesChart);
+
+        // Handle chart period changes
+        document.querySelectorAll('#appointmentChartOptions + .dropdown-menu .dropdown-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                const months = this.dataset.months;
+                
+                // Update active state
+                document.querySelectorAll('#appointmentChartOptions + .dropdown-menu .dropdown-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Update button text
+                document.getElementById('appointmentChartOptions').textContent = `Last ${months} months`;
+                
+                // Fetch new data and update chart
+                fetch(`/admin/dashboard/appointments?months=${months}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        appointmentsChart.data.labels = data.labels;
+                        appointmentsChart.data.datasets[0].data = data.completed;
+                        appointmentsChart.data.datasets[1].data = data.cancelled;
+                        appointmentsChart.update();
+                    })
+                    .catch(error => console.error('Error fetching appointment data:', error));
+            });
+        });
+    });
+</script>
+{{/section}}
