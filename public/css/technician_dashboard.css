@@ -1,0 +1,17 @@
+/* Custom styles for technician dashboard */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+  }
+  
+  aside {
+    border-right: 1px solid #e5e7eb;
+  }
+  
+  table {
+    min-width: 600px;
+  }
+  
+  th, td {
+    border-bottom: 1px solid #e5e7eb;
+  }

@@ -1,0 +1,164 @@
+<div class="profile-container">
+    <div class="sidebar">
+        <div class="sidebar-item-container"> 
+            <button class="sidebar-item ">
+                <img src="/public/images/icon/icons8-user-32 (1).png" alt="">
+                <span>Profile</span>
+            </button>
+            <button class="sidebar-item">
+                <img src="/public/images/icon/icons8-password-32 (1).png" alt="">
+                <span>Password</span>
+            </button>
+            <button class="sidebar-item">
+                <img src="/public/images/icon/icons8-exam-32.png" alt="">
+                <span>History Exam</span>
+            </button>
+            <button class="sidebar-item logout">
+                <img src="/public/images/icon/icons8-logout-32.png" alt="">
+                <span>Log out</span>
+            </button>
+        </div>
+    </div>
+    <div class="main-content-container">
+        <div class="user-info-header ">
+            <div class="avatar">
+                <img src="placeholder-avatar.png" alt=" ">
+            </div>
+            <div class="user-details mt-2">
+                <h5 class="username">Lavender Blue 
+                    <img src="/public/images/icon/icons8-edit-32.png" alt="">
+                </h5>
+                <p class="email">lthuong10112003@gmail.com</p>
+            </div>
+        </div>
+        <div class="appointment-status-container">
+            <button class="appointment-status-button">
+                <img src="/public/images/icon/icons8-coming-soon-24.png" alt="" width="30px">
+                Coming</button>
+            <button class="appointment-status-button">
+                <img src="/public/images/icon/icons8-complete-32.png" alt="" width="30px">
+                Completed</button>
+            <button class="appointment-status-button">
+                <img src="/public/images/icon/icons8-atm-cancel-32.png" alt="" width="30px">
+                Cancelled</button>
+            <button class="appointment-filter-button">
+                <img src="/public/images/icon/icons8-filter-32.png" alt=""width="30px">
+            </button>
+        </div>
+        <main class="main-content">
+            <div class="appointment-card">
+                <div class="appointment-title">
+                    <h5>Appointment Detail Information</h5>
+                </div>
+                <div class="appointment-detail-info">
+                    <div class="view-appointment-container">
+                        {{!-- <div class="view-appointment--modal-header">
+                            <div class="button-step-group">
+                                <button class="information-step-button">
+                                    <img src="/public/images/icon/icons8-stethoscope-32 (2).png" alt="">
+                                </button>
+                                <div class="separate-step-line"></div>
+                                <button class="email-verify-step-button">
+                                    <img src="/public/images/icon/icons8-send-email-32.png" alt="">
+                                </button>
+                                <div class="separate-step-line"></div>
+                                <button class="payment-step-button">
+                                    <img src="/public/images/icon/icons8-payment-32 (1).png" alt="">
+                                </button>
+                                <div class="separate-step-line"></div>
+                                <button class="status-step-button">
+                                    <img src="/public/images/icon/icons8-status-32.png" alt="">
+                                </button>
+                            </div>
+                        </div> --}}
+                        <div class="payment-modal-body">
+                            {{!-- <div class="modal-header">
+                                <h2>VIEW</h2>
+                                <h1>Appointment</h1>
+                            </div> --}}
+                            <div class="modal-body-form-container">
+                                <div class="modal-body-form">
+                                    <h5>Patient Information</h5>
+                                    <div class="modal-body">
+                                        <div class="input-group">
+                                            <input type="text" id="name" placeholder="Name">
+                                        </div>
+                                        <div class="input-group">
+                                            <input type="tel" id="phone" placeholder="Phone Number">
+                                        </div>
+                                        <div class="input-group">
+                                            <div class="birthday-input">
+                                                <input type="text" id="birthday" placeholder="Birthday">
+                                                <img src="/public/images/icon/icons8-calendar-32.png" alt="" width="20px">
+                                            </div>
+                                        </div>                           
+                                        <div class="input-group">
+                                            <input type="text" id="address" placeholder="Address">
+                                        </div>
+                                    </div>
+                                    <hr class="custom-separate-line">
+                                    <h5 class="mt-2">Appointment Information</h5>
+                                    <div class="modal-body-appointment-container">
+                                        <div class="modal-body-appointment">
+                                            <div class="info-row">
+                                                <div class="info-label">Specialty</div>
+                                                <div class="info-value">Psychology</div>
+                                            </div>
+                                            <div class="info-row">
+                                                <div class="info-label">Service</div>
+                                                <div class="info-value">None</div>
+                                            </div>
+                                            <div class="info-row">
+                                                <div class="info-label">Doctor</div>
+                                                <div class="info-value">AkiraYuri</div>
+                                            </div>
+                                            <div class="info-row">
+                                                <div class="info-label">Room's No</div>
+                                                <div class="info-value">A8-04</div>
+                                            </div>
+                                            <div class="info-row">
+                                                <div class="info-label">Order's No</div>
+                                                <div class="info-value order-no">24</div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-body-time">
+                                            <h5>Appointment Time</h5>
+                                            <div>
+                                                <img src="/public/images/icon/icons8-clock-32 (1).png" alt="">
+                                                <span id="appointment-time" style="color: #FF4A4D;">10/11/2003 10:00 AM</span>
+                                            </div>
+                                            <p style="color: #E8B716; font-size: 14px;">This is only an estimated time. We sincerely apologize for any inconvenience caused by unexpected delays </p>
+                                            {{!-- We sincerely apologize for any inconvenience caused by unexpected delays. --}}
+                                        </div>
+                                    </div>
+                                    <div class="payment-info-container">
+                                        <div class="payment-img">
+                                            <img src="/public/images/icon/icons8-payment-32 (1) copy.png" alt="" width="60px">
+                                        </div>
+                                        <div class="payment-fee">
+                                            <p>Examination fee</p>
+                                            <p>Extra Service</p>
+                                        </div>
+                                        <div class="payment-value">
+                                            <p>1000000</p>
+                                            <p>1000000</p>
+                                        </div>
+                                        <div class="total-payment">
+                                            <p style="font-weight:700; font-size:large; ">Total</p>
+                                            <p class="total-value">1000000</p>
+
+                                        </div>
+                                    </div>
+                                    <div class="button-action">
+                                        <button class="back-to-main-button">Back to Mainpage</button>
+                                        <button class="cancel-button">Cancel</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
