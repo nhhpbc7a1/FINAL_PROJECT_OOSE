@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Doctor Appointment</title>
+  <link rel="stylesheet" href="/public/css/doctor-side/Appointment.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+</head>
+<body>
+  <div class="container">
+      <div class="content-container">
+        <!-- Left Column -->
+        <div class="left-column">
+                 <div class="appointment-container">
+            <div class="date-filter">
+              <div class="date-input">
+                <input id="datepicker" type="text" placeholder="27/04/2025" />
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M19 4H18V2H16V4H8V2H6V4H5C3.89 4 3.01 4.9 3.01 6L3 20C3 21.1 3.89 22 5 22H19C20.1 22 21 21.1 21 20V6C21 4.9 20.1 4 19 4ZM19 20H5V9H19V20Z" fill="#6c757d"/>
+                </svg>
+              </div>  
+              <button class="view-btn">View</button>
+              <button class="filter-btn">Filter</button>
+            </div>
+           <div class="appointment-date" id="appointmentDateText">Sunday, April 27, 2025</div>
+            <div class="appointment-card">
+              <div class="appointment-time">08:00 AM</div>
+              <div class="patient-name">NGUYEN NGUYEN TOAN KHOA</div>
+              <div class="appointment-type">Periodic Examination</div>
+              <div class="appointment-location">Internal Medicine - Room 203</div>
+              <div class="appointment-status status-examined">Examined</div>
+              <div class="appointment-number">1</div>
+            </div>
+            
+            <div class="appointment-card">
+              <div class="appointment-time">09:15 AM</div>
+              <div class="patient-name">NGUYEN LE TUNG CHI</div>
+              <div class="appointment-type">Re-examination</div>
+              <div class="appointment-location">Internal Medicine - Room 203</div>
+              <div class="appointment-status status-examining">Examining</div>
+              <div class="appointment-number">2</div>
+            </div>
+            
+            <div class="appointment-card">
+              <div class="appointment-time">09:15 AM</div>
+              <div class="patient-name">NGUYEN HOANG HUY</div>
+              <div class="appointment-type">Re-examination</div>
+              <div class="appointment-location">Internal Medicine - Room 203</div>
+              <div class="appointment-status status-examining">Examining</div>
+              <div class="appointment-number">3</div>
+            </div>
+            
+            <div class="appointment-card">
+              <div class="appointment-time">09:15 AM</div>
+              <div class="patient-name">NGUYEN HOANG HUY</div>
+              <div class="appointment-type">Re-examination</div>
+              <div class="appointment-location">Internal Medicine - Room 203</div>
+              <div class="appointment-status status-examining">Examining</div>
+              <div class="appointment-number">4</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Right Column -->
+        <div class="right-column">
+         <div class="appointment-details">
+            <div class="details-header">
+              <div class="details-title">Appointment Details</div>
+              <button class="print-btn">Print</button>
+            </div>
+            
+            <div class="tabs">
+              <button class="tab tab-btn active">   Patient info</button> 
+              <button class="tab tab-btn">Medical History</button>
+              <button class="tab tab-btn">Previous Visits</button>
+            </div>
+            
+            <div class="patient-profile">
+              <div class="patient-avatar">NK</div>
+              <div>
+                <div class="patient-name">NGUYEN NGUYEN TOAN KHOA</div>
+                <div class="patient-id">Patient ID: P123214542323</div>
+                <div class="patient-meta">
+                  <span>20 years old</span>
+                  <span>Male</span>
+                  <span>Blood type: O+</span>
+                </div>
+              </div>
+              <a href="/doctor/patient-details" class="patient-details-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="#0D99FF"/>
+                </svg>
+                Patient Details
+              </a>
+            </div>
+            
+            <div class="appointment-info">
+              <div class="info-title">Appointment Information</div>
+              <div class="info-grid">
+                <div class="info-field">
+                  <div class="field-label">Appointment Date</div>
+                  <div class="field-value">April 28, 2025</div>
+                </div>
+                <div class="info-field">
+                  <div class="field-label">Appointment Time</div>
+                  <div class="field-value">08:00 AM - 08:30 AM</div>
+                </div>
+                <div class="info-field">
+                  <div class="field-label">Appointment Type</div>
+                  <div class="field-value">Period Examination</div>
+                </div>
+                <div class="info-field">
+                  <div class="field-label">Department</div>
+                  <div class="field-value">Internal Medicine</div>
+                </div>
+                <div class="info-field">
+                  <div class="field-label">Room</div>
+                  <div class="field-value">Room 203</div>
+                </div>
+                <div class="info-field status-field">
+                  <div class="field-label">Status</div>
+                  <div class="field-value">Examined</div>
+                </div>
+              </div>
+              
+              <div class="contact-info">
+                <div class="info-title">Contact information</div>
+                <div class="info-grid">
+                  <div class="info-field">
+                    <div class="field-label">Phone Number</div>
+                    <div class="field-value">+84 2131231231233312</div>
+                  </div>
+                  <div class="info-field">
+                    <div class="field-label">Email</div>
+                    <div class="field-value">khoane@gmail.com</div>
+                  </div>
+                </div>
+              </div>
+              
+              <a href="/doctor/examination" id="examinationBtn" class="action-btn">Examination</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+  flatpickr("#datepicker", {
+    dateFormat: "d/m/Y",
+    defaultDate: "27/04/2025",
+    onChange: function(selectedDates, dateStr, instance) {
+      if (selectedDates.length > 0) {
+        const selectedDate = selectedDates[0];
+
+        // Format ngày dạng "Sunday, April 27, 2025"
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const formatted = selectedDate.toLocaleDateString('en-US', options);
+
+        // Cập nhật nội dung text trong div
+        document.getElementById("appointmentDateText").textContent = formatted;
+      }
+    }
+  });
+</script>
+   <script>
+     const sidebar = document.getElementById('sidebar');
+      const toggleSidebar = document.getElementById('toggleSidebar');
+      
+      toggleSidebar.addEventListener('click', function() {
+        sidebar.classList.toggle('collapsed');
+        
+        // Update toggle button position based on sidebar state
+        if (sidebar.classList.contains('collapsed')) {
+          toggleSidebar.style.right = '-15px';
+        } else {
+          toggleSidebar.style.right = '-15px';
+        }
+      });
+      
+      // Make patient name clickable to go to patient details
+      document.querySelector('.patient-name').style.cursor = 'pointer';
+      document.querySelector('.patient-name').addEventListener('click', function() {
+        // Redirect to the patient details page
+        window.location.href = `/doctor/patient-details`;
+      });
+  </script>
+</body>
+
+</html>

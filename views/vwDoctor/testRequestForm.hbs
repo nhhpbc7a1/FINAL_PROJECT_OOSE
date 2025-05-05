@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Doctor TestRequest</title>
+  <link rel="stylesheet" href="/public/css/doctor-side/testRequestForm.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+      <div class="content-container">
+        <div class="column"> 
+            <a href="/doctor/examination" class="back-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="#6c757d"/>
+          </svg>
+          Back to Dashboard
+        </a>
+
+        <div class="lab-request-header">
+          <h1>Laboratory Test Request</h1>
+          <div class="action-buttons">
+            <button class="btn-print">Print</button>
+            <button class="btn-save">Save</button>
+          </div>
+        </div>
+
+        <div class="patient-card">
+          <div class="patient-avatar">
+            NL
+          </div>
+          <div class="patient-info">
+            <h3>NGUYEN LE TUNG CHI</h3>
+            <div class="patient-details">
+              <span>32 years old</span>
+              <span>Female</span>
+              <span>Code: P-20250428</span>
+              <span class="examining-tag">Examining</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-request-card">
+          <div class="card-header">
+            <h2>Test Request Information</h2>
+            <span class="test-code">Code: LT-20250429-001</span>
+          </div>
+
+          <div>
+            <h3 style="margin-bottom: 15px; font-size: 14px; font-weight: 600; color: #006eb9;">Test Selection</h3>
+            
+            <div class="test-categories">
+              <div class="category-tab active">Hematology</div>
+              <div class="category-tab">Biochemistry</div>
+              <div class="category-tab">Immunology</div>
+              <div class="category-tab">Microbiology</div>
+              <div class="category-tab">Urine Analysis</div>
+              <div class="category-tab">Imaging</div>
+            </div>
+
+            <div class="test-options">
+              <div class="test-option">
+                <input type="checkbox" id="cbc" checked>
+                <label for="cbc">Complete Blood Count (CBC)</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="pt">
+                <label for="pt">Prothrombin Time (PT)</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="electro">
+                <label for="electro">Hemoglobin Electrophoresis</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="esr">
+                <label for="esr">Erythrocyte Sedimentation Rate</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="ptt">
+                <label for="ptt">Partial Thromboplastin Time</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="retic">
+                <label for="retic">Reticulocyte Count</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="bgrh">
+                <label for="bgrh">Blood Group & Rh Factor</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="inr">
+                <label for="inr">International Normalized Ratio</label>
+              </div>
+              <div class="test-option">
+                <input type="checkbox" id="pbs">
+                <label for="pbs">Peripheral Blood Smear</label>
+              </div>
+            </div>
+
+            <div class="selected-tests">
+              <div class="selected-tests-header">Selected Tests (1)</div>
+              <div class="selected-test-item">
+                <span>Complete Blood Count (CBC)</span>
+                <button class="remove-test">✕</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn-cancel">Cancel</button>
+            <button class="btn-submit">Submit Request</button>
+          </div>
+        </div>
+        </div>
+      </div>
+  </div>
+  <script>
+    // Parse the URL query parameters
+    function getQueryParams() {
+      const params = {};
+      const queryString = window.location.search.substring(1);
+      const pairs = queryString.split('&');
+      
+      for (let i = 0; i < pairs.length; i++) {
+        const pair = pairs[i].split('=');
+        params[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
+      }
+      
+      return params;
+    }
+    
+    // When page loads, check for patient ID in URL
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check for server-provided patientId (from Handlebars)
+      const serverPatientId = '{{patientId}}';
+      
+      // Check for URL query parameter if server didn't provide patientId
+      let patientId = serverPatientId;
+      if (!patientId || patientId === '{{patientId}}') {
+        const params = getQueryParams();
+        patientId = params.patientId || '';
+      }
+      
+      if (patientId) {
+        console.log('Patient ID:', patientId);
+        
+        // Update the patient code on the page
+        const patientCodeElement = document.querySelector('.patient-details span:nth-child(3)');
+        if (patientCodeElement) {
+          patientCodeElement.textContent = `Code: ${patientId}`;
+        }
+        
+        // Update back link to include patient ID
+        const backLink = document.querySelector('.back-link');
+        if (backLink) {
+          backLink.href = `/doctor/examination?patientId=${patientId}`;
+          backLink.textContent = 'Back to Examination';
+        }
+      }
+    });
+    
+    // Add event listeners for tab switching
+    const categoryTabs = document.querySelectorAll('.category-tab');
+    categoryTabs.forEach(tab => {
+      tab.addEventListener('click', function() {
+        // Remove active class from all tabs
+        categoryTabs.forEach(t => t.classList.remove('active'));
+        // Add active class to clicked tab
+        this.classList.add('active');
+      });
+    });
+    
+    // Add event listener for remove test button
+    document.querySelector('.remove-test').addEventListener('click', function() {
+      // Get the test item element
+      const testItem = this.closest('.selected-test-item');
+      
+      // Remove the test item
+      if (testItem) {
+        testItem.remove();
+        
+        // Update the selected tests count
+        const selectedTestsHeader = document.querySelector('.selected-tests-header');
+        if (selectedTestsHeader) {
+          const count = document.querySelectorAll('.selected-test-item').length;
+          selectedTestsHeader.textContent = `Selected Tests (${count})`;
+        }
+        
+        // Uncheck the corresponding checkbox
+        document.getElementById('cbc').checked = false;
+      }
+    });
+  </script>
+</body>
+</html>

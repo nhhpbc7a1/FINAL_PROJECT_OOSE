@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Doctor Examination</title>
+  <link rel="stylesheet" href="/public/css/doctor-side/examination.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+
+</head>
+<body>
+  <div class="container">
+      <div class="content-container">
+        <div class="column"> 
+         <a href="/doctor/appointments" class="back-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="#6c757d"/>
+          </svg>
+          Back to Appointments
+        </a>
+
+        <div class="page-header">
+                <h1 class="page-title">Medical examination form</h1>
+                <button class="test-request-btn">Test Request</button>
+        </div>
+
+        <div class="patient-card">
+          <div class="patient-initials">
+            NL
+          </div>
+          <div class="patient-info">
+            <h3>NGUYEN LE TUNG CHI</h3>
+            <div class="patient-details">
+              <span>32 years old</span>
+              <span>Female</span>
+              <span>Code: P-20250428</span>
+              <span class="badge">Examining</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="exam-info-card">
+          <div class="exam-info-header">
+            <div>Medical examination information</div>
+            <div>Code: EX-20250429-0912</div>
+          </div>
+
+          <div class="vital-signs">
+            <h2 class="vital-signs-title">Vital signs</h2>
+            
+            <div class="vital-signs-grid">
+              <div class="vital-sign-item">
+                <div class="vital-sign-label">Temperature</div>
+                <div class="vital-sign-value">
+                  <input type="text" class="vital-sign-input" value="37.2" />
+                  <span class="vital-sign-unit">°C</span>
+                </div>
+              </div>
+
+              <div class="vital-sign-item">
+                <div class="vital-sign-label">Blood pressure</div>
+                <div class="vital-sign-value">
+                  <input type="text" class="vital-sign-input" value="130/85" />
+                  <span class="vital-sign-unit">mmHg</span>
+                </div>
+              </div>
+
+              <div class="vital-sign-item">
+                <div class="vital-sign-label">Pulse</div>
+                <div class="vital-sign-value">
+                  <input type="text" class="vital-sign-input" value="78" />
+                  <span class="vital-sign-unit">bpm</span>
+                </div>
+              </div>
+
+              <div class="vital-sign-item">
+                <div class="vital-sign-label">Breathing</div>
+                <div class="vital-sign-value">
+                  <input type="text" class="vital-sign-input" value="16" />
+                  <span class="vital-sign-unit">bpm</span>
+                </div>
+              </div>
+
+              <div class="vital-sign-item">
+                <div class="vital-sign-label">SpO2</div>
+                <div class="vital-sign-value">
+                  <input type="text" class="vital-sign-input" value="98" />
+                  <span class="vital-sign-unit">%</span>
+                </div>
+              </div>
+
+              <div class="vital-sign-item">
+                <div class="vital-sign-label">Weight</div>
+                <div class="vital-sign-value">
+                  <input type="text" class="vital-sign-input" value="78" />
+                  <span class="vital-sign-unit">Kg</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="examination-section">
+            <h2 class="examination-title">Examination</h2>
+            <textarea class="examination-textarea">The patient is alert and responsive. Skin and mucous membranes are pink. There are no signs of difficulty breathing.</textarea>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn-outline">Print</button>
+            <button class="btn btn-primary">Submit</button>
+          </div>
+        </div>
+        </div>
+      </div>
+    </main>
+  </div>
+   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+  <script>
+    // Parse the URL query parameters
+    function getQueryParams() {
+      const params = {};
+      const queryString = window.location.search.substring(1);
+      const pairs = queryString.split('&');
+      
+      for (let i = 0; i < pairs.length; i++) {
+        const pair = pairs[i].split('=');
+        params[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
+      }
+      
+      return params;
+    }
+    
+    // When page loads, check for patient ID in URL or from server
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check for server-provided patientId (from Handlebars)
+      const serverPatientId = '{{patientId}}';
+      
+      // Check for URL query parameter if server didn't provide patientId
+      let patientId = serverPatientId;
+      if (!patientId || patientId === '{{patientId}}') {
+        const params = getQueryParams();
+        patientId = params.patientId || '';
+      }
+      
+      if (patientId) {
+        console.log('Patient ID:', patientId);
+        
+        // Update the patient code on the page
+        const patientCodeElement = document.querySelector('.patient-details span:nth-child(3)');
+        if (patientCodeElement) {
+          patientCodeElement.textContent = `Code: ${patientId}`;
+        }
+        
+        // In a real application, you would:
+        // 1. Fetch patient details using this ID
+        // 2. Update all patient information on the page
+        // 3. Possibly fetch examination history
+      }
+    });
+    
+    // Handle Test Request button click
+    document.querySelector('.test-request-btn').addEventListener('click', function() {
+      // Get patient ID to pass to the test request form
+      const patientCodeElement = document.querySelector('.patient-details span:nth-child(3)');
+      let patientId = '';
+      
+      if (patientCodeElement) {
+        // Extract the ID from the "Code: XXX" text
+        const codeText = patientCodeElement.textContent;
+        patientId = codeText.split(':')[1]?.trim() || '';
+      }
+      
+      // Navigate to the test request form with patient ID as query parameter
+      window.location.href = `/doctor/test-request?patientId=${patientId}`;
+    });
+  </script>
+</body>
+
+</html>
