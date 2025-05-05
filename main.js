@@ -83,6 +83,45 @@ app.engine('hbs', engine({
                 return 'Invalid date';
             }
         },
+        formatTime: function(time, format) {
+            if (!time) return '';
+
+            try {
+                // Kiểm tra xem time có phải là chuỗi hh:mm:ss không
+                if (typeof time === 'string' && /^\d{2}:\d{2}(:\d{2})?$/.test(time)) {
+                    // Thêm ngày hiện tại để tạo thành datetime đầy đủ
+                    const today = moment().format('YYYY-MM-DD');
+                    return moment(`${today} ${time}`).format(format || 'HH:mm');
+                }
+                
+                return moment(time).format(format || 'HH:mm');
+            } catch (error) {
+                console.error('Error formatting time:', error);
+                return 'Invalid time';
+            }
+        },
+        formatCurrency: function(value) {
+            if (value === undefined || value === null) return '0 VNĐ';
+            return numeral(value).format('0,0') + ' VNĐ';
+        },
+        startsWith: function(str, prefix) {
+            if (!str || !prefix) return false;
+            return String(str).startsWith(prefix);
+        },
+        ifCond: function(v1, v2, options) {
+            if (v1 === v2) {
+                return options.fn(this);
+            }
+            return options.inverse(this);
+        },
+        substring: function(str, start, end) {
+            if (!str) return '';
+            if (end) {
+                return String(str).substring(start, end);
+            } else {
+                return String(str).substring(start);
+            }
+        },
         toLowerCase: function(str) {
             return str ? str.toLowerCase() : '';
         },
@@ -126,31 +165,14 @@ app.engine('hbs', engine({
             // Trả về chuỗi gốc nếu không cần cắt hoặc không hợp lệ
             return typeof str === 'string' ? str : ''; // Trả về rỗng nếu không phải string
         },
-        includes: function (string, substring) {
-            if (typeof string !== 'string') return false;
-            return string.includes(substring);
+        moment: function(date, format) {
+            // Helper to use moment.js operations in templates
+            if (!date) return moment();
+            if (!format) return moment(date);
+            return moment(date, format);
         },
-        limitTo: function (array, limit) {
-            if (!Array.isArray(array)) return [];
-            return array.slice(0, limit);
-        },
-        round: function (value) {
-            return Math.round(value);
-        },
-        uniqueYears: function(appointments) {
-            if (!Array.isArray(appointments) || appointments.length === 0) {
-                return [];
-            }
-            
-            // Extract years and filter out duplicates
-            const uniqueYearsSet = new Set(
-                appointments
-                    .filter(appointment => appointment.year)
-                    .map(appointment => appointment.year)
-            );
-            
-            // Convert Set to Array and sort in descending order (newest first)
-            return Array.from(uniqueYearsSet).sort((a, b) => b - a);
+        now: function() {
+            return new Date();
         }
     },
 }));

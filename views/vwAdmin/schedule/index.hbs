@@ -1,0 +1,865 @@
+{{!-- Work Schedule Overview --}}
+{{#section 'css'}}
+    <link rel="stylesheet" href="/public/css/admin-side/schedule.css">
+{{/section}}
+
+
+<div class="content-header">
+    <div>
+        <h1 class="page-title">Work Schedule Management</h1>
+        <p class="page-subtitle">View and manage schedules for doctors and laboratory technicians</p>
+    </div>
+</div>
+
+{{!-- Error/Success Messages --}}
+{{#if error}}
+<div class="alert alert-danger alert-dismissible fade show mt-3">
+    <i class="fas fa-exclamation-circle"></i> <span>{{error}}</span>
+    <button type="button" class="close" data-dismiss="alert">×</button>
+</div>
+{{/if}}
+
+{{#if flashMessage}}
+<div class="alert alert-{{flashMessage.type}} alert-dismissible fade show mt-3">
+    <i class="fas fa-{{#if (eq flashMessage.type 'success')}}check-circle{{else}}exclamation-circle{{/if}}"></i> <span>{{flashMessage.message}}</span>
+    <button type="button" class="close" data-dismiss="alert">×</button>
+</div>
+{{/if}}
+
+<div class="schedule-container">
+    <!-- Schedule Header -->
+    <div class="schedule-header">
+        <div class="date-navigation">
+            <button id="prev-week" class="btn btn-outline-secondary" title="Previous Week">
+                <i class="fas fa-chevron-left"></i>
+                <span class="d-none d-md-inline ml-1">Previous Week</span>
+            </button>
+            <div class="date-display">
+                <span id="date-range">{{formatDate startDate "MMM D"}} - {{formatDate endDate "MMM D, YYYY"}}</span>
+            </div>
+            <button id="next-week" class="btn btn-outline-secondary" title="Next Week">
+                <span class="d-none d-md-inline mr-1">Next Week</span>
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+        <div class="schedule-actions">
+            <a href="/admin/schedule/add" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add Schedule
+            </a>
+        </div>
+    </div>
+
+    <!-- Schedule Filters -->
+    <div class="schedule-filters">
+        <div class="filter-item">
+            <label for="specialty-filter" class="small font-weight-bold">Specialty</label>
+            <select id="specialty-filter" class="form-control {{#if specialtyId}}has-filter{{/if}}">
+                <option value="">All Specialties</option>
+                {{#each specialties}}
+                <option value="{{specialtyId}}" {{#if (eq ../specialtyId specialtyId)}}selected{{/if}}>{{name}}</option>
+                {{/each}}
+            </select>
+        </div>
+
+        <div class="filter-item ml-2">
+            <label for="staff-type-filter" class="small font-weight-bold">Staff Type</label>
+            <select id="staff-type-filter" class="form-control {{#if staffTypeFilter}}has-filter{{/if}}">
+                <option value="all" {{#if (eq staffTypeFilter "all")}}selected{{/if}}>All Staff</option>
+                <option value="doctor" {{#if (eq staffTypeFilter "doctor")}}selected{{/if}}>Doctors Only</option>
+                <option value="labTechnician" {{#if (eq staffTypeFilter "labTechnician")}}selected{{/if}}>Lab Technicians Only</option>
+            </select>
+        </div>
+
+        <div class="filter-item ml-2" id="doctorFilterContainer" style="display: none;">
+            <label for="doctor-filter" class="small font-weight-bold">Doctor</label>
+            <div class="d-flex align-items-center">
+                <span id="selectedDoctorName" class="mr-2"></span>
+                <button id="clear-doctor-filter" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-times"></i> Clear
+                </button>
+            </div>
+        </div>
+        {{#if specialtyId}}
+        <div class="filter-item ml-2">
+            <label class="small font-weight-bold">&nbsp;</label>
+            <div>
+                <button id="clear-specialty-filter" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-times"></i> Clear Specialty Filter
+                </button>
+            </div>
+        </div>
+
+        <div class="filter-item ml-auto">
+            <span class="specialty-filter-indicator">
+                <i class="fas fa-filter"></i>
+                Filtered by:
+                {{#each specialties}}
+                    {{#if (eq ../specialtyId specialtyId)}}
+                        {{name}}
+                    {{/if}}
+                {{/each}}
+            </span>
+        </div>
+        {{/if}}
+    </div>
+
+    {{#if specialtyId}}
+    <!-- Active filters information -->
+    <div class="mb-3">
+        <div class="alert alert-info alert-sm" role="alert">
+            <i class="fas fa-info-circle"></i>
+            Filters applied:
+            <ul class="mb-0 mt-1">
+                <li>
+                    <strong>Specialty:</strong>
+                    {{#each specialties}}
+                        {{#if (eq ../specialtyId specialtyId)}}
+                            {{name}}
+                        {{/if}}
+                    {{/each}}
+                </li>
+                {{#if (ne staffTypeFilter "all")}}
+                <li>
+                    <strong>Staff Type:</strong>
+                    {{#if (eq staffTypeFilter "doctor")}}
+                        Doctors Only
+                    {{else}}
+                        Lab Technicians Only
+                    {{/if}}
+                </li>
+                {{/if}}
+            </ul>
+            <div class="mt-1">
+                Found:
+                <span class="badge badge-light">{{schedules.length}} schedules</span>
+                <span class="badge badge-light">{{doctors.length}} doctors</span>
+                <span class="badge badge-light">{{labTechnicians.length}} lab technicians</span>
+            </div>
+        </div>
+    </div>
+    {{else if (ne staffTypeFilter "all")}}
+    <!-- Staff type filter only -->
+    <div class="mb-3">
+        <div class="alert alert-info alert-sm" role="alert">
+            <i class="fas fa-info-circle"></i>
+            Showing:
+            <strong>
+                {{#if (eq staffTypeFilter "doctor")}}
+                    Doctors Only
+                {{else}}
+                    Lab Technicians Only
+                {{/if}}
+            </strong>
+            <span class="ml-2">
+                (Found: <span class="badge badge-light">{{schedules.length}} schedules</span>)
+            </span>
+        </div>
+    </div>
+    {{/if}}
+
+    <!-- Schedule Calendar -->
+    <div class="schedule-calendar">
+        <div class="calendar-header">
+            <div class="calendar-time-header">Time</div>
+            {{#each days}}
+            <div class="calendar-day-header {{#if (eq date (formatDate (now) 'YYYY-MM-DD'))}}today{{/if}}">
+                <div class="calendar-day-name">{{dayName}}</div>
+                <div class="calendar-day-date">{{dayMonth}}</div>
+            </div>
+            {{/each}}
+        </div>
+
+        <div class="calendar-body">
+            {{#each timeSlots}}
+            <div class="calendar-row">
+                <div class="calendar-time-cell">
+                    <div class="time-slot-label">{{label}}</div>
+                    <div class="time-slot-description">{{description}}</div>
+                </div>
+                {{#each ../days}}
+                <div class="calendar-day-cell" data-date="{{date}}" data-time="{{../time}}">
+                    {{#each ../../schedules}}
+                    {{#if (and (eq workDate ../date) (eq (substring startTime 0 5) ../../time))}}
+                    <div class="schedule-item status-{{status}}" data-schedule-id="{{scheduleId}}" data-doctor-id="{{doctorId}}" data-labtech-id="{{labTechnicianId}}">
+                        <div class="schedule-item-time">
+                            {{#ifCond (substring startTime 0 5) "07:00"}}
+                                Morning (7:00 - 11:30)
+                            {{else}}
+                                Afternoon (13:00 - 16:30)
+                            {{/ifCond}}
+                        </div>
+                        <div class="schedule-item-details">
+                            <div class="schedule-item-staff">
+                                {{#if (eq staffType "doctor")}}
+                                Dr. {{doctorName}}
+                                {{else}}
+                                {{labTechnicianName}}
+                                {{/if}}
+                            </div>
+                            <div class="schedule-item-location">{{roomNumber}}</div>
+                            <span class="schedule-item-status status-{{status}}">{{status}}</span>
+                        </div>
+                    </div>
+                    {{/if}}
+                    {{/each}}
+                </div>
+                {{/each}}
+            </div>
+            {{/each}}
+        </div>
+    </div>
+
+    <!-- Staff Section -->
+    <div class="staff-schedule-container">
+        <ul class="nav nav-tabs" id="staffTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link active" id="doctors-tab" data-toggle="tab" href="#doctors" role="tab" aria-controls="doctors" aria-selected="true">
+                    <i class="fas fa-user-md mr-2"></i> Doctors
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="labtechs-tab" data-toggle="tab" href="#labtechs" role="tab" aria-controls="labtechs" aria-selected="false">
+                    <i class="fas fa-flask mr-2"></i> Lab Technicians
+                </a>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="staffTabContent">
+            <!-- Doctors Tab -->
+            <div class="tab-pane fade show active" id="doctors" role="tabpanel" aria-labelledby="doctors-tab">
+                <div class="staff-list">
+                    {{#each doctors}}
+                    <div class="staff-card">
+                        <div class="staff-header">
+                            <div class="staff-avatar">
+                                {{#if profileImage}}
+                                <img src="{{profileImage}}" alt="{{fullName}}">
+                                {{else}}
+                                <img src="/public/images/default-avatar.jpg" alt="Default avatar">
+                                {{/if}}
+                            </div>
+                            <div class="staff-name">Dr. {{fullName}}</div>
+                            <div class="staff-role">Doctor</div>
+                            <div class="staff-specialty">{{specialtyName}}</div>
+                        </div>
+                        <div class="staff-body">
+                            <ul class="staff-info-list">
+                                <li class="staff-info-item">
+                                    <div class="staff-info-icon">
+                                        <i class="fas fa-graduation-cap"></i>
+                                    </div>
+                                    <div class="staff-info-content">
+                                        <div class="staff-info-label">Experience</div>
+                                        <div class="staff-info-value">{{#if experience}}{{experience}} years{{else}}Not specified{{/if}}</div>
+                                    </div>
+                                </li>
+                                <li class="staff-info-item">
+                                    <div class="staff-info-icon">
+                                        <i class="fas fa-id-card-alt"></i>
+                                    </div>
+                                    <div class="staff-info-content">
+                                        <div class="staff-info-label">License Number</div>
+                                        <div class="staff-info-value">{{licenseNumber}}</div>
+                                    </div>
+                                </li>
+                                <li class="staff-info-item">
+                                    <div class="staff-info-icon">
+                                        <i class="fas fa-phone"></i>
+                                    </div>
+                                    <div class="staff-info-content">
+                                        <div class="staff-info-label">Contact</div>
+                                        <div class="staff-info-value">{{phoneNumber}}</div>
+                                    </div>
+                                </li>
+                            </ul>
+                            <div class="staff-actions">
+                                <button class="btn btn-sm btn-primary view-schedule-btn" data-doctor-id="{{doctorId}}" data-name="{{fullName}}">
+                                    <i class="fas fa-calendar-alt mr-1"></i> View Schedule
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {{/each}}
+
+                    {{#unless doctors.length}}
+                    <div class="alert alert-info w-100">
+                        <i class="fas fa-info-circle mr-2"></i> No doctors found.
+                    </div>
+                    {{/unless}}
+                </div>
+            </div>
+
+            <!-- Lab Technicians Tab -->
+            <div class="tab-pane fade" id="labtechs" role="tabpanel" aria-labelledby="labtechs-tab">
+                <div class="staff-list">
+                    {{#each labTechnicians}}
+                    <div class="staff-card">
+                        <div class="staff-header">
+                            <div class="staff-avatar">
+                                {{#if profileImage}}
+                                <img src="{{profileImage}}" alt="{{fullName}}">
+                                {{else}}
+                                <img src="/public/images/default-avatar.jpg" alt="Default avatar">
+                                {{/if}}
+                            </div>
+                            <div class="staff-name">{{fullName}}</div>
+                            <div class="staff-role">Lab Technician</div>
+                            <div class="staff-specialty">{{specialtyName}}</div>
+                        </div>
+                        <div class="staff-body">
+                            <ul class="staff-info-list">
+                                <li class="staff-info-item">
+                                    <div class="staff-info-icon">
+                                        <i class="fas fa-flask"></i>
+                                    </div>
+                                    <div class="staff-info-content">
+                                        <div class="staff-info-label">Specialization</div>
+                                        <div class="staff-info-value">{{#if specialization}}{{specialization}}{{else}}General{{/if}}</div>
+                                    </div>
+                                </li>
+                                <li class="staff-info-item">
+                                    <div class="staff-info-icon">
+                                        <i class="fas fa-envelope"></i>
+                                    </div>
+                                    <div class="staff-info-content">
+                                        <div class="staff-info-label">Email</div>
+                                        <div class="staff-info-value">{{email}}</div>
+                                    </div>
+                                </li>
+                                <li class="staff-info-item">
+                                    <div class="staff-info-icon">
+                                        <i class="fas fa-phone"></i>
+                                    </div>
+                                    <div class="staff-info-content">
+                                        <div class="staff-info-label">Contact</div>
+                                        <div class="staff-info-value">{{phoneNumber}}</div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    {{/each}}
+
+                    {{#unless labTechnicians.length}}
+                    <div class="alert alert-info w-100">
+                        <i class="fas fa-info-circle mr-2"></i> No laboratory technicians found.
+                    </div>
+                    {{/unless}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{#if specialtyId}}
+<!-- Debug information to help diagnose filtering issues -->
+<div class="debug-info" style="display: none;">
+    <h5>Filter Debug Information:</h5>
+    <div>Active specialty filter: {{specialtyId}}</div>
+    <div>Total schedules: {{schedules.length}}</div>
+    <div>Total doctors: {{doctors.length}}</div>
+    <div>Total lab technicians: {{labTechnicians.length}}</div>
+    <div>
+        Specialty info:
+        {{#each specialties}}
+        {{#if (eq ../specialtyId specialtyId)}}
+            ID: {{specialtyId}}, Name: {{name}}
+        {{/if}}
+        {{/each}}
+    </div>
+    <div>
+        <button class="btn btn-sm btn-secondary" id="showScheduleDebug">Show Schedule Data</button>
+        <div id="scheduleDebugData" style="display: none; margin-top: 10px;"></div>
+    </div>
+</div>
+{{/if}}
+
+<!-- Schedule Detail Modal -->
+<div class="modal fade" id="scheduleDetailModal" tabindex="-1" aria-labelledby="scheduleDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog schedule-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="scheduleDetailModalLabel">Schedule Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="schedule-details-content">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-danger" id="delete-schedule-btn">Delete</button>
+                <button type="button" class="btn btn-primary" id="update-status-btn">Update Status</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+{{#section 'js'}}
+<!-- Đảm bảo moment.js được tải trước script của bạn -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Date navigation
+        const startDate = "{{startDate}}";
+        const endDate = "{{endDate}}";
+        const urlParams = new URLSearchParams(window.location.search);
+        const doctorFilterParam = urlParams.get('doctorId');
+        const staffTypeFilterParam = urlParams.get('staffType') || 'all';
+        
+        try {
+            // Thiết lập tooltips cho các nút previous/next week
+            const prevWeekBtn = document.getElementById('prev-week');
+            const nextWeekBtn = document.getElementById('next-week');
+            
+            if (!window.moment) {
+                console.warn('Moment.js not available for tooltip generation');
+                prevWeekBtn.setAttribute('title', 'Previous Week');
+                nextWeekBtn.setAttribute('title', 'Next Week');
+            } else {
+                const prevWeekStart = window.moment(startDate).subtract(7, 'days').format('MMM D');
+                const prevWeekEnd = window.moment(endDate).subtract(7, 'days').format('MMM D');
+                prevWeekBtn.setAttribute('title', `${prevWeekStart} - ${prevWeekEnd}`);
+
+                const nextWeekStart = window.moment(startDate).add(7, 'days').format('MMM D');
+                const nextWeekEnd = window.moment(endDate).add(7, 'days').format('MMM D');
+                nextWeekBtn.setAttribute('title', `${nextWeekStart} - ${nextWeekEnd}`);
+            }
+        } catch (error) {
+            console.error('Error setting up date tooltips:', error);
+            // Fallback tooltips
+            prevWeekBtn.setAttribute('title', 'Previous Week');
+            nextWeekBtn.setAttribute('title', 'Next Week');
+        }
+
+        // Specialty Filter
+        document.getElementById('specialty-filter').addEventListener('change', function() {
+            const specialtyId = this.value;
+            console.log('Specialty filter changed to:', specialtyId);
+        
+            // Clear doctor filter when changing specialty
+            const staffTypeSelect = document.getElementById('staff-type-filter');
+            const staffType = staffTypeSelect.value;
+
+            console.log('Using staff type:', staffType);
+
+            window.location.href = buildFilterUrl(
+                startDate,
+                endDate,
+                specialtyId,
+                null,
+                staffType
+            );
+        });
+
+        // Staff Type Filter
+        document.getElementById('staff-type-filter').addEventListener('change', function() {
+            const staffType = this.value;
+            console.log('Staff type filter changed to:', staffType);
+
+            // Lấy giá trị từ dropdown specialty-filter thay vì từ URL
+            const specialtySelect = document.getElementById('specialty-filter');
+            const specialtyId = specialtySelect.value;
+
+            const doctorId = urlParams.get('doctorId');
+
+            console.log('Using specialty ID from dropdown:', specialtyId);
+
+            window.location.href = buildFilterUrl(
+                startDate,
+                endDate,
+                specialtyId,
+                doctorId,
+                staffType
+            );
+        });
+
+        // Clear Doctor Filter Button
+        document.getElementById('clear-doctor-filter').addEventListener('click', function() {
+            window.location.href = buildFilterUrl(
+                startDate,
+                endDate,
+                urlParams.get('specialty'),
+                null,
+                urlParams.get('staffType') || 'all'
+            );
+        });
+
+        // Clear Specialty Filter Button (if exists)
+        const clearSpecialtyBtn = document.getElementById('clear-specialty-filter');
+        if (clearSpecialtyBtn) {
+            clearSpecialtyBtn.addEventListener('click', function() {
+                // Reset giá trị của dropdown specialty-filter
+                const specialtySelect = document.getElementById('specialty-filter');
+                specialtySelect.value = '';
+
+                // Lấy giá trị từ dropdown staff-type-filter
+                const staffTypeSelect = document.getElementById('staff-type-filter');
+                const staffType = staffTypeSelect.value;
+
+                window.location.href = buildFilterUrl(
+                    startDate,
+                    endDate,
+                    null,
+                    urlParams.get('doctorId'),
+                    staffType
+                );
+            });
+        }
+
+        const prevWeekBtn = document.getElementById('prev-week');
+        const nextWeekBtn = document.getElementById('next-week');
+
+        // Previous Week Button
+        prevWeekBtn.addEventListener('click', function() {
+            try {
+                // Đảm bảo moment.js có sẵn
+                if (!window.moment) {
+                    console.error('Moment.js is not available');
+                    alert('Error: Date library is not loaded. Please refresh the page.');
+                    return;
+                }
+                
+                const prevWeekStartDate = window.moment(startDate).subtract(7, 'days').format('YYYY-MM-DD');
+                const prevWeekEndDate = window.moment(endDate).subtract(7, 'days').format('YYYY-MM-DD');
+
+                // Lấy giá trị từ các dropdown
+                const specialtySelect = document.getElementById('specialty-filter');
+                const specialtyId = specialtySelect.value;
+
+                const staffTypeSelect = document.getElementById('staff-type-filter');
+                const staffType = staffTypeSelect.value;
+
+                window.location.href = buildFilterUrl(
+                    prevWeekStartDate,
+                    prevWeekEndDate,
+                    specialtyId,
+                    urlParams.get('doctorId'),
+                    staffType
+                );
+            } catch (error) {
+                console.error('Error navigating to previous week:', error);
+                alert('Error navigating to previous week. Please try again.');
+            }
+        });
+        
+        // Next Week Button
+        nextWeekBtn.addEventListener('click', function() {
+            try {
+                // Đảm bảo moment.js có sẵn
+                if (!window.moment) {
+                    console.error('Moment.js is not available');
+                    alert('Error: Date library is not loaded. Please refresh the page.');
+                    return;
+                }
+                
+                const nextWeekStartDate = window.moment(startDate).add(7, 'days').format('YYYY-MM-DD');
+                const nextWeekEndDate = window.moment(endDate).add(7, 'days').format('YYYY-MM-DD');
+
+                // Lấy giá trị từ các dropdown
+                const specialtySelect = document.getElementById('specialty-filter');
+                const specialtyId = specialtySelect.value;
+
+                const staffTypeSelect = document.getElementById('staff-type-filter');
+                const staffType = staffTypeSelect.value;
+
+                window.location.href = buildFilterUrl(
+                    nextWeekStartDate,
+                    nextWeekEndDate,
+                    specialtyId,
+                    urlParams.get('doctorId'),
+                    staffType
+                );
+            } catch (error) {
+                console.error('Error navigating to next week:', error);
+                alert('Error navigating to next week. Please try again.');
+            }
+        });
+
+        // Build the filter URL with proper parameters
+        function buildFilterUrl(startDate, endDate, specialtyId, doctorId, staffType) {
+            console.log('Building URL with params:', { startDate, endDate, specialtyId, doctorId, staffType });
+
+            // Tạo đối tượng URLSearchParams mới
+            const params = new URLSearchParams();
+
+            // Thêm các tham số cơ bản
+            params.set('startDate', startDate);
+            params.set('endDate', endDate);
+
+            // Thêm các tham số tùy chọn nếu có giá trị
+            if (specialtyId) {
+                params.set('specialty', specialtyId);
+            }
+
+            if (doctorId) {
+                params.set('doctorId', doctorId);
+            }
+
+            if (staffType && staffType !== 'all') {
+                params.set('staffType', staffType);
+            }
+
+            // Tạo URL với các tham số
+            const url = `/admin/schedule?${params.toString()}`;
+
+            console.log('Generated URL:', url);
+            return url;
+        }
+
+        // Schedule Item Click
+        document.querySelectorAll('.schedule-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const scheduleId = this.getAttribute('data-schedule-id');
+                openScheduleDetailModal(scheduleId);
+            });
+        });
+
+        // Doctor Schedule View Button
+        document.querySelectorAll('.view-schedule-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const doctorId = this.getAttribute('data-doctor-id');
+                const doctorName = this.getAttribute('data-name');
+                filterCalendarByDoctor(doctorId, doctorName);
+            });
+        });
+
+        // Apply doctor filter if present in URL
+        if (doctorFilterParam) {
+            const doctorItems = document.querySelectorAll('.view-schedule-btn[data-doctor-id="' + doctorFilterParam + '"]');
+            if (doctorItems.length > 0) {
+                const doctorName = doctorItems[0].getAttribute('data-name');
+                showDoctorFilter(doctorFilterParam, doctorName);
+                highlightDoctorSchedules(doctorFilterParam);
+            }
+        }
+
+        // Handle Schedule Detail Modal
+        function openScheduleDetailModal(scheduleId) {
+            // Fetch schedule details via AJAX
+            const scheduleDetailsContent = document.getElementById('schedule-details-content');
+
+            // Loading indicator
+            scheduleDetailsContent.innerHTML = `
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                </div>
+            `;
+
+            // Fetch schedule data
+            fetch(`/admin/schedule/detail/${scheduleId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const schedule = data.schedule;
+                    const shiftLabel = schedule.startTime.startsWith('07:00') ? 'Morning (7:00 - 11:30)' : 'Afternoon (13:00 - 16:30)';
+                    const staffName = schedule.staffType === 'doctor'
+                        ? `Dr. ${schedule.doctorName || 'N/A'}`
+                        : schedule.labTechnicianName || 'N/A';
+
+                    scheduleDetailsContent.innerHTML = `
+                        <div class="mb-4">
+                            <p class="mb-1"><strong>Staff:</strong> ${staffName}</p>
+                            <p class="mb-1"><strong>Date:</strong> ${window.moment ? window.moment(schedule.workDate).format('dddd, MMMM D, YYYY') : new Date(schedule.workDate).toLocaleDateString()}</p>
+                            <p class="mb-1"><strong>Time:</strong> ${shiftLabel}</p>
+                            <p class="mb-1"><strong>Room:</strong> ${schedule.roomNumber || 'No Room'}</p>
+                            <p class="mb-1"><strong>Status:</strong> <span class="status-badge status-${schedule.status}">${schedule.status}</span></p>
+                        </div>
+                        <div class="status-selector mb-3">
+                            <label class="font-weight-bold">Change Status:</label>
+                            <div class="btn-group w-100" role="group">
+                                <button type="button" class="btn btn-outline-success btn-sm status-btn ${schedule.status === 'available' ? 'active' : ''}" data-status="available">Available</button>
+                                <button type="button" class="btn btn-outline-primary btn-sm status-btn ${schedule.status === 'booked' ? 'active' : ''}" data-status="booked">Booked</button>
+                                <button type="button" class="btn btn-outline-danger btn-sm status-btn ${schedule.status === 'unavailable' ? 'active' : ''}" data-status="unavailable">Unavailable</button>
+                            </div>
+                        </div>
+                    `;
+
+                    // Setup status buttons
+                    document.querySelectorAll('.status-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const status = this.getAttribute('data-status');
+                            document.querySelectorAll('.status-btn').forEach(b => b.classList.remove('active'));
+                            this.classList.add('active');
+                            document.getElementById('update-status-btn').setAttribute('data-status', status);
+                        });
+                    });
+
+                    // Setup update status button
+                    document.getElementById('update-status-btn').setAttribute('data-schedule-id', scheduleId);
+                    document.getElementById('update-status-btn').setAttribute('data-status', schedule.status);
+
+                    // Setup delete button
+                    document.getElementById('delete-schedule-btn').setAttribute('data-schedule-id', scheduleId);
+                } else {
+                    scheduleDetailsContent.innerHTML = '<div class="alert alert-danger">Failed to load schedule details</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching schedule:', error);
+                scheduleDetailsContent.innerHTML = '<div class="alert alert-danger">An error occurred while loading schedule details</div>';
+            });
+
+            $('#scheduleDetailModal').modal('show');
+        }
+
+        // Update Status Button Click
+        document.getElementById('update-status-btn').addEventListener('click', function() {
+            const scheduleId = this.getAttribute('data-schedule-id');
+            const status = this.getAttribute('data-status');
+
+            // Send AJAX request to update status
+            fetch(`/admin/schedule/update-status/${scheduleId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Close modal and reload page
+                    $('#scheduleDetailModal').modal('hide');
+                    location.reload();
+                } else {
+                    alert('Failed to update status: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error updating status:', error);
+                alert('An error occurred while updating status');
+            });
+        });
+
+        // Delete Schedule Button Click
+        document.getElementById('delete-schedule-btn').addEventListener('click', function() {
+            const scheduleId = this.getAttribute('data-schedule-id');
+
+            if (confirm('Are you sure you want to delete this schedule?')) {
+                // Send AJAX request to delete
+                fetch(`/admin/schedule/delete/${scheduleId}`, {
+                    method: 'POST',
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Close modal and reload page
+                        $('#scheduleDetailModal').modal('hide');
+                        location.reload();
+                    } else {
+                        alert('Failed to delete schedule: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting schedule:', error);
+                    alert('An error occurred while deleting schedule');
+                });
+            }
+        });
+
+        // Filter calendar to show only a specific doctor's schedule
+        function filterCalendarByDoctor(doctorId, doctorName) {
+            window.location.href = buildFilterUrl(
+                startDate,
+                endDate,
+                urlParams.get('specialty'),
+                doctorId,
+                staffTypeFilterParam
+            );
+        }
+
+        // Show doctor filter UI
+        function showDoctorFilter(doctorId, doctorName) {
+            const doctorFilterContainer = document.getElementById('doctorFilterContainer');
+            const selectedDoctorName = document.getElementById('selectedDoctorName');
+
+            selectedDoctorName.textContent = `Dr. ${doctorName}`;
+            doctorFilterContainer.style.display = 'block';
+        }
+
+        // Highlight doctor schedules in the calendar
+        function highlightDoctorSchedules(doctorId) {
+            // Add 'filtered-out' class to all schedule items
+            document.querySelectorAll('.schedule-item').forEach(item => {
+                item.classList.add('filtered-out');
+                item.classList.remove('filtered-in');
+            });
+
+            // Add 'filtered-in' class to the selected doctor's schedules
+            document.querySelectorAll(`.schedule-item[data-doctor-id="${doctorId}"]`).forEach(item => {
+                item.classList.remove('filtered-out');
+                item.classList.add('filtered-in');
+            });
+        }
+
+        // Debug feature - can be used to diagnose filtering issues
+        const showScheduleDebugBtn = document.getElementById('showScheduleDebug');
+        if (showScheduleDebugBtn) {
+            showScheduleDebugBtn.addEventListener('click', function() {
+                const debugDataContainer = document.getElementById('scheduleDebugData');
+                if (debugDataContainer.style.display === 'none') {
+                    // Create a simplified version of schedules for display
+                    const scheduleData = Array.from(document.querySelectorAll('.schedule-item'))
+                        .map(item => {
+                            return {
+                                id: item.getAttribute('data-schedule-id'),
+                                doctorId: item.getAttribute('data-doctor-id'),
+                                labTechId: item.getAttribute('data-labtech-id'),
+                                date: item.closest('.calendar-day-cell').getAttribute('data-date'),
+                                time: item.closest('.calendar-day-cell').getAttribute('data-time')
+                            };
+                        });
+
+                    debugDataContainer.innerHTML = `<pre>${JSON.stringify(scheduleData, null, 2)}</pre>`;
+                    debugDataContainer.style.display = 'block';
+                    showScheduleDebugBtn.textContent = 'Hide Schedule Data';
+                } else {
+                    debugDataContainer.style.display = 'none';
+                    showScheduleDebugBtn.textContent = 'Show Schedule Data';
+                }
+            });
+        }
+
+        // Toggle debug panel
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+Shift+D to toggle debug panel
+            if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+                const debugInfo = document.querySelector('.debug-info');
+                if (debugInfo) {
+                    debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
+                }
+                e.preventDefault();
+            }
+        });
+
+        // If specialty filter is active, highlight the filter
+        if (urlParams.get('specialty')) {
+            const specialtySelect = document.getElementById('specialty-filter');
+            specialtySelect.classList.add('active-filter');
+        }
+
+        // If staff type filter is active, highlight the filter
+        if (urlParams.get('staffType') && urlParams.get('staffType') !== 'all') {
+            const staffTypeSelect = document.getElementById('staff-type-filter');
+            staffTypeSelect.classList.add('active-filter');
+        }
+    });
+</script>
+{{/section}}
