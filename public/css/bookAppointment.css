@@ -1,0 +1,250 @@
+.book-appointment-container{
+    font-family: sans-serif;
+    display: flex;
+    flex-direction: column; 
+    min-height: 100vh;
+    background-color: #FBFBFB; /* Light blue background */
+    margin-bottom: 30px;
+}
+.book-appointment-modal-container{
+    flex-grow: 1; /* Cho phép container form chiếm không gian còn lại */
+    display: flex;
+    justify-content: center; /* Căn giữa form theo chiều ngang */
+    align-items: center;
+    background-color: #FBFBFB;
+
+}
+.book-appointment-modal {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 10px 30px;
+    width: 750px; 
+}
+
+.modal-header {
+    display: flex; /* Use flexbox to control alignment */
+    flex-direction: column; /* Stack the headings vertically */
+    align-items: flex-start; /* Align items to the left */
+    margin-bottom: 0;
+    position: relative;
+    border: none;
+    margin-left: 20px;
+}
+
+.modal-header h2 {
+    color: #002B9A; /* Blue heading */
+    font-size: 1.5em;
+    margin: 0;
+}
+
+.modal-header h1 {
+    color: #002B9A; /* Blue heading */
+    font-size: 40px;
+    margin-top: -10px;
+    /* margin: 0 0 0 5px; */
+    font-weight: 600;
+}
+
+.close-button {
+    color: #90caf9; /* Light blue close button */
+    font-size: 1.8em;
+    cursor: pointer;
+    border: none;
+    background: none;
+    padding: 0;
+}
+
+.close-button:hover {
+    color: #1e88e5;
+}
+
+.modal-body {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    padding-top: 30px;
+
+}
+
+.input-group {
+    display: flex;
+    position: relative;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+
+.input-group input[type="text"],
+.input-group input[type="tel"],
+.input-group input[type="email"],
+.input-group input[type="password"] {
+    border: 1px solid #81BAEE; /* Light blue border */
+    background-color: #F2F2F2;
+    border-radius: 50px;
+    padding: 15px;
+    font-size: 16px;
+    color: #333;
+    
+}
+
+.input-group input::placeholder {
+    color: #13467E; /* Light blue placeholder */
+}
+
+.birthday-input, .appoinment-date-input {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+input{
+    width: 300px;
+    margin: 10px;
+}
+.input-group img{
+    position: absolute;
+    margin-right: 20px;
+    right: 5px; /* Khoảng cách từ mép phải của .birthday-input */
+    top: 50%;
+    transform: translateY(-50%); /* Căn giữa dọc hình ảnh */
+    width: 20px; /* Kích thước hình ảnh */
+    height: auto;
+    pointer-events: none; 
+
+}
+.birthday-input input {
+    padding-right: 30px; /* Space for the icon */
+
+}
+.select-wrapper {
+    position: relative;
+    background-color: #F2F2F2;
+    border: 1px solid #81BAEE; /* Light blue border */
+    border-radius: 50px;
+    overflow: hidden;
+    width: 300px;
+    margin: 10px;
+}
+
+.select-wrapper select {
+    width: 100%;
+    padding: 15px;
+    background-color: #F2F2F2;
+    border-radius: 50px;
+    border: 1px solid #8baac7; /* Light blue border */
+    color: #13467E;
+    border: none;
+    appearance: none;
+    /* cursor: pointer; */
+}
+
+.select-wrapper-service select {
+    width: 100%;
+    padding: 15px;
+    background-color: #F2F2F2;
+    border-radius: 50px;
+    border: 1px solid #8baac7; /* Light blue border */
+    color: #13467E;
+    border: none;
+    appearance: none;
+    /* cursor: pointer; */
+}
+.select-wrapper-service{
+    position: relative;
+    background-color: #F2F2F2;
+    border: 1px solid #81BAEE; /* Light blue border */
+    border-radius: 50px;
+    overflow: hidden;
+    width: 640px;
+    margin: 10px 0px;
+}
+#symptom{
+    margin-top: 30px;
+    width: 640px;
+    height: 70px;
+}
+.radio-group {
+    grid-column: 1 / -1; /* Span across both columns */
+}
+
+.radio-options {
+    display: flex; /* Display labels in a row */
+    gap: 0px; /* Adjust the gap between labels */
+    align-items: center; /* Vertically align radio and text */
+    margin-top: 10px;
+}
+.lbl-department{
+    margin: 20px 30px 10px 30px;
+    color: #13467E;
+
+}
+.radio-options label {
+    display: flex;
+    align-items: center;
+    color: #333;
+    font-size: 0.95em;
+    margin-left: -125px;
+}
+
+.radio-options input[type="radio"] {
+    margin-right: -130px; /* Reduce the margin between radio button and text */
+}
+
+.radio-label-text {
+    /* You can add specific styling for the text if needed */
+}
+
+.password-group {
+    position: relative;
+}
+
+.password-input {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-input input {
+    padding-right: 30px; /* Space for the eye icon */
+}
+.button-group{
+    display: flex;
+    gap: 30px; /* Khoảng cách giữa hai nút */
+    justify-content: start;
+    margin-left: 30px;
+}
+.back-button{
+    background-color: white; /* Blue button */
+    color: #13467E;
+    border: 2px solid #13467E;
+    border-radius: 6px;
+    padding: 12px 0px;
+    font-size: 1.1em;
+    cursor: pointer;
+    margin: 30px 0px;
+    width: 200px;
+    /* display: flex;
+    justify-content: center;
+    align-items: center; */
+
+}
+.submit-button {
+    background-color: #13467E; /* Blue button */
+    color: white;
+    border: 2px solid #13467E;
+    border-radius: 6px;
+    padding: 12px 0px;
+    font-size: 1.1em;
+    cursor: pointer;
+    margin: 30px 0px;
+    width: 200px;
+    /* display: flex;
+    justify-content: center;
+    align-items: center; */
+}
+.button-group button:hover{
+    background-color: #4AABF2;
+}
+
+

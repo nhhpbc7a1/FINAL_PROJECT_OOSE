@@ -160,10 +160,9 @@ app.get('/', (_req, res) => {
     res.redirect('/patient');
 });
 
+
 import accountRouter from './routes/account.route.js';
 app.use('/account', accountRouter);
-
-
 
 import patientRouter from './routes/patient/patient.route.js';
 app.use('/patient', patientRouter);

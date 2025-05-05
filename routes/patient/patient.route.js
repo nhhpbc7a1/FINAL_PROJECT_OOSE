@@ -13,5 +13,8 @@ router.use((req, res, next) => {
 router.get('/', async function (req, res) {
     res.render('homepage');
 });
+router.get('/', async function (req, res) {
+  res.render('login');
+});
 
 export default router;
