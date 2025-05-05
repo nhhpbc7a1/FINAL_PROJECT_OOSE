@@ -1,0 +1,39 @@
+{{#section 'css'}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
+        integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    {{!-- swiperjs --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <link rel="stylesheet" href="/public/css/changePass.css">
+{{/section}}
+
+{{#section 'js'}}
+{{/section}}
+
+<div class="form-group">
+    <div class="input-group password-group">
+        <div class="password-input">
+            <input type="password" id="current-password" placeholder="Enter current password">
+            <img src="/public/images/icon/icons8-eye-30.png" alt="">
+        </div>
+    </div>
+    <div class="input-group password-group">
+        <div class="password-input">
+            <input type="password" id="new-password" placeholder="Enter new password">
+            <img src="/public/images/icon/icons8-eye-30.png" alt="">
+        </div>
+    </div>
+    <p class="password-notion">Create a new password that is at least 6 characters long. A strong password is a combination of letters, numbers, and punctuation.</p>
+    <div class="input-group password-group">
+        <div class="password-input">
+            <input type="password" id="re-type-password" placeholder="Re-type new password">
+            <img src="/public/images/icon/icons8-eye-30.png" alt="">
+        </div>
+    </div>
+    <p  class="password-notion">Your retype password must be the same as the password you just created</p>
+</div>
+<div class="update-button-container">
+    <button class="back-button">Back</button>
+    <button class="update-button">Update</button>
+</div>

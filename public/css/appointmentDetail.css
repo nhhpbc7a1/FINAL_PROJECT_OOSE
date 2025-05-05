@@ -1,0 +1,404 @@
+.appointment-status-container{
+    background-color: #81BAEE;
+    width: 1000px;
+    height: 70px;
+    margin-bottom: 20px;
+    display: flex;
+}
+.appointment-status-button{
+    background-color: #81BAEE;
+    border: none;
+    color: white;
+    font-weight: 600;
+    height: 68px;
+    gap: 5px;
+    width: 31%;
+}
+.appointment-filter-button{
+    width: 7%;
+    background-color: #13467E;
+    border: #13467E;
+
+}
+.appointment-status-button img{
+    margin-right: 10px;
+}
+.appointment-status-button:hover{
+    background-color: #13467E;
+}
+
+/* Form Grid */
+.booked-time{
+    display: flex;
+    justify-content: space-between;
+}
+.booked-time p{
+    color: #E8B716;
+    padding: 10px;
+}
+.modal-body-form-container{
+    display: flex; 
+}
+.appointment-status-container{
+    background-color: #81BAEE;
+    width: 1000px;
+    height: 70px;
+    margin-bottom: 20px;
+    display: flex;
+}
+.appointment-status-button{
+    background-color: #81BAEE;
+    border: none;
+    color: white;
+    font-weight: 600;
+    height: 68px;
+    gap: 5px;
+    width: 31%;
+}
+.appointment-filter-button{
+    width: 7%;
+    background-color: #13467E;
+    border: #13467E;
+
+}
+.appointment-status-button img{
+    margin-right: 10px;
+}
+.appointment-status-button:hover{
+    background-color: #13467E;
+}
+/* Update Button */
+.appointment-card{
+margin-top: 20px;
+}
+.appointment-title{
+    margin: auto;
+    background-color: #D8EBFD;
+    width: 852px;
+    text-align: center;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.appointment-title h5{
+    color: #13467E;
+    font-weight: 600;
+    padding: 0px;
+
+}
+.appointment-detail-info{
+    background-color: white;
+}
+.main-content{
+    padding: 0px;
+}
+.view-appointment--container{
+    background-color: #FBFBFB;
+    font-size: 16px;
+    /* display: flex;
+    justify-content: center;
+    align-items: center; */
+
+}
+.view-appointment--modal-header{
+    background-color: #81BAEE;
+    height: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.button-step-group{
+    display: flex; /* Sử dụng flexbox để sắp xếp các nút và đường kẻ theo hàng ngang */
+    align-items: center; /* Căn chỉnh các phần tử theo chiều dọc ở giữa */
+    justify-content: space-between; /* Phân phối khoảng trắng đều giữa các phần tử */
+    width: fit-content; /* Điều chỉnh chiều rộng vừa đủ nội dung */
+    margin: 0 auto;
+}
+.button-step-group button{
+    background-color: white;
+    border-radius: 100%;
+    width: 60px;
+    height: 60px;
+    border: white;
+    outline: 3px solid white;
+    outline-offset: 5px;
+    display: flex; /* Để căn giữa hình ảnh bên trong nút */
+    justify-content: center;
+    align-items: center;
+}
+.separate-step-line {
+    width: 80px;
+    height: 2px; /* Độ dày của đường kẻ */
+    background-color: #ffffff; /* Màu của đường kẻ */
+    flex-grow: 1; /* Cho phép đường kẻ kéo dài để lấp đầy khoảng trống */
+    margin: 0 8px; /* Tạo khoảng cách giữa đường kẻ và nút */
+}
+.modal-body-form-container{
+    flex-grow: 1; /* Cho phép container form chiếm không gian còn lại */
+    display: flex;
+    justify-content: center; /* Căn giữa form theo chiều ngang */
+    align-items: center;
+    background-color: #ffffff;
+
+
+}
+.modal-body-form {
+    background-color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 10px 30px;
+    width: 850px; 
+    padding-bottom: 30px;
+}
+.modal-body-form h5{
+    padding-bottom: 0px;
+    padding-top: 10px;
+    
+}
+.custom-separate-line{
+    margin: 0px auto;
+    width: 95%;
+    
+}
+.modal-body-appointment-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.modal-body-appointment .modal-body-time{
+    width: 50%;
+}
+.modal-body-appointment{
+    margin-bottom: 20px;
+    margin-left: 40px;
+    margin-top: -25px;
+}
+.modal-body-time h5{
+    padding-bottom: 10px;
+    margin-right: 15px;
+    text-align: center;
+}
+.modal-body-time{
+    border: 1px solid rgb(146, 144, 144);
+    border-radius: 10px;
+    width: 300px;
+    padding:10px;
+    text-align: center;
+    font-weight: 600;
+    margin: 0px auto;
+    margin-left: 200px;
+}
+.modal-body-appointment div{
+    margin-top: 20px;
+}
+.modal-body-appointment img{
+    margin-right: 20px;
+    width: 20px;
+}
+.modal-body-time img{
+    margin-right: 20px;
+    width: 25px;
+    margin-bottom: 10px;
+}
+.modal-header {
+    display: flex; /* Use flexbox to control alignment */
+    flex-direction: column; /* Stack the headings vertically */
+    align-items: flex-start; /* Align items to the left */
+    margin-bottom: 0;
+    position: relative;
+    border: none;
+    margin-left: 20px;
+}
+
+.modal-header h2 {
+    color: #002B9A; /* Blue heading */
+    font-size: 1.5em;
+    margin: 0;
+}
+
+.modal-header h1 {
+    color: #002B9A; /* Blue heading */
+    font-size: 45px;
+    margin-top: -10px;
+    /* margin: 0 0 0 5px; */
+    font-weight: 600;
+}
+.input-group input[type="text"],
+.input-group input[type="tel"] {
+    border: 1px solid #81BAEE; /* Light blue border */
+    background-color: #F2F2F2;
+    border-radius: 50px;
+    padding: 15px;
+    font-size: 16px;
+    color: #333;
+    
+}
+.modal-body {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    padding-top: 0px;
+
+}
+
+.input-group {
+    display: flex;
+    position: relative;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+.input-group input::placeholder {
+    color: #13467E; /* Light blue placeholder */
+}
+
+.birthday-input, .appoinment-date-input {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+input{
+    width: 350px;
+    margin: 10px;
+}
+.input-group img{
+    position: absolute;
+    margin-right: 20px;
+    right: 5px; /* Khoảng cách từ mép phải của .birthday-input */
+    top: 50%;
+    transform: translateY(-50%); /* Căn giữa dọc hình ảnh */
+    width: 20px; /* Kích thước hình ảnh */
+    height: auto;
+    pointer-events: none; 
+
+}
+.birthday-input input {
+    padding-right: 30px; /* Space for the icon */
+
+}
+.payment-modal-body{
+    background-color: #FBFBFB;
+}
+.button-group{
+    margin-left: 100px;
+}
+.button-group button{
+    width: 250px;
+    height: 70px;
+    border: 2px solid;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    font-weight: 600;
+    font-size: 18px;
+}
+.pay-button img{
+    width: 30px;
+    margin-right: 60px;
+    margin-left: 10px;
+}
+.info-row {
+    display: flex;
+    height: 25px;
+}
+.info-label {
+    font-weight: bold;
+    margin-right: 30px;
+    margin-top: 60px;
+
+    width: 100px; /* Đặt chiều rộng cố định cho label */
+    color: #333; /* Màu chữ label */
+}
+
+.info-value {
+    color: #555; /* Màu chữ value */
+}
+
+.order-no {
+    color: green; /* Màu xanh cho Order's No */
+    font-weight: bold;
+}
+.payment-info-container{
+    background-color: #D8ECFF;
+    width:750px;
+    height: 150px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin: 0px auto;
+    margin-top: 20px;
+}
+.payment-info-container img{
+    margin-left: 20px;
+    margin-right: 30px;
+}
+.payment-info-container .payment-img{
+    width: 30px;
+}
+.payment-fee{
+    width: 200px;
+    margin-left: 80px;
+    font-weight: 600;
+    font-size: 18px;
+}
+.payment-value{
+    margin: 0px;
+    font-size: 18px;
+    font-weight: 600;
+}
+.total-payment{
+    margin-left: 150px;
+    text-align: center;
+}
+.total-value{
+    color: #16A90F;
+    font-weight: 700;
+    font-size: 24px;
+}
+.button-action{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 750px;
+    margin-left: 20px;
+}
+.button-action button{
+    margin-top: 20px;
+    width: 200px;
+    height: 60px;
+    /* margin-left: 20px; */
+    font-weight: 600;
+    font-size: 18px;
+    border-radius: 5px;
+}
+.button-action a{
+    color: white;
+}
+/* .back-to-main-button{
+    border: 2px solid #FF4A4D;
+    color: #FF4A4D;
+    background-color: white;
+
+}
+.cancel-button{
+    border: 2px solid #FF4A4D;
+    color: white;
+    background-color: #FF4A4D;
+
+} */
+.blood-test-button{
+    border: 2px solid #FF4A4D;
+    color: white;
+    background-color: #FF4A4D;
+
+}
+.prescription-button{
+    border: 2px solid #39C332;
+    color: white;
+    background-color: #39C332;
+
+}
+.exam-button{
+    border: 2px solid #E8B716;
+    color: white;
+    background-color: #E8B716;
+}
