@@ -1,4 +1,4 @@
-.payment-page-container{
+.view-appointment--container{
     background-color: #FBFBFB;
     font-size: 16px;
     /* display: flex;
@@ -6,7 +6,7 @@
     align-items: center; */
 
 }
-.payment-modal-header{
+.view-appointment--modal-header{
     background-color: #81BAEE;
     height: 100px;
     display: flex;
@@ -57,7 +57,7 @@
     padding-bottom: 30px;
 }
 .modal-body-form h5{
-    margin-left: -60px;
+    /* margin-left: -60px; */
     padding-bottom: 0px;
     padding-top: 10px;
     
@@ -67,8 +67,33 @@
     width: 95%;
     
 }
+.modal-body-appointment-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.modal-body-appointment .modal-body-time{
+    width: 50%;
+}
 .modal-body-appointment{
+    margin-bottom: 20px;
     margin-left: 40px;
+    margin-top: -25px;
+}
+.modal-body-time h5{
+    padding-bottom: 10px;
+    margin-right: 15px;
+    text-align: center;
+}
+.modal-body-time{
+    border: 1px solid rgb(146, 144, 144);
+    border-radius: 10px;
+    width: 300px;
+    padding:10px;
+    text-align: center;
+    font-weight: 600;
+    margin: 0px auto;
+    margin-left: 200px;
 }
 .modal-body-appointment div{
     margin-top: 20px;
@@ -76,6 +101,11 @@
 .modal-body-appointment img{
     margin-right: 20px;
     width: 20px;
+}
+.modal-body-time img{
+    margin-right: 20px;
+    width: 25px;
+    margin-bottom: 10px;
 }
 .modal-header {
     display: flex; /* Use flexbox to control alignment */
@@ -95,7 +125,7 @@
 
 .modal-header h1 {
     color: #002B9A; /* Blue heading */
-    font-size: 50px;
+    font-size: 45px;
     margin-top: -10px;
     /* margin: 0 0 0 5px; */
     font-weight: 600;
@@ -156,41 +186,6 @@ input{
 .payment-modal-body{
     background-color: #FBFBFB;
 }
-.payment-modal-footer{
-    background-color: white;
-    height: 200px;
-    margin-top: 40px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding-top: 10px;
-
-}
-.payment-modal-footer div{
-    width: 33%;
-}
-.payment-fee{
-    margin-left:100px;
-    font-size: 18px;
-    font-weight: 600;
-
-}
-.payment-fee .temporary-fee{
-    font-weight: 700;
-    font-size: 20px;
-}
-.payment-value{
-    font-size: 18px;
-    font-weight: 600;
-    margin-left: 200px;
-
-}
-.payment-value .total-value{
-    color: #16A90F;
-    font-size: 24px;
-    font-weight: 700;
-
-}
 .button-group{
     margin-left: 100px;
 }
@@ -203,23 +198,79 @@ input{
     font-weight: 600;
     font-size: 18px;
 }
-.button-group button:hover{
-    background-color: #81BAEE;
-}
-.button-group .back-button{
-    border-color: #13467E;
-    color: #13467E;
-}
-.button-group .pay-button{
-    border-color: #13467E;
-    background-color: #13467E;
-    color: white;
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-}
 .pay-button img{
     width: 30px;
     margin-right: 60px;
     margin-left: 10px;
+}
+.info-row {
+    display: flex;
+    height: 25px;
+}
+.info-label {
+    font-weight: bold;
+    margin-right: 30px;
+    margin-top: 60px;
+
+    width: 100px; /* Đặt chiều rộng cố định cho label */
+    color: #333; /* Màu chữ label */
+}
+
+.info-value {
+    color: #555; /* Màu chữ value */
+}
+
+.order-no {
+    color: green; /* Màu xanh cho Order's No */
+    font-weight: bold;
+}
+.payment-info-container{
+    background-color: #D8ECFF;
+    width:750px;
+    height: 150px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin: 0px auto;
+    margin-top: 20px;
+}
+.payment-info-container img{
+    margin-left: 20px;
+    margin-right: 30px;
+}
+.payment-info-container .payment-img{
+    width: 30px;
+}
+.payment-fee{
+    width: 200px;
+    margin-left: 80px;
+    font-weight: 600;
+    font-size: 18px;
+}
+.payment-value{
+    margin: 0px;
+    font-size: 18px;
+    font-weight: 600;
+}
+.total-payment{
+    margin-left: 150px;
+    text-align: center;
+}
+.total-value{
+    color: #16A90F;
+    font-weight: 700;
+    font-size: 24px;
+}
+.back-to-main-button{
+    margin-top: 20px;
+    width: 200px;
+    height: 60px;
+    border: 2px solid #13467E;
+    color: #13467E;
+    border-radius: 5px;
+    background-color: white;
+    margin-left: 20px;
+    font-weight: 600;
+    font-size: 18px;
+
 }
