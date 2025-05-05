@@ -14,37 +14,27 @@
     <link rel="stylesheet" href="/public/css/login.css">
 </head>
 <body>
-    <div class="login-container">
+    <div class="password-container">
         <div class="modal-header">
-            <h2>LOGIN</h2>
-            <h1>Account</h1>
+            <h2>FORGOT</h2>
+            <h1>Password</h1>
         </div>
-        <div class="signin-modal-container">
-            <div class="signin-modal">
-                <div class="modal-footer">
-                    <p>Don't have an account? <a href="#">Sign in</a></p>
-                </div>
+        <div class="password-modal-container">
+            <div class="password-modal">
+                <p>Please enter your account’s verified email address so that we can help you get your password. </p>
                 <div class="modal-body-container">
                     <div class="modal-body">
-                        <button class="button-gmail-signin">
-                            <img src="/public/images/icon/icons8-gmail-30.png" alt="">
-                            <span style="font-weight:600;">Gmail</span>
-                        </button>
-                        <p style="color: rgb(107, 107, 107);">OR</p>
-                        <div class="input-group">
-                            <input type="text" id="name" placeholder="Name">
-                        </div>
                         <div class="input-group password-group">
-                            <div class="password-input">
-                                <input type="password" id="password" placeholder="Password">
-                                <img src="/public/images/icon/icons8-eye-30.png" alt="">
+                            <div class="email-input">
+                                <input type="text" id="email" placeholder="Email address">
                             </div>
                         </div>
                     </div>
                 </div>
+                <p>We will send a code to your email</p>
                 <div class="button-group">
-                    <button class="forgot-button"><a href="/account/login/forgotPass" style="color: #13467E;">Forgot password?</a></button>
-                    <button class="login-button">Login</button>
+                    <button class="back-button">Back</button>
+                    <button class="continue-button">Continue</button>
                 </div>
             </div>
 
