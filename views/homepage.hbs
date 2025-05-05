@@ -1,252 +1,142 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+{{#section 'css'}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
         integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
     {{!-- swiperjs --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <link rel="stylesheet" href="/public/css/homepage.css">
-</head>
-<body>
-   <div class="homepage_container">
-        <div class="background_image">
-            <button class="button_book_appointment">Book Appointment</button>
-        </div>
-        <div class="specialty-service-container">
-            <div class="service-section">
-                <h4 class="section-title">SERVICE</h4>
-                <div class="service-grid">
-                    <div class="service-item">
-                        <img src="/public/images/background/general.jpg" alt="General Health Check-up Package">
-                        <h4 class="service-name" style="color: #B91A3C;">GENERAL HEALTH CHECK-UP PACKAGE</h4>
-                    </div>
-                    <div class="service-item">
-                        <img src="/public/images/background/bloood.jpg" alt="General Health Check-up Package">
-                        <h4 class="service-name" style="color: #1063BF;">GENERAL HEALTH CHECK-UP PACKAGE</h4>
-                    </div>
-                    <div class="service-item">
-                        <img src="/public/images/background/bloood.jpg" alt="General Health Check-up Package">
-                        <h4 class="service-name" style="color: #1063BF;">GENERAL HEALTH CHECK-UP PACKAGE</h4>
-                    </div>
-                    <div class="service-item">
-                        <img src="/public/images/background/bloood.jpg" alt="General Health Check-up Package">
-                        <h4 class="service-name" style="color: #1063BF;">GENERAL HEALTH CHECK-UP PACKAGE</h4>
-                    </div>
-                </div>
-            </div>
+{{/section}}
 
-            <div class="specialty-section">
-                <h4 class="section-title">SPECIALTY</h4>
-                <ul class="specialty-list">
-                    <li class="specialty-item">
-                        <div class="specialty-icon">
-                            <img src="/public/images/icon/icons8-dog-bone-35.png" alt="Rheumatology">
-                        </div>
-                        <div class="specialty-info">
-                            <h3 class="specialty-name">RHEUMATOLOGY</h3>
-                            <a href="#" class="view-detail">View detail</a>
-                        </div>
-                    </li>
-                    <li class="specialty-item">
-                        <div class="specialty-icon">
-                            <img src="/public/images/icon/icons8-blood-sample-35.png" alt="Hematology - Blood Transfusion">
-                        </div>
-                        <div class="specialty-info">
-                            <h3 class="specialty-name">HEMATOLOGY - BLOOD TRANSFUSION</h3>
-                            <a href="#" class="view-detail">View detail</a>
-                        </div>
-                    </li>
-                    <li class="specialty-item">
-                        <div class="specialty-icon">
-                            <img src="/public/images/icon/icons8-pregnant-35.png" alt="Pediatric">
-                        </div>
-                        <div class="specialty-info">
-                            <h3 class="specialty-name">PEDIATRIC</h3>
-                            <a href="#" class="view-detail">View detail</a>
-                        </div>
-                    </li>
-                    <li class="specialty-item">
-                        <div class="specialty-icon">
-                            <img src="/public/images/icon/icons8-medical-heart-35.png" alt="Cardiology">
-                        </div>
-                        <div class="specialty-info">
-                            <h3 class="specialty-name">CARDIOLOGY</h3>
-                            <a href="#" class="view-detail">View detail</a>
-                        </div>
-                    </li>
-                    <li class="specialty-item">
-                        <div class="specialty-icon">
-                            <img src="/public/images/icon/icons8-neuron-32.png" alt="NEUROLOGY">
-                        </div>
-                        <div class="specialty-info">
-                            <h3 class="specialty-name">NEUROLOGY</h3>
-                            <a href="#" class="view-detail">View detail</a>
-                        </div>
-                    </li>
-                </ul>
-            </div>
-        </div>
-        <div class="doctor-team-container">
-            <div class="doctors-team-section">
-                <div class="doctor-title-container">
-                    <h2 class="section-doctor-title">Our Dedicated Doctors Team</h2>
+{{#section 'js'}}
+{{/section}}
+<div class="homepage_container">
+    <div class="background_image">
+        <button class="button_book_appointment">
+            <a href="/patient/book-appointment" class="btn-a">Book Appointment</a>
+        </button>
+    </div>
+    <div class="specialty-service-container">
+        <div class="service-section">
+            <h4 class="section-title">SERVICE</h4>
+            <div class="service-grid">
+                <div class="service-item">
+                    <img src="/public/images/background/general.jpg" alt="General Health Check-up Package">
+                    <h4 class="service-name" style="color: #B91A3C;">GENERAL HEALTH CHECK-UP PACKAGE</h4>
                 </div>
-                <div class="doctors-list">
-                    <div class="doctor-card">
-                        <div class="doctor-image">
-                            <img src="/public/images/background/doctorNeuron.jpg" alt="Dr. Maran">
-                        </div>
-                        <h3 class="doctor-name">Dr. Maran</h3>
-                        <p class="doctor-specialty">Cardiologist</p>
-                        <button class="view-profile-button">View Profile</button>
-                    </div>
-                    <div class="doctor-card">
-                        <div class="doctor-image">
-                            <img src="/public/images/background/doctorPediatrician.jpg" alt="Dr. Suganthi">
-                        </div>
-                        <h3 class="doctor-name">Dr. Suganthi</h3>
-                        <p class="doctor-specialty">Pediatrician</p>
-                        <button class="view-profile-button">View Profile</button>
-                    </div>
-                    <div class="doctor-card">
-                        <div class="doctor-image">
-                            <img src="/public/images/background/doctorPediatrician.jpg" alt="Dr. JohnDurai">
-                        </div>
-                        <h3 class="doctor-name">Dr. JohnDurai</h3>
-                        <p class="doctor-specialty">Psychiatrist</p>
-                        <button class="view-profile-button">View Profile</button>
-                    </div>
-                    <div class="doctor-card">
-                        <div class="doctor-image">
-                            <img src="/public/images/background/doctorNeuron.jpg" alt="Dr. JohnDurai">
-                        </div>
-                        <h3 class="doctor-name">Dr. JohnDurai</h3>
-                        <p class="doctor-specialty">Psychiatrist</p>
-                        <button class="view-profile-button">View Profile</button>
-                    </div>
+                <div class="service-item">
+                    <img src="/public/images/background/bloood.jpg" alt="General Health Check-up Package">
+                    <h4 class="service-name" style="color: #1063BF;">GENERAL HEALTH CHECK-UP PACKAGE</h4>
                 </div>
-                <div class="slider-controls">
-                    <button class="prev-button">
-                        <img src="/public/images/icon/icon_back.png" alt="">
-                    </button>
-                    <button class="next-button">
-                        <img src="/public/images/icon/icon_forward.png" alt="">
-                    </button>
+                <div class="service-item">
+                    <img src="/public/images/background/bloood.jpg" alt="General Health Check-up Package">
+                    <h4 class="service-name" style="color: #1063BF;">GENERAL HEALTH CHECK-UP PACKAGE</h4>
+                </div>
+                <div class="service-item">
+                    <img src="/public/images/background/bloood.jpg" alt="General Health Check-up Package">
+                    <h4 class="service-name" style="color: #1063BF;">GENERAL HEALTH CHECK-UP PACKAGE</h4>
                 </div>
             </div>
         </div>
-         {{!--view status  --}}
-         <div class="view-appointment-container">
-            <div class="view-appointment--modal-header">
-                <div class="button-step-group">
-                    <button class="information-step-button">
-                        <img src="/public/images/icon/icons8-stethoscope-32 (2).png" alt="">
-                    </button>
-                    <div class="separate-step-line"></div>
-                    <button class="email-verify-step-button">
-                        <img src="/public/images/icon/icons8-send-email-32.png" alt="">
-                    </button>
-                    <div class="separate-step-line"></div>
-                    <button class="payment-step-button">
-                        <img src="/public/images/icon/icons8-payment-32 (1).png" alt="">
-                    </button>
-                    <div class="separate-step-line"></div>
-                    <button class="status-step-button">
-                        <img src="/public/images/icon/icons8-status-32.png" alt="">
-                    </button>
-                </div>
-            </div>
-            <div class="payment-modal-body">
-                <div class="modal-header">
-                    <h2>VIEW</h2>
-                    <h1>Appointment</h1>
-                </div>
-                <div class="modal-body-form-container">
-                    <div class="modal-body-form">
-                        <h5>Patient Information</h5>
-                        <div class="modal-body">
-                            <div class="input-group">
-                                <input type="text" id="name" placeholder="Name">
-                            </div>
-                            <div class="input-group">
-                                <input type="tel" id="phone" placeholder="Phone Number">
-                            </div>
-                            <div class="input-group">
-                                <div class="birthday-input">
-                                    <input type="text" id="birthday" placeholder="Birthday">
-                                    <img src="/public/images/icon/icons8-calendar-32.png" alt="" width="20px">
-                                </div>
-                            </div>                           
-                            <div class="input-group">
-                                <input type="text" id="address" placeholder="Address">
-                            </div>
-                        </div>
-                        <hr class="custom-separate-line">
-                        <h5 class="mt-2">Appointment Information</h5>
-                        <div class="modal-body-appointment-container">
-                            <div class="modal-body-appointment">
-                                <div class="info-row">
-                                    <div class="info-label">Specialty</div>
-                                    <div class="info-value">Psychology</div>
-                                </div>
-                                <div class="info-row">
-                                    <div class="info-label">Service</div>
-                                    <div class="info-value">None</div>
-                                </div>
-                                <div class="info-row">
-                                    <div class="info-label">Doctor</div>
-                                    <div class="info-value">AkiraYuri</div>
-                                </div>
-                                <div class="info-row">
-                                    <div class="info-label">Room's No</div>
-                                    <div class="info-value">A8-04</div>
-                                </div>
-                                <div class="info-row">
-                                    <div class="info-label">Order's No</div>
-                                    <div class="info-value order-no">24</div>
-                                </div>
-                            </div>
-                            <div class="modal-body-time">
-                                <h5>Appointment Time</h5>
-                                <div>
-                                    <img src="/public/images/icon/icons8-clock-32 (1).png" alt="">
-                                    <span id="appointment-time" style="color: #FF4A4D;">10/11/2003 10:00 AM</span>
-                                </div>
-                                <p style="color: #E8B716; font-size: 14px;">This is only an estimated time. We sincerely apologize for any inconvenience caused by unexpected delays </p>
-                                {{!-- We sincerely apologize for any inconvenience caused by unexpected delays. --}}
-                            </div>
-                        </div>
-                        <div class="payment-info-container">
-                            <div class="payment-img">
-                                <img src="/public/images/icon/icons8-payment-32 (1) copy.png" alt="" width="60px">
-                            </div>
-                            <div class="payment-fee">
-                                <p>Examination fee</p>
-                                <p>Extra Service</p>
-                            </div>
-                            <div class="payment-value">
-                                <p>1000000</p>
-                                <p>1000000</p>
-                            </div>
-                            <div class="total-payment">
-                                <p style="font-weight:700; font-size:large; ">Total</p>
-                                <p class="total-value">1000000</p>
 
-                            </div>
-                        </div>
-                        <div>
-                            <button class="back-to-main-button">Back to Mainpage</button>
-                        </div>
+        <div class="specialty-section">
+            <h4 class="section-title">SPECIALTY</h4>
+            <ul class="specialty-list">
+                <li class="specialty-item">
+                    <div class="specialty-icon">
+                        <img src="/public/images/icon/icons8-dog-bone-35.png" alt="Rheumatology">
                     </div>
+                    <div class="specialty-info">
+                        <h3 class="specialty-name">RHEUMATOLOGY</h3>
+                        <a href="#" class="view-detail">View detail</a>
+                    </div>
+                </li>
+                <li class="specialty-item">
+                    <div class="specialty-icon">
+                        <img src="/public/images/icon/icons8-blood-sample-35.png" alt="Hematology - Blood Transfusion">
+                    </div>
+                    <div class="specialty-info">
+                        <h3 class="specialty-name">HEMATOLOGY - BLOOD TRANSFUSION</h3>
+                        <a href="#" class="view-detail">View detail</a>
+                    </div>
+                </li>
+                <li class="specialty-item">
+                    <div class="specialty-icon">
+                        <img src="/public/images/icon/icons8-pregnant-35.png" alt="Pediatric">
+                    </div>
+                    <div class="specialty-info">
+                        <h3 class="specialty-name">PEDIATRIC</h3>
+                        <a href="#" class="view-detail">View detail</a>
+                    </div>
+                </li>
+                <li class="specialty-item">
+                    <div class="specialty-icon">
+                        <img src="/public/images/icon/icons8-medical-heart-35.png" alt="Cardiology">
+                    </div>
+                    <div class="specialty-info">
+                        <h3 class="specialty-name">CARDIOLOGY</h3>
+                        <a href="#" class="view-detail">View detail</a>
+                    </div>
+                </li>
+                <li class="specialty-item">
+                    <div class="specialty-icon">
+                        <img src="/public/images/icon/icons8-neuron-32.png" alt="NEUROLOGY">
+                    </div>
+                    <div class="specialty-info">
+                        <h3 class="specialty-name">NEUROLOGY</h3>
+                        <a href="#" class="view-detail">View detail</a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="doctor-team-container">
+        <div class="doctors-team-section">
+            <div class="doctor-title-container">
+                <h2 class="section-doctor-title">Our Dedicated Doctors Team</h2>
+            </div>
+            <div class="doctors-list">
+                <div class="doctor-card">
+                    <div class="doctor-image">
+                        <img src="/public/images/background/doctorNeuron.jpg" alt="Dr. Maran">
+                    </div>
+                    <h3 class="doctor-name">Dr. Maran</h3>
+                    <p class="doctor-specialty">Cardiologist</p>
+                    <button class="view-profile-button">View Profile</button>
                 </div>
+                <div class="doctor-card">
+                    <div class="doctor-image">
+                        <img src="/public/images/background/doctorPediatrician.jpg" alt="Dr. Suganthi">
+                    </div>
+                    <h3 class="doctor-name">Dr. Suganthi</h3>
+                    <p class="doctor-specialty">Pediatrician</p>
+                    <button class="view-profile-button">View Profile</button>
+                </div>
+                <div class="doctor-card">
+                    <div class="doctor-image">
+                        <img src="/public/images/background/doctorPediatrician.jpg" alt="Dr. JohnDurai">
+                    </div>
+                    <h3 class="doctor-name">Dr. JohnDurai</h3>
+                    <p class="doctor-specialty">Psychiatrist</p>
+                    <button class="view-profile-button">View Profile</button>
+                </div>
+                <div class="doctor-card">
+                    <div class="doctor-image">
+                        <img src="/public/images/background/doctorNeuron.jpg" alt="Dr. JohnDurai">
+                    </div>
+                    <h3 class="doctor-name">Dr. JohnDurai</h3>
+                    <p class="doctor-specialty">Psychiatrist</p>
+                    <button class="view-profile-button">View Profile</button>
+                </div>
+            </div>
+            <div class="slider-controls">
+                <button class="prev-button">
+                    <img src="/public/images/icon/icon_back.png" alt="">
+                </button>
+                <button class="next-button">
+                    <img src="/public/images/icon/icon_forward.png" alt="">
+                </button>
             </div>
         </div>
     </div>
-</body>
-</html>
+</div>

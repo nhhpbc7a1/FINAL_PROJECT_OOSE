@@ -45,4 +45,12 @@ router.get('/is-available-email', async function (req, res) {
     }
 });
 
+router.get('/login', async function (req, res) {
+    res.render('login');
+});
+
+router.get('/signup', async function (req, res) {
+    res.render('signup');
+});
+
 export default router;
