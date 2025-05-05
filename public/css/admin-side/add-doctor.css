@@ -1,0 +1,288 @@
+/* Add Doctor Form Styles */
+
+/* Content Header */
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.page-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.page-subtitle {
+    color: #7f8c8d;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.header-actions .btn {
+    padding: 0.5rem 1rem;
+}
+
+/* Form Card */
+.form-card {
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    margin-bottom: 2rem;
+}
+
+.card-body {
+    padding: 2rem;
+}
+
+/* Form Sections */
+.form-section {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.form-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #3498db;
+    margin-bottom: 1.25rem;
+    position: relative;
+    padding-bottom: 0.5rem;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background-color: #3498db;
+    border-radius: 2px;
+}
+
+/* Form Controls */
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-control {
+    border-radius: 6px;
+    border: 1px solid #ced4da;
+    padding: 0rem 0.85rem;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.15);
+}
+
+.form-text {
+    font-size: 0.85rem;
+    margin-top: 0.3rem;
+}
+
+label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #34495e;
+    font-size: 0.9rem;
+}
+
+.required {
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+/* Photo Upload */
+.profile-photo-upload {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.photo-preview {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background-color: #edf2f7;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    cursor: pointer;
+    color: #a0aec0;
+    border: 2px dashed #cbd5e0;
+    background-size: cover;
+    background-position: center;
+    transition: all 0.3s ease;
+}
+
+.photo-preview i {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.photo-preview span {
+    font-size: 0.85rem;
+}
+
+.photo-preview.has-image {
+    border: 2px solid #3498db;
+    color: transparent;
+}
+
+.profile-photo-input {
+    display: none;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e9ecef;
+    margin-top: 1.5rem;
+}
+
+.form-actions button {
+    margin-left: 1rem;
+    padding: 0.6rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.btn-primary {
+    background-color: #3498db;
+    border-color: #3498db;
+}
+
+.btn-primary:hover {
+    background-color: #2980b9;
+    border-color: #2980b9;
+}
+
+.btn-outline {
+    border: 1px solid #cbd5e0;
+    color: #4a5568;
+    background-color: transparent;
+    transition: all 0.3s ease;
+}
+
+.btn-outline:hover {
+    background-color: #f7fafc;
+    color: #1a202c;
+}
+
+.btn-outline-secondary {
+    color: #7f8c8d;
+    border-color: #bdc3c7;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #ecf0f1;
+    color: #2c3e50;
+}
+
+/* Validation Styles */
+.form-group.has-error .form-control {
+    border-color: #e74c3c;
+}
+
+.form-group.has-error .form-text {
+    color: #e74c3c;
+}
+
+.form-group.has-error label {
+    color: #e74c3c;
+}
+
+.was-validated .form-control:invalid {
+    border-color: #e74c3c;
+}
+
+.was-validated .form-control:valid {
+    border-color: #2ecc71;
+}
+
+/* Alert Styles */
+.alert {
+    border-radius: 6px;
+    border: none;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.alert-danger {
+    background-color: #fff5f5;
+    color: #c53030;
+}
+
+.alert i {
+    font-size: 1.25rem;
+    margin-right: 0.75rem;
+}
+
+.alert .close {
+    margin-left: auto;
+    font-size: 1.1rem;
+    color: inherit;
+    opacity: 0.7;
+}
+
+/* Checkbox Styles */
+.form-check {
+    padding-left: 1.75rem;
+}
+
+.form-check-input {
+    margin-top: 0.25rem;
+    margin-left: -1.75rem;
+}
+
+.form-check-label {
+    font-weight: normal;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .content-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .header-actions {
+        margin-top: 1rem;
+        align-self: flex-start;
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .form-actions button {
+        margin: 0.5rem 0 0 0;
+        width: 100%;
+    }
+    
+    .form-actions button:first-child {
+        margin-top: 0;
+    }
+} 

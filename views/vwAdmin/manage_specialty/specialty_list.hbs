@@ -1,0 +1,234 @@
+<link rel="stylesheet" href="/public/css/admin-side/doctor-list.css"> {{!-- Reuse list styling --}}
+
+<div class="patient-list-container"> {{!-- Container class --}}
+    <div class="filters-bar">
+        {{!-- Add filters here if needed (e.g., search by name) --}}
+         <div class="search-box">
+             <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="Search specialties...">
+             <i class="fas fa-search"></i>
+         </div>
+
+        <a href="/admin/manage_specialty/add" class="add-new-btn">
+            <i class="fas fa-plus"></i> Add New Specialty
+        </a>
+    </div>
+
+    {{#if flashMessage}}
+    <div class="alert alert-{{flashMessage.type}} alert-dismissible fade show mt-3 mx-3" role="alert">
+         <i class="fas fa-{{#if (eq flashMessage.type 'success')}}check-circle{{else}}exclamation-circle{{/if}}"></i>
+        {{flashMessage.message}}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">×</span>
+        </button>
+    </div>
+    {{/if}}
+
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">Specialty Name</th>
+                    <th scope="col">Head Doctor</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody id="specialty-table-body">
+                {{#each specialties}}
+                <tr class="specialty-row" data-id="{{specialtyId}}" data-name="{{toLowerCase name}}">
+                    <td>{{name}}</td>
+                    <td>{{#if headDoctorName}}{{headDoctorName}}{{else}}<span class="text-muted">None</span>{{/if}}</td>
+                    <td>{{#if description}}{{truncate description 100}}{{else}}<span class="text-muted">N/A</span>{{/if}}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="/admin/manage_specialty/edit/{{specialtyId}}" class="btn btn-icon" title="Edit Specialty">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="#" class="btn btn-icon delete-specialty" title="Delete Specialty" data-toggle="modal" data-target="#deleteModal" data-id="{{specialtyId}}" data-name="{{name}}">
+                                <i class="fas fa-trash-alt text-danger"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {{/each}}
+                <tr id="no-results-row" style="display: none;">
+                    <td colspan="4">
+                         <div class="empty-state">
+                            <i class="fas fa-search"></i>
+                            <h5>No specialties found</h5>
+                            <p>No specialties match your search criteria.</p>
+                        </div>
+                    </td>
+                </tr>
+                {{#unless specialties}}
+                 <tr id="no-data-row">
+                    <td colspan="4">
+                         <div class="empty-state">
+                            <i class="fas fa-clipboard-list"></i>
+                            <h5>No specialties added yet</h5>
+                            <p>Click "Add New Specialty" to create the first one.</p>
+                        </div>
+                    </td>
+                </tr>
+                {{/unless}}
+            </tbody>
+        </table>
+    </div>
+     {{!-- Pagination can be added here if needed --}}
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the specialty <strong id="specialtyToDeleteName"></strong>?</p>
+                <p class="text-danger font-weight-bold">Warning: This action cannot be undone and may fail if the specialty is currently in use.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const allSpecialties = Array.from(document.querySelectorAll('.specialty-row'));
+        const noResultsRow = document.getElementById('no-results-row');
+        const noDataRow = document.getElementById('no-data-row'); // Row shown when table is initially empty
+        const specialtyTableBody = document.getElementById('specialty-table-body');
+        const searchInput = document.getElementById('searchInput');
+
+        // --- Search Functionality ---
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(filterSpecialties, 300);
+        });
+
+        function filterSpecialties() {
+            const searchTerm = searchInput.value.trim().toLowerCase();
+            let visibleCount = 0;
+
+            allSpecialties.forEach(row => {
+                const name = row.getAttribute('data-name') || '';
+                const isMatch = name.includes(searchTerm);
+                row.style.display = isMatch ? 'table-row' : 'none';
+                if (isMatch) visibleCount++;
+            });
+
+            noResultsRow.style.display = (visibleCount === 0 && allSpecialties.length > 0) ? 'table-row' : 'none';
+             // Hide initial no-data row if filtering reveals results or if search is cleared
+            if(noDataRow) noDataRow.style.display = 'none';
+        }
+
+
+        // --- Delete Functionality ---
+        let specialtyIdToDelete = null;
+        const confirmDeleteBtn = document.getElementById('confirmDelete');
+        const deleteModal = $('#deleteModal'); // jQuery needed for modal show/hide
+
+         document.querySelectorAll('.delete-specialty').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                specialtyIdToDelete = this.getAttribute('data-id');
+                const specialtyName = this.getAttribute('data-name');
+                 document.getElementById('specialtyToDeleteName').textContent = specialtyName;
+                deleteModal.modal('show'); // Show the modal
+            });
+        });
+
+        confirmDeleteBtn.addEventListener('click', function() {
+            if (specialtyIdToDelete) {
+                confirmDeleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Deleting...';
+                confirmDeleteBtn.disabled = true;
+
+                fetch(`/admin/manage_specialty/delete/${specialtyIdToDelete}`, {
+                    method: 'DELETE',
+                     headers: { 'Content-Type': 'application/json' }
+                })
+                .then(response => response.json().then(data => ({ status: response.status, body: data })))
+                .then(({ status, body }) => {
+                     deleteModal.modal('hide'); // Hide modal regardless of outcome
+                     confirmDeleteBtn.innerHTML = 'Delete';
+                     confirmDeleteBtn.disabled = false;
+
+                    if (body.success) {
+                        // Remove row from table
+                        const rowToDelete = document.querySelector(`.specialty-row[data-id="${specialtyIdToDelete}"]`);
+                        if (rowToDelete) rowToDelete.remove();
+                         // Update the 'allSpecialties' array
+                         const index = allSpecialties.findIndex(row => row.getAttribute('data-id') === specialtyIdToDelete);
+                         if (index > -1) allSpecialties.splice(index, 1);
+
+                         // Show success alert
+                         showAlert('success', body.message || 'Specialty deleted successfully.');
+                         // Check if table is now empty
+                         if (allSpecialties.length === 0 && noDataRow) {
+                             noDataRow.style.display = 'table-row';
+                         }
+                         filterSpecialties(); // Re-apply filter in case it affects no-results row
+
+                    } else {
+                        // Show error alert
+                         showAlert('danger', body.message || 'Failed to delete specialty.');
+                    }
+                     specialtyIdToDelete = null; // Reset ID
+                })
+                .catch(error => {
+                    console.error('Error deleting specialty:', error);
+                    deleteModal.modal('hide');
+                     confirmDeleteBtn.innerHTML = 'Delete';
+                     confirmDeleteBtn.disabled = false;
+                     showAlert('danger', 'An unexpected error occurred.');
+                    specialtyIdToDelete = null; // Reset ID
+                });
+            }
+        });
+
+         // Function to show alerts dynamically
+         function showAlert(type, message) {
+             const alertContainer = document.querySelector('.patient-list-container'); // Insert alerts here
+             if (!alertContainer) return;
+
+             const alertDiv = document.createElement('div');
+             alertDiv.className = `alert alert-${type} alert-dismissible fade show mt-3 mx-3`; // Added margins
+             alertDiv.role = 'alert';
+             alertDiv.innerHTML = `
+                  <i class="fas fa-{{#if (eq type 'success')}}check-circle{{else}}exclamation-circle{{/if}}"></i>
+                 ${message}
+                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                     <span aria-hidden="true">×</span>
+                 </button>
+             `;
+             // Insert after the filters bar
+             const filtersBar = alertContainer.querySelector('.filters-bar');
+             alertContainer.insertBefore(alertDiv, filtersBar ? filtersBar.nextSibling : alertContainer.firstChild);
+
+             // Auto-dismiss
+             setTimeout(() => {
+                  const alertInstance = new bootstrap.Alert(alertDiv); // Use Bootstrap's Alert JS if available
+                  if(alertInstance) alertInstance.close();
+                  else alertDiv.remove(); // Fallback removal
+             }, 5000);
+         }
+
+         // Initial filter application if needed
+         filterSpecialties();
+         // Show no-data row only if search is empty and no specialties exist
+         if(noDataRow && allSpecialties.length === 0 && !searchInput.value) {
+             noDataRow.style.display = 'table-row';
+         } else if(noDataRow) {
+             noDataRow.style.display = 'none';
+         }
+
+    });
+</script>
