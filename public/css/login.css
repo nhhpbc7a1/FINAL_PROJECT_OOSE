@@ -1,4 +1,4 @@
-/* Register */
+
 .signin-modal{
     font-family: sans-serif;
     display: flex;
@@ -11,13 +11,17 @@
     width: 750px; 
 
 }
+.login-container{
+    background-color: #FBFBFB;
+
+}
 .signin-modal-container{
     flex-grow: 1; /* Cho phép container form chiếm không gian còn lại */
     display: flex;
     justify-content: center; /* Căn giữa form theo chiều ngang */
     align-items: center;
     background-color: #FBFBFB;
-    margin-bottom: 30px;
+ padding-bottom: 20px;
 
 }
 .modal-body-container{

@@ -76,6 +76,7 @@ export default {
                     'User.accountStatus',
                     'User.gender',
                     'User.dob',
+                    'User.profileImage', // Explicitly select profileImage
                     'Specialty.name as specialtyName'
                 )
                 .where('Doctor.specialtyId', specialtyId)

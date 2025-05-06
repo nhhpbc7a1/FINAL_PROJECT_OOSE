@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
+        integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    {{!-- swiperjs --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <link rel="stylesheet" href="/public/css/filter.css">
+</head>
+<body>
+    <div class="fliter-poppup">
+        <div class="filter-container">
+            <div class="filter-by-time">
+                <div class="filter-header">
+                    <img src="/public/images/icon/icons8-clock-blue.png" alt="Clock Icon" width="30">
+                    <span>Filter by Time</span>
+                </div>
+                <div class="date-range">
+                    <div class="date-input">
+                        <label for="from-date">From</label>
+                        <div class="input-with-icon">
+                            <input type="text" id="from-date" value="10/11/2003">
+                            <button class="calendar-button">
+                                <img src="/public/images/icon/icons8-calendar-32.png" alt="Calendar Icon" width="20">
+                            </button>
+                        </div>
+                    </div>
+                    <div class="date-input">
+                        <label for="to-date">To</label>
+                        <div class="input-with-icon">
+                            <input type="text" id="to-date" value="10/11/2003">
+                            <button class="calendar-button">
+                                <img src="/public/images/icon/icons8-calendar-32.png" alt="Calendar Icon" width="20">
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="time-shortcuts">
+                    <button class="shortcut-button">Today</button>
+                    <button class="shortcut-button">This week</button>
+                    <button class="shortcut-button">This year</button>
+                </div>
+            </div>
+
+            <div class="filter-by-specialty">
+                <div class="filter-header">
+                    <img src="/public/images/icon/icons8-stethoscope-yellow.png" alt="Stethoscope Icon" width="30">
+                    <span>Filter by Specialty</span>
+                </div>
+                <div class="specialty-dropdown">
+                    <select>
+                        <option>Rheumatory</option>
+                        <option>Cardiology</option>
+                        <option>Hematology - Blood Tranfusion</option>
+                        <option>Pediatric</option>
+                        <option>Nerology</option>
+                        </select>
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M12 15.75l-5.5-5.5h11l-5.5 5.5z"/>
+                    </svg>
+                </div>
+            </div>
+
+            <button class="apply-button">Apply</button>
+        </div>
+    </div>
+</body>
+</html>

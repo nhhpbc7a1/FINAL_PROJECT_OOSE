@@ -1,0 +1,255 @@
+/* Content Header */
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding: 0 1rem;
+}
+
+.page-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin: 0;
+    color: #2c3e50;
+}
+
+.page-subtitle {
+    color: #7f8c8d;
+    margin: 0.5rem 0 0;
+}
+
+.header-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+/* Form Card */
+.form-card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.card-body {
+    padding: 2rem;
+}
+
+/* Form Sections */
+.form-section {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.form-section:last-child {
+    border-bottom: none;
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+}
+
+/* Form Groups */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    font-weight: 500;
+    color: #34495e;
+    margin-bottom: 0.5rem;
+}
+
+.form-group .required {
+    color: #e74c3c;
+}
+
+.form-control {
+    border: 1px solid #dce4ec;
+    border-radius: 4px;
+    padding: 0.5rem 0.75rem;
+    transition: border-color 0.15s ease-in-out;
+}
+
+.form-control:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+.form-text {
+    font-size: 0.875rem;
+    color: #7f8c8d;
+}
+
+/* Image Upload */
+.service-image-upload {
+    text-align: center;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.image-preview {
+    width: 200px;
+    height: 200px;
+    margin: 0 auto 1rem;
+    border: 2px dashed #bdc3c7;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    color: #95a5a6;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.image-preview:hover {
+    border-color: #3498db;
+    color: #3498db;
+}
+
+.image-preview i {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+}
+
+.image-preview.has-image {
+    border: none;
+    color: transparent;
+    background-size: cover !important;
+    background-position: center !important;
+}
+
+.image-input {
+    display: none;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+/* Validation Styles */
+.has-error .form-control {
+    border-color: #e74c3c;
+}
+
+.has-error .form-text {
+    color: #e74c3c;
+}
+
+/* Alert Styles */
+.alert {
+    border-radius: 4px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.alert i {
+    margin-right: 0.5rem;
+    font-size: 1.25rem;
+}
+
+.alert-danger {
+    background-color: #fdf3f2;
+    border: 1px solid #fbd7d5;
+    color: #c0392b;
+}
+
+.alert-success {
+    background-color: #f0f9f4;
+    border: 1px solid #d1e9c4;
+    color: #27ae60;
+}
+
+/* Buttons */
+.btn {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.btn i {
+    font-size: 1rem;
+}
+
+.btn-primary {
+    background-color: #3498db;
+    border-color: #3498db;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background-color: #2980b9;
+    border-color: #2980b9;
+}
+
+.btn-outline {
+    background-color: transparent;
+    border: 1px solid #bdc3c7;
+    color: #7f8c8d;
+}
+
+.btn-outline:hover {
+    background-color: #f8f9fa;
+    border-color: #95a5a6;
+    color: #34495e;
+}
+
+.btn-outline-secondary {
+    background-color: transparent;
+    border: 1px solid #bdc3c7;
+    color: #7f8c8d;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #f8f9fa;
+    border-color: #95a5a6;
+    color: #34495e;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .content-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .header-actions {
+        width: 100%;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .form-actions .btn {
+        width: 100%;
+    }
+
+    .col-md-3 {
+        margin-top: 2rem;
+    }
+} 

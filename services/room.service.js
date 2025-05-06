@@ -192,5 +192,19 @@ export default {
             console.error(`Error searching rooms with query "${query}":`, error);
             throw new Error('Unable to search rooms');
         }
+    },
+
+    async findBySpecialty(specialtyId) {
+        try {
+            return await db('Room')
+                .where('specialtyId', specialtyId)
+                .select(
+                    'Room.*'
+                )
+                .orderBy('Room.roomNumber');
+        } catch (error) {
+            console.error(`Error fetching rooms for specialty ID ${specialtyId}:`, error);
+            throw new Error('Unable to find rooms by specialty');
+        }
     }
 };

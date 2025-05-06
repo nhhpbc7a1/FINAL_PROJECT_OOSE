@@ -1,0 +1,151 @@
+
+{{#section 'css'}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
+        integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    {{!-- swiperjs --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <link rel="stylesheet" href="/public/css/prescription.css">
+{{/section}}
+
+{{#section 'js'}}
+{{/section}}
+
+<div class="appointment-status-container">
+    <button class="appointment-status-button">
+        <img src="/public/images/icon/icons8-coming-soon-24.png" alt="" width="30px">
+        Coming</button>
+    <button class="appointment-status-button">
+        <img src="/public/images/icon/icons8-complete-32.png" alt="" width="30px">
+        Completed</button>
+    <button class="appointment-status-button">
+        <img src="/public/images/icon/icons8-atm-cancel-32.png" alt="" width="30px">
+        Cancelled</button>
+    <button class="appointment-filter-button">
+        <img src="/public/images/icon/icons8-filter-32.png" alt=""width="30px">
+    </button>
+</div>
+<div class="modal-body-form-container">
+    <div class="appointment-card">
+        <div class="appointment-title">
+            <h5>Prescription Detailed Information</h5>
+            <button class="download-button pdf-button">
+                <img src="/public/images/icon/icons8-download-24.png" alt="" width="15px">
+                PDF
+            </button>
+            <button class="download-button img-button">
+                <img src="/public/images/icon/icons8-download-24.png" alt="" width="15px">
+                IMG
+            </button>
+        </div>
+        <div class="modal-body-form">
+            <div class="booked-time">
+                <h5>Patient Information</h5>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <input type="text" id="name" placeholder="Name">
+                </div>
+                <div class="input-group">
+                    <input type="tel" id="phone" placeholder="Phone Number">
+                </div>
+                <div class="input-group">
+                    <div class="birthday-input">
+                        <input type="text" id="birthday" placeholder="Birthday">
+                        <img src="/public/images/icon/icons8-calendar-32.png" alt="" width="20px">
+                    </div>
+                </div>                           
+                <div class="input-group">
+                    <input type="text" id="address" placeholder="Address">
+                </div>
+            </div>
+            <hr class="custom-separate-line">
+            {{!-- <h5 class="mt-2 mb-4">Appointment Information</h5> --}}
+            <div class="modal-body-appointment-container">
+                <div class="modal-body-appointment">
+                    <div class="info-row">
+                        <div class="info-label">Prescribing Doctor</div>
+                        <div class="info-value">AkiraYuri</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Specialty</div>
+                        <div class="info-value">Psychology</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Prescription Date</div>
+                        <div class="info-value"  style="color:#FF4A4D ;font-weight:600;">10/11/2003</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Diagnose</div>
+                        <div class="info-value" style="color:#16A90F ;font-weight:600;">nobody knows</div>
+                    </div>
+                </div>
+            </div>
+            <hr class="custom-separate-line">
+            <h5 class="mt-2 mb-4">Prescription Information</h5>
+            <div>
+                <table class="table">
+                    <thead class="">
+                        <tr class="table-primary">
+                        <th scope="col">#</th>
+                        <th scope="col">Product</th>
+                        <th scope="col">Quantity</th>
+                        <th scope="col">Note</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                        <th scope="row">1</th>
+                        <td>Purlse</td>
+                        <td>Otto</td>
+                        <td>@beats/min</td>
+                        </tr>
+                        <tr>
+                        <th scope="row">2</th>
+                        <td>Temperature</td>
+                        <td>Thornton</td>
+                        <td>°C</td>
+                        </tr>
+                        <tr>
+                        <th scope="row">3</th>
+                        <td>Blood pressure</td>
+                        <td>the Bird</td>
+                        <td>mmHg</td>
+                        </tr>
+                        <tr>
+                        <th scope="row">4</th>
+                        <td>Respiratory rate</td>
+                        <td>the Bird</td>
+                        <td>breaths/min</td>
+                        </tr>
+                        <tr>
+                        <th scope="row">5</th>
+                        <td>Weight</td>
+                        <td>the Bird</td>
+                        <td>kg</td>
+                        </tr>
+                        <tr>
+                        <th scope="row">6</th>
+                        <td>Height</td>
+                        <td>the Bird</td>
+                        <td>m</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <hr class="custom-separate-line">
+            {{!-- <div class="button-action">
+                <button class="back-to-main-button">Back </button>
+                <button class="cancel-button">Cancel</button>
+            </div>
+            --}}
+            <div class="button-action">
+                <button class="back-button">Back </button>
+                <button class="exam-button">Exam's Result</button>
+                <button class="blood-test-button">Blood Test</button>
+            </div>
+        </div>
+
+    </div>
+</div>

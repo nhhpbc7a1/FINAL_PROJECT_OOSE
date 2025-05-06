@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS User (
     address VARCHAR(255),
     gender ENUM('male', 'female', 'other') NOT NULL,
     dob DATE,
-    profileImage VARCHAR(255),
+    profileImage VARCHAR(255) DEFAULT '/public/images/default-avatar.jpg',
     accountStatus ENUM('active', 'inactive', 'pending') DEFAULT 'pending',
     createdDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     roleId INT NOT NULL,
@@ -56,8 +56,6 @@ CREATE TABLE IF NOT EXISTS Patient (
     dob DATE NOT NULL,
     gender ENUM('male', 'female', 'other') NOT NULL,
     bloodType VARCHAR(10),
-    healthInsuranceNumber VARCHAR(50),
-    emergencyContact VARCHAR(100),
     medicalHistory TEXT,
     FOREIGN KEY (userId) REFERENCES User(userId)
 );
@@ -77,6 +75,7 @@ CREATE TABLE IF NOT EXISTS Specialty (
     description TEXT,
     hospitalId INT,
     headDoctorId INT,
+    icon VARCHAR(255) default '/public/images/specialties/default-specialty.jpg',
     FOREIGN KEY (hospitalId) REFERENCES Hospital(hospitalId)
 );
 
@@ -110,16 +109,28 @@ CREATE TABLE IF NOT EXISTS Doctor (
 ALTER TABLE Specialty
 ADD FOREIGN KEY (headDoctorId) REFERENCES Doctor(doctorId);
 
+-- Create LabTechnician table
+CREATE TABLE IF NOT EXISTS LabTechnician (
+    technicianId INT AUTO_INCREMENT PRIMARY KEY,
+    userId INT UNIQUE,
+    specialization VARCHAR(100),
+    specialtyId INT,
+    FOREIGN KEY (userId) REFERENCES User(userId),
+    FOREIGN KEY (specialtyId) REFERENCES Specialty(specialtyId)
+);
+
 -- Create Schedule table
 CREATE TABLE IF NOT EXISTS Schedule (
     scheduleId INT AUTO_INCREMENT PRIMARY KEY,
     doctorId INT,
+    labTechnicianId INT,
     roomId INT,
     workDate DATE NOT NULL,
     startTime TIME NOT NULL,
     endTime TIME NOT NULL,
     status ENUM('available', 'booked', 'unavailable') DEFAULT 'available',
     FOREIGN KEY (doctorId) REFERENCES Doctor(doctorId),
+    FOREIGN KEY (labTechnicianId) REFERENCES LabTechnician(technicianId),
     FOREIGN KEY (roomId) REFERENCES Room(roomId)
 );
 
@@ -129,11 +140,12 @@ CREATE TABLE IF NOT EXISTS Service (
     name VARCHAR(100) NOT NULL,
     description TEXT,
     price DECIMAL(10, 2) NOT NULL,
-    duration INT,  -- in minutes
+    duration INT NOT NULL, -- in minutes
     type ENUM('service', 'test') NOT NULL,
-    category VARCHAR(100),
+    category VARCHAR(50) NOT NULL,
     specialtyId INT,
     status ENUM('active', 'inactive') DEFAULT 'active',
+    image VARCHAR(255) DEFAULT '/public/images/services/default-service.jpg',
     FOREIGN KEY (specialtyId) REFERENCES Specialty(specialtyId)
 );
 
@@ -143,6 +155,7 @@ CREATE TABLE IF NOT EXISTS Appointment (
     patientId INT,
     specialtyId INT,
     appointmentDate DATE NOT NULL,
+    appointmentTime DATE NOT NULL,
     reason TEXT,
     queueNumber INT,
     estimatedTime TIME,
@@ -184,16 +197,6 @@ CREATE TABLE IF NOT EXISTS MedicalRecord (
     FOREIGN KEY (appointmentId) REFERENCES Appointment(appointmentId)
 );
 
--- Create LabTechnician table
-CREATE TABLE IF NOT EXISTS LabTechnician (
-    technicianId INT AUTO_INCREMENT PRIMARY KEY,
-    userId INT UNIQUE,
-    specialization VARCHAR(100),
-    specialtyId INT,
-    FOREIGN KEY (userId) REFERENCES User(userId),
-    FOREIGN KEY (specialtyId) REFERENCES Specialty(specialtyId)
-);
-
 -- Create File table for storing files
 CREATE TABLE IF NOT EXISTS File (
     fileId INT AUTO_INCREMENT PRIMARY KEY,
@@ -208,6 +211,7 @@ CREATE TABLE IF NOT EXISTS File (
 -- Create TestResult table
 CREATE TABLE IF NOT EXISTS TestResult (
     resultId INT AUTO_INCREMENT PRIMARY KEY,
+    appointmentId INT,
     recordId INT,
     serviceId INT,
     technicianId INT,
@@ -224,7 +228,8 @@ CREATE TABLE IF NOT EXISTS TestResult (
     FOREIGN KEY (serviceId) REFERENCES Service(serviceId),
     FOREIGN KEY (technicianId) REFERENCES LabTechnician(technicianId),
     FOREIGN KEY (roomId) REFERENCES Room(roomId),
-    FOREIGN KEY (resultFileId) REFERENCES File(fileId)
+    FOREIGN KEY (resultFileId) REFERENCES File(fileId),
+    FOREIGN KEY (appointmentId) REFERENCES Appointment(appointmentId)
 );
 
 -- Create Medication table

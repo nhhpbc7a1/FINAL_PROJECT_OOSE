@@ -8,10 +8,9 @@ import hbs_sections from 'express-handlebars-sections';
 import moment from 'moment';
 import session from 'express-session';
 import { authAdmin, authDoctor, authLabtech, authPatient } from './middlewares/auth.route.js';
-import labtechRouter from './routes/labtech/labtech.route.js';
-import patientRouter from './routes/patient/patient.route.js';
-import doctorRouter from './routes/doctor/doctor.route.js';
-import adminRouter from './routes/admin/admin.route.js';
+
+import { formatDate, formatDay, times, arrayFind, removeFilterUrl, eq, lte, subtract, or } from './views/helpers/hbs_helpers.js';
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
@@ -36,6 +35,132 @@ app.engine('hbs', engine({
         },
         eq(a, b) {
             return a === b;
+        section: function(name, options) {
+            if (!this._sections) this._sections = {};
+            this._sections[name] = options.fn(this);
+            return null;
+        },
+        eq: eq,
+        ne: function(v1, v2) {
+            return v1 !== v2;
+        },
+        lt: function(v1, v2) {
+            return v1 < v2;
+        },
+        gt: function(v1, v2) {
+            return v1 > v2;
+        },
+        lte: lte,
+        gte: function(v1, v2) {
+            return v1 >= v2;
+        },
+        and: function() {
+            return Array.prototype.slice.call(arguments, 0, -1).every(Boolean);
+        },
+        or: or,
+        formatDate: formatDate,
+        formatDay: formatDay,
+        times: times,
+        arrayFind: arrayFind,
+        removeFilterUrl: removeFilterUrl,
+        subtract: subtract,
+        formatDateTime: function(date, format) {
+            if (!date) return '';
+
+            try {
+                return moment(date).format(format || 'DD/MM/YYYY HH:mm');
+            } catch (error) {
+                console.error('Error formatting datetime:', error);
+                return 'Invalid date';
+            }
+        },
+        formatTime: function(time, format) {
+            if (!time) return '';
+
+            try {
+                // Kiểm tra xem time có phải là chuỗi hh:mm:ss không
+                if (typeof time === 'string' && /^\d{2}:\d{2}(:\d{2})?$/.test(time)) {
+                    // Thêm ngày hiện tại để tạo thành datetime đầy đủ
+                    const today = moment().format('YYYY-MM-DD');
+                    return moment(`${today} ${time}`).format(format || 'HH:mm');
+                }
+                
+                return moment(time).format(format || 'HH:mm');
+            } catch (error) {
+                console.error('Error formatting time:', error);
+                return 'Invalid time';
+            }
+        },
+        formatCurrency: function(value) {
+            if (value === undefined || value === null) return '0 VNĐ';
+            return numeral(value).format('0,0') + ' VNĐ';
+        },
+        startsWith: function(str, prefix) {
+            if (!str || !prefix) return false;
+            return String(str).startsWith(prefix);
+        },
+        ifCond: function(v1, v2, options) {
+            if (v1 === v2) {
+                return options.fn(this);
+            }
+            return options.inverse(this);
+        },
+        substring: function(str, start, end) {
+            if (!str) return '';
+            if (end) {
+                return String(str).substring(start, end);
+            } else {
+                return String(str).substring(start);
+            }
+        },
+        toLowerCase: function(str) {
+            return str ? str.toLowerCase() : '';
+        },
+        toUpperCase: function(str) {
+            return str ? str.toUpperCase() : '';
+        },
+        add: function(a, b) {
+            return a + b;
+        },
+        multiply: function(a, b) {
+            return a * b;
+        },
+        divide: function(a, b) {
+            return a / b;
+        },
+        min: function(a, b) {
+            return Math.min(a, b);
+        },
+        max: function(a, b) {
+            return Math.max(a, b);
+        },
+        range: function(start, end) {
+            let result = [];
+            for (let i = start; i < end; i++) {
+                result.push(i);
+            }
+            return result;
+        },
+        json: function(obj) {
+            return JSON.stringify(obj);
+        },
+        truncate: function (str, len) {
+            // Kiểm tra xem str có phải là string và có tồn tại không
+            if (str && typeof str === 'string' && str.length > len) {
+                // Cắt chuỗi và thêm dấu "..."
+                return str.substring(0, len) + '...';
+            }
+            // Trả về chuỗi gốc nếu không cần cắt hoặc không hợp lệ
+            return typeof str === 'string' ? str : ''; // Trả về rỗng nếu không phải string
+        },
+        moment: function(date, format) {
+            // Helper to use moment.js operations in templates
+            if (!date) return moment();
+            if (!format) return moment(date);
+            return moment(date, format);
+        },
+        now: function() {
+            return new Date();
         }
     },
 }));
