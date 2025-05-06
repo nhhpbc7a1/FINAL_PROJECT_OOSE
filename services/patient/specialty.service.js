@@ -61,33 +61,46 @@ const specialtyDetailService = {
             const schedulesByDoctor = [];
             
             for (const doctor of doctors) {
-                // Get schedules for this doctor in the date range
-                const doctorWithSchedule = await doctorService.getDoctorWithSchedule(
-                    doctor.doctorId,
-                    startDate,
-                    endDate
-                );
+                // Kiểm tra xem doctor có id hay không
+                const doctorId = doctor.id || doctor.doctorId;
                 
-                if (doctorWithSchedule && doctorWithSchedule.schedules) {
-                    // Group schedules by date
-                    const schedulesByDate = {};
+                if (!doctorId) {
+                    console.log('Doctor ID is missing:', doctor);
+                    continue; // Bỏ qua nếu không có doctorId
+                }
+                
+                try {
+                    // Get schedules for this doctor in the date range
+                    const doctorWithSchedule = await doctorService.getDoctorWithSchedule(
+                        doctorId,
+                        startDate,
+                        endDate
+                    );
                     
-                    for (const date of dates) {
-                        // Convert date to string format for comparison with schedule data
-                        const dateStr = date.toISOString().split('T')[0];
+                    if (doctorWithSchedule && doctorWithSchedule.schedules) {
+                        // Group schedules by date
+                        const schedulesByDate = {};
                         
-                        // Filter schedules for this date
-                        const schedulesForDate = doctorWithSchedule.schedules.filter(
-                            schedule => schedule.workDate === dateStr
-                        );
+                        for (const date of dates) {
+                            // Convert date to string format for comparison with schedule data
+                            const dateStr = date.toISOString().split('T')[0];
+                            
+                            // Filter schedules for this date
+                            const schedulesForDate = doctorWithSchedule.schedules.filter(
+                                schedule => schedule.workDate === dateStr
+                            );
+                            
+                            schedulesByDate[dateStr] = schedulesForDate;
+                        }
                         
-                        schedulesByDate[dateStr] = schedulesForDate;
+                        schedulesByDoctor.push({
+                            doctor: doctorWithSchedule,
+                            schedulesByDate
+                        });
                     }
-                    
-                    schedulesByDoctor.push({
-                        doctor: doctorWithSchedule,
-                        schedulesByDate
-                    });
+                } catch (error) {
+                    console.error(`Error getting schedule for doctor ID ${doctorId}:`, error);
+                    // Continue with next doctor rather than failing the entire request
                 }
             }
             

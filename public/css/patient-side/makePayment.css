@@ -50,11 +50,11 @@
 }
 .modal-body-form {
     background-color: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    padding: 10px 30px;
-    width: 850px; 
-    padding-bottom: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    width: 100%;
+    max-width: 600px;
 }
 .modal-body-form h5{
     /* margin-left: -60px; */
@@ -63,19 +63,29 @@
     
 }
 .custom-separate-line{
-    margin: 0px auto;
-    width: 95%;
-    
+    border: none;
+    height: 1px;
+    background-color: #ddd;
+    margin: 20px 0;
 }
 .modal-body-appointment{
-    margin-left: 40px;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 .modal-body-appointment div{
-    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
 .modal-body-appointment img{
-    margin-right: 20px;
     width: 20px;
+    height: 20px;
+}
+.modal-body-appointment span{
+    font-size: 15px;
+    color: #333;
 }
 .modal-header {
     display: flex; /* Use flexbox to control alignment */
@@ -157,45 +167,51 @@ input{
     background-color: #FBFBFB;
 }
 .payment-modal-footer{
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
     background-color: white;
-    height: 200px;
-    margin-top: 40px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
     display: flex;
-    justify-content: center;
-    align-items: center;
-    padding-top: 10px;
-
-}
-.payment-modal-footer div{
-    width: 33%;
+    justify-content: space-between;
 }
 .payment-fee{
-    margin-left:100px;
-    font-size: 18px;
-    font-weight: 600;
-
+    flex: 1;
+}
+.payment-fee p{
+    margin: 8px 0;
+    font-size: 15px;
+    color: #333;
 }
 .payment-fee .temporary-fee{
-    font-weight: 700;
-    font-size: 20px;
+    font-weight: bold;
+    font-size: 18px !important;
+    color: #FF4A4D !important;
 }
 .payment-value{
-    font-size: 18px;
-    font-weight: 600;
-    margin-left: 200px;
-
+    text-align: right;
+    flex: 1;
+}
+.payment-value p{
+    margin: 8px 0;
+    font-size: 15px;
+    color: #333;
 }
 .payment-value .total-value{
-    color: #16A90F;
-    font-size: 24px;
-    font-weight: 700;
-
+    font-weight: bold;
+    font-size: 18px !important;
+    color: #FF4A4D !important;
 }
-.button-group{
-    margin-left: 100px;
+.button-group{   
+    width: 250px;   
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    margin-top: 0;
 }
 .button-group button{
-    width: 250px;
+    width: 200px;
     height: 70px;
     border: 2px solid;
     border-radius: 10px;
@@ -222,4 +238,27 @@ input{
     width: 30px;
     margin-right: 60px;
     margin-left: 10px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .payment-modal-footer {
+        flex-direction: column;
+    }
+    
+    .payment-value {
+        text-align: left;
+        margin-top: 10px;
+    }
+    
+    .button-group {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .back-button,
+    .pay-button {
+        width: 100%;
+        justify-content: center;
+    }
 }

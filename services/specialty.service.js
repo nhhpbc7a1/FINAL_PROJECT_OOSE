@@ -21,6 +21,39 @@ export default {
         }
     },
 
+    async getAllActive() {
+        try {
+            // Query to get all specialties
+            const query = db('Specialty')
+                .leftJoin('Doctor', 'Specialty.headDoctorId', '=', 'Doctor.doctorId')
+                .leftJoin('User', 'Doctor.userId', '=', 'User.userId')
+                .select(
+                    'Specialty.specialtyId as id',
+                    'Specialty.name',
+                    'Specialty.description',
+                    'Specialty.icon',
+                    'User.fullName as headDoctorName'
+                )
+                .orderBy('Specialty.name');
+            
+            // Check if the status column exists in Specialty table
+            try {
+                const hasStatusColumn = await db.schema.hasColumn('Specialty', 'status');
+                if (hasStatusColumn) {
+                    query.where('Specialty.status', 'active');
+                }
+            } catch (e) {
+                // If error checking column, assume no status column exists
+                console.log('Assuming no status column in Specialty table');
+            }
+            
+            return await query;
+        } catch (error) {
+            console.error('Error fetching active specialties:', error);
+            throw new Error('Unable to load active specialties');
+        }
+    },
+
     async findById(specialtyId) {
         try {
             const specialty = await db('Specialty')

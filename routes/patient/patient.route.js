@@ -29,7 +29,7 @@ router.get('/', async function (req, res) {
     }
 });
 
-import bookAppointmentRouter from './book_appointment.js'
+import bookAppointmentRouter from './book_appointment.route.js'
 router.use('/book-appointment', bookAppointmentRouter);
 
 import profileRouter  from './profile.route.js'
