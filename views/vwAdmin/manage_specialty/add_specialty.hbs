@@ -1,4 +1,5 @@
 <link rel="stylesheet" href="/public/css/admin-side/add-doctor.css"> {{!-- Reuse form styling --}}
+<link rel="stylesheet" href="/public/css/admin-side/add-service.css"> {{!-- For image upload --}}
 
 <div class="content-header">
     <div>
@@ -30,51 +31,75 @@
 
 <div class="card form-card">
     <div class="card-body">
-        <form id="specialtyForm" action="/admin/manage_specialty/add" method="POST" novalidate>
-            <div class="form-section">
-                 <h3 class="section-title">Specialty Details</h3>
+        <form id="specialtyForm" action="/admin/manage_specialty/add" method="POST" enctype="multipart/form-data" novalidate>
+            <div class="row">
+                <div class="col-md-9">
+                    <div class="form-section">
+                        <h3 class="section-title">Specialty Details</h3>
 
-                 <div class="form-group">
-                    <label for="name">Specialty Name <span class="required">*</span></label>
-                    <input type="text" class="form-control" id="name" name="name" value="{{specialty.name}}" required aria-describedby="name-feedback">
-                    <small class="form-text text-muted">The official name of the specialty.</small>
-                    <div id="name-feedback"></div>
-                    <div class="invalid-feedback">Please enter the specialty name.</div>
-                </div>
+                        <div class="form-group">
+                            <label for="name">Specialty Name <span class="required">*</span></label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{specialty.name}}" required aria-describedby="name-feedback">
+                            <small class="form-text text-muted">The official name of the specialty.</small>
+                            <div id="name-feedback"></div>
+                            <div class="invalid-feedback">Please enter the specialty name.</div>
+                        </div>
 
-                 <div class="form-group">
-                    <label for="description">Description</label>
-                    <textarea class="form-control" id="description" name="description" rows="3">{{specialty.description}}</textarea>
-                    <small class="form-text text-muted">A brief description of the specialty (optional).</small>
-                </div>
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3">{{specialty.description}}</textarea>
+                            <small class="form-text text-muted">A brief description of the specialty (optional).</small>
+                        </div>
 
-                <div class="form-row">
-                     {{!-- Hospital Selection - Uncomment and adapt if needed
-                     <div class="form-group col-md-6">
-                        <label for="hospitalId">Hospital</label>
-                        <select class="form-control" id="hospitalId" name="hospitalId">
-                            <option value="" selected>-- Select Hospital --</option>
-                            {{#each hospitals}}
-                            <option value="{{hospitalId}}" {{#if (eq ../specialty.hospitalId hospitalId)}}selected{{/if}}>{{name}}</option>
-                            {{/each}}
-                        </select>
-                        <small class="form-text text-muted">Assign to a hospital (optional).</small>
+                        <div class="form-row">
+                            {{!-- Hospital Selection - Uncomment and adapt if needed
+                            <div class="form-group col-md-6">
+                                <label for="hospitalId">Hospital</label>
+                                <select class="form-control" id="hospitalId" name="hospitalId">
+                                    <option value="" selected>-- Select Hospital --</option>
+                                    {{#each hospitals}}
+                                    <option value="{{hospitalId}}" {{#if (eq ../specialty.hospitalId hospitalId)}}selected{{/if}}>{{name}}</option>
+                                    {{/each}}
+                                </select>
+                                <small class="form-text text-muted">Assign to a hospital (optional).</small>
+                            </div>
+                            --}}
+
+                            <div class="form-group col-md-6">
+                                <label for="headDoctorId">Head Doctor</label>
+                                <select class="form-control" id="headDoctorId" name="headDoctorId">
+                                    <option value="" selected>-- Assign Head Doctor (Optional) --</option>
+                                    {{#each doctors}}
+                                    <option value="{{doctorId}}" {{#if (eq ../specialty.headDoctorId doctorId)}}selected{{/if}}>{{fullName}} (ID: {{doctorId}})</option>
+                                    {{/each}}
+                                </select>
+                                <small class="form-text text-muted">Select an active doctor to lead this specialty.</small>
+                            </div>
+                        </div>
                     </div>
-                    --}}
-
-                     <div class="form-group col-md-6">
-                        <label for="headDoctorId">Head Doctor</label>
-                        <select class="form-control" id="headDoctorId" name="headDoctorId">
-                            <option value="" selected>-- Assign Head Doctor (Optional) --</option>
-                            {{#each doctors}}
-                            <option value="{{doctorId}}" {{#if (eq ../specialty.headDoctorId doctorId)}}selected{{/if}}>{{fullName}} (ID: {{doctorId}})</option>
-                            {{/each}}
-                        </select>
-                        <small class="form-text text-muted">Select an active doctor to lead this specialty.</small>
+                </div>
+                
+                <div class="col-md-3">
+                    <!-- Specialty Icon Upload -->
+                    <div class="form-section">
+                        <h3 class="section-title">Specialty Icon</h3>
+                        <div class="service-image-upload">
+                            <div class="image-preview" id="imagePreview">
+                                <i class="fas fa-image"></i>
+                                <span>Upload Icon</span>
+                            </div>
+                            <input type="file" id="icon" name="icon" accept="image/*" class="image-input">
+                            <button type="button" class="btn btn-outline-primary btn-sm btn-block mt-2" id="uploadImageBtn">
+                                <i class="fas fa-upload"></i> Choose Icon
+                            </button>
+                            <small class="form-text text-muted">
+                                Recommended: Square image, max 2MB.<br>
+                                Allowed formats: JPG, PNG, GIF, SVG
+                            </small>
+                        </div>
                     </div>
-                 </div>
-             </div>
-
+                </div>
+            </div>
 
             <div class="form-actions">
                 <button type="button" class="btn btn-outline-secondary" onclick="location.href='/admin/manage_specialty'">
@@ -96,6 +121,40 @@
 
          let isNameAvailable = false; // Assume unavailable until checked
          let nameCheckTimeout = null;
+
+         // Image upload preview
+         const iconInput = document.getElementById('icon');
+         const imagePreview = document.getElementById('imagePreview');
+         const uploadImageBtn = document.getElementById('uploadImageBtn');
+
+         uploadImageBtn.addEventListener('click', function() {
+             iconInput.click();
+         });
+
+         iconInput.addEventListener('change', function() {
+             if (this.files && this.files[0]) {
+                 const reader = new FileReader();
+
+                 reader.onload = function(e) {
+                     // Clear existing content
+                     imagePreview.innerHTML = '';
+                     
+                     // Create and append image element
+                     const img = document.createElement('img');
+                     img.src = e.target.result;
+                     img.alt = 'Specialty Icon';
+                     img.style.width = '100%';
+                     img.style.height = '100%';
+                     img.style.objectFit = 'cover';
+                     img.style.borderRadius = '8px';
+                     
+                     imagePreview.appendChild(img);
+                     imagePreview.classList.add('has-image');
+                 }
+
+                 reader.readAsDataURL(this.files[0]);
+             }
+         });
 
          const checkNameAvailability = async () => {
              const name = nameInput.value.trim();

@@ -20,126 +20,59 @@
         <div class="service-section">
             <h4 class="section-title">SERVICE</h4>
             <div class="service-grid">
+                {{#each services}}
                 <div class="service-item">
-                    <img src="/public/images/background/general.jpg" alt="General Health Check-up Package">
-                    <h4 class="service-name" style="color: #B91A3C;">GENERAL HEALTH CHECK-UP PACKAGE</h4>
+                    <img src="{{this.image}}" alt="{{this.name}}">
+                    <h4 class="service-name" style="color: #B91A3C;">{{this.name}}</h4>
                 </div>
-                <div class="service-item">
-                    <img src="/public/images/background/bloood.jpg" alt="General Health Check-up Package">
-                    <h4 class="service-name" style="color: #1063BF;">GENERAL HEALTH CHECK-UP PACKAGE</h4>
-                </div>
-                <div class="service-item">
-                    <img src="/public/images/background/bloood.jpg" alt="General Health Check-up Package">
-                    <h4 class="service-name" style="color: #1063BF;">GENERAL HEALTH CHECK-UP PACKAGE</h4>
-                </div>
-                <div class="service-item">
-                    <img src="/public/images/background/bloood.jpg" alt="General Health Check-up Package">
-                    <h4 class="service-name" style="color: #1063BF;">GENERAL HEALTH CHECK-UP PACKAGE</h4>
-                </div>
+                {{/each}}
             </div>
         </div>
 
-            <div class="specialty-section">
-                <h4 class="section-title">SPECIALTY</h4>
-                <ul class="specialty-list">
-                    <li class="specialty-item">
-                        <div class="specialty-icon">
-                            <img src="/public/images/icon/icons8-dog-bone-35.png" alt="Rheumatology">
-                        </div>
-                        <div class="specialty-info">
-                            <h3 class="specialty-name">RHEUMATOLOGY</h3>
-                            <a href="#" class="view-detail">View detail</a>
-                        </div>
-                    </li>
-                    <li class="specialty-item">
-                        <div class="specialty-icon">
-                            <img src="/public/images/icon/icons8-blood-sample-35.png" alt="Hematology - Blood Transfusion">
-                        </div>
-                        <div class="specialty-info">
-                            <h3 class="specialty-name">HEMATOLOGY - BLOOD TRANSFUSION</h3>
-                            <a href="#" class="view-detail">View detail</a>
-                        </div>
-                    </li>
-                    <li class="specialty-item">
-                        <div class="specialty-icon">
-                            <img src="/public/images/icon/icons8-pregnant-35.png" alt="Pediatric">
-                        </div>
-                        <div class="specialty-info">
-                            <h3 class="specialty-name">PEDIATRIC</h3>
-                            <a href="#" class="view-detail">View detail</a>
-                        </div>
-                    </li>
-                    <li class="specialty-item">
-                        <div class="specialty-icon">
-                            <img src="/public/images/icon/icons8-medical-heart-35.png" alt="Cardiology">
-                        </div>
-                        <div class="specialty-info">
-                            <h3 class="specialty-name">CARDIOLOGY</h3>
-                            <a href="#" class="view-detail">View detail</a>
-                        </div>
-                    </li>
-                    <li class="specialty-item">
-                        <div class="specialty-icon">
-                            <img src="/public/images/icon/icons8-neuron-32.png" alt="NEUROLOGY">
-                        </div>
-                        <div class="specialty-info">
-                            <h3 class="specialty-name">NEUROLOGY</h3>
-                            <a href="#" class="view-detail">View detail</a>
-                        </div>
-                    </li>
-                </ul>
-            </div>
+        <div class="specialty-section">
+            <h4 class="section-title">SPECIALTY</h4>
+            <ul class="specialty-list">
+                {{#each specialties}}
+                <li class="specialty-item">
+                    <div class="specialty-icon">
+                        <img src="{{this.icon}}" alt="{{this.name}}">
+                    </div>
+                    <div class="specialty-info">
+                        <h3 class="specialty-name">{{this.name}}</h3>
+                        <a href="/patient/specialty/{{this.id}}" class="view-detail">View detail</a>
+                    </div>
+                </li>
+                {{/each}}
+            </ul>
         </div>
-        <div class="doctor-team-container">
-            <div class="doctors-team-section">
-                <div class="doctor-title-container">
-                    <h2 class="section-doctor-title">Our Dedicated Doctors Team</h2>
-                </div>
-                <div class="doctors-list">
-                    <div class="doctor-card">
-                        <div class="doctor-image">
-                            <img src="/public/images/background/doctorNeuron.jpg" alt="Dr. Maran">
-                        </div>
-                        <h3 class="doctor-name">Dr. Maran</h3>
-                        <p class="doctor-specialty">Cardiologist</p>
-                        <button class="view-profile-button">View Profile</button>
-                    </div>
-                    <div class="doctor-card">
-                        <div class="doctor-image">
-                            <img src="/public/images/background/doctorPediatrician.jpg" alt="Dr. Suganthi">
-                        </div>
-                        <h3 class="doctor-name">Dr. Suganthi</h3>
-                        <p class="doctor-specialty">Pediatrician</p>
-                        <button class="view-profile-button">View Profile</button>
-                    </div>
-                    <div class="doctor-card">
-                        <div class="doctor-image">
-                            <img src="/public/images/background/doctorPediatrician.jpg" alt="Dr. JohnDurai">
-                        </div>
-                        <h3 class="doctor-name">Dr. JohnDurai</h3>
-                        <p class="doctor-specialty">Psychiatrist</p>
-                        <button class="view-profile-button">View Profile</button>
-                    </div>
-                    <div class="doctor-card">
-                        <div class="doctor-image">
-                            <img src="/public/images/background/doctorNeuron.jpg" alt="Dr. JohnDurai">
-                        </div>
-                        <h3 class="doctor-name">Dr. JohnDurai</h3>
-                        <p class="doctor-specialty">Psychiatrist</p>
-                        <button class="view-profile-button">View Profile</button>
-                    </div>
-                </div>
-                <div class="slider-controls">
-                    <button class="prev-button">
-                        <img src="/public/images/icon/icon_back.png" alt="">
-                    </button>
-                    <button class="next-button">
-                        <img src="/public/images/icon/icon_forward.png" alt="">
-                    </button>
-                </div>
-            </div>
-        </div>
-         {{!--view status  --}}
     </div>
+    <div class="doctor-team-container">
+        <div class="doctors-team-section">
+            <div class="doctor-title-container">
+                <h2 class="section-doctor-title">Our Dedicated Doctors Team</h2>
+            </div>
+            <div class="doctors-list">
+                {{#each doctors}}
+                <div class="doctor-card">
+                    <div class="doctor-image">
+                        <img src="{{this.image}}" alt="{{this.name}}">
+                    </div>
+                    <h3 class="doctor-name">{{this.name}}</h3>
+                    <p class="doctor-specialty">{{this.specialty_name}}</p>
+                    <button class="view-profile-button" onclick="window.location.href='/doctor/{{this.id}}'">View Profile</button>
+                </div>
+                {{/each}}
+            </div>
+            <div class="slider-controls">
+                <button class="prev-button">
+                    <img src="/public/images/icon/icon_back.png" alt="">
+                </button>
+                <button class="next-button">
+                    <img src="/public/images/icon/icon_forward.png" alt="">
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>

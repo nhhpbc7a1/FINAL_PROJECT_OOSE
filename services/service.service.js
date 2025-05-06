@@ -32,6 +32,14 @@ export default {
                 )
                 .where('serviceId', serviceId)
                 .first();
+            
+            if (service && service.image) {
+                // Ensure image path is properly formatted
+                if (!service.image.startsWith('http') && !service.image.startsWith('/')) {
+                    service.image = '/' + service.image;
+                }
+            }
+            
             return service || null;
         } catch (error) {
             console.error(`Error fetching service with ID ${serviceId}:`, error);
@@ -71,7 +79,8 @@ export default {
                 type: service.type, // Required field
                 category: service.category || null,
                 specialtyId: service.specialtyId ? parseInt(service.specialtyId, 10) : null,
-                status: service.status || 'active' // Default status
+                status: service.status || 'active', // Default status
+                image: specialty.image || '/public/images/services/default-service.jpg'
             };
 
             // Basic validation

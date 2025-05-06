@@ -1,0 +1,51 @@
+<main class="flex-1 p-6">
+  <div class="bg-white p-6 rounded-lg shadow-md">
+    <h1 class="text-2xl font-semibold mb-4 text-gray-800">Test Results Entry</h1>
+
+    <!-- Chi tiết yêu cầu xét nghiệm -->
+    <div class="mb-6">
+      <h2 class="text-xl font-medium mb-2">Test Request Details</h2>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <p class="text-gray-600"><strong>Test ID:</strong> {{testRequest.testId}}</p>
+          <p class="text-gray-600"><strong>Patient Name:</strong> {{testRequest.patientName}}</p>
+          <p class="text-gray-600"><strong>Test Type:</strong> {{testRequest.testType}}</p>
+        </div>
+        <div>
+          <p class="text-gray-600"><strong>Status:</strong> 
+            <span class="inline-block px-2 py-1 text-sm font-semibold rounded-full 
+              {{#if (eq testRequest.status 'done')}}bg-green-100 text-green-600{{/if}}
+              {{#if (eq testRequest.status 'in_progress')}}bg-blue-100 text-blue-600{{/if}}
+              {{#if (eq testRequest.status 'incomplete')}}bg-yellow-100 text-yellow-600{{/if}}
+              {{#if (eq testRequest.status 'decline')}}bg-red-100 text-red-600{{/if}}">
+              {{testRequest.status}}
+            </span>
+          </p>
+          <p class="text-gray-600"><strong>Request Date:</strong> {{format_date testRequest.requestDate}}</p>
+          <p class="text-gray-600"><strong>Description:</strong> {{testRequest.description}}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form nhập kết quả -->
+    <div class="mb-6">
+      <h2 class="text-xl font-medium mb-2">Enter Test Results</h2>
+      <form id="resultForm" action="/labtech/test-results-entry/{{testRequest.testId}}/submit" method="POST" enctype="multipart/form-data">
+        <div class="mb-4">
+          <label for="resultValue" class="block text-gray-700 font-medium mb-1">Result Value</label>
+          <input type="text" id="resultValue" name="resultValue" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter test result (e.g., Hemoglobin: 14 g/dL)" required>
+        </div>
+        <div class="mb-4">
+          <label for="notes" class="block text-gray-700 font-medium mb-1">Notes</label>
+          <textarea id="notes" name="notes" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" rows="4" placeholder="Additional notes about the test result"></textarea>
+        </div>
+        <div class="mb-4">
+          <label for="attachment" class="block text-gray-700 font-medium mb-1">Upload Image/Document</label>
+          <input type="file" id="attachment" name="attachment" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" accept="image/*,.pdf">
+          <p class="text-sm text-gray-500 mt-1">Accepted formats: Images (PNG, JPG), PDF</p>
+        </div>
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Submit Results</button>
+      </form>
+    </div>
+  </div>
+</main>

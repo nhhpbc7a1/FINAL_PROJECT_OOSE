@@ -1,3 +1,4 @@
+
 -- -- Database creation
 CREATE DATABASE IF NOT EXISTS FINAL_PROJECT_OOSE;
 USE FINAL_PROJECT_OOSE;
@@ -361,6 +362,7 @@ CREATE TABLE IF NOT EXISTS TestRequest (
     FOREIGN KEY (serviceId) REFERENCES Service(serviceId) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (requestedByDoctorId) REFERENCES Doctor(doctorId) ON DELETE CASCADE ON UPDATE CASCADE
 );
+
 
 
 -- -- Insert sample data
@@ -943,14 +945,14 @@ INSERT INTO TestResult (recordId, appointmentId, requestId, serviceId, technicia
 (3, 8, 3, 9, 3, 6, 'Normal brain wave activity', 1, 'file', 'N/A', 'N/A', 'No epileptiform activity or focal slowing detected.', 'completed', CURDATE() - INTERVAL 13 DAY); -- Result ID 3
 
 -- Insert sample data into Medication table
-INSERT INTO Medication (name, description, dosage, price, category, manufacturer, sideEffects, stockQuantity) VALUES
-('Nitroglycerin', 'Vasodilator for angina', '0.4mg sublingual tablet', 75000, 'Cardiovascular', 'Pfizer', 'Headache, dizziness', 200), -- Medication ID 1
-('Hydrocortisone Cream', 'Topical steroid for skin inflammation', '1% cream', 80000, 'Dermatology', 'Johnson & Johnson', 'Skin thinning, local irritation', 300), -- Medication ID 2
-('Sumatriptan', 'Triptan for migraine relief', '50mg tablet', 150000, 'Neurology', 'GlaxoSmithKline', 'Dizziness, nausea, chest tightness', 150), -- Medication ID 3
-('Naproxen', 'NSAID for pain and inflammation', '500mg tablet', 30000, 'Pain Relief', 'Roche', 'Stomach upset, heartburn', 500), -- Medication ID 4
-('Omeprazole', 'Proton pump inhibitor for GERD', '20mg capsule', 45000, 'Gastroenterology', 'Abbott', 'Headache, nausea', 400), -- Medication ID 5
-('Albuterol Inhaler', 'Bronchodilator for asthma', '90mcg/puff inhaler', 250000, 'Pulmonology', 'GlaxoSmithKline', 'Tremor, fast heartbeat', 100), -- Medication ID 6
-('Metformin', 'Oral medication for Type 2 Diabetes', '500mg tablet', 20000, 'Endocrinology', 'Bristol-Myers Squibb', 'Nausea, diarrhea', 600); -- Medication ID 7
+INSERT INTO Medication (name, description, dosage, price, category, manufacturer, sideEffects) VALUES
+('Nitroglycerin', 'Vasodilator for angina', '0.4mg sublingual tablet', 75000, 'Cardiovascular', 'Pfizer', 'Headache, dizziness'), -- Medication ID 1
+('Hydrocortisone Cream', 'Topical steroid for skin inflammation', '1% cream', 80000, 'Dermatology', 'Johnson & Johnson', 'Skin thinning, local irritation'), -- Medication ID 2
+('Sumatriptan', 'Triptan for migraine relief', '50mg tablet', 150000, 'Neurology', 'GlaxoSmithKline', 'Dizziness, nausea, chest tightness'), -- Medication ID 3
+('Naproxen', 'NSAID for pain and inflammation', '500mg tablet', 30000, 'Pain Relief', 'Roche', 'Stomach upset, heartburn'), -- Medication ID 4
+('Omeprazole', 'Proton pump inhibitor for GERD', '20mg capsule', 45000, 'Gastroenterology', 'Abbott', 'Headache, nausea'), -- Medication ID 5
+('Albuterol Inhaler', 'Bronchodilator for asthma', '90mcg/puff inhaler', 250000, 'Pulmonology', 'GlaxoSmithKline', 'Tremor, fast heartbeat'), -- Medication ID 6
+('Metformin', 'Oral medication for Type 2 Diabetes', '500mg tablet', 20000, 'Endocrinology', 'Bristol-Myers Squibb', 'Nausea, diarrhea'); -- Medication ID 7
 
 
 -- Insert sample data into Prescription table
@@ -975,33 +977,6 @@ INSERT INTO Payment (appointmentId, amount, method, status, transactionId, payme
 (1, 800000, 'credit_card', 'completed', 'TXN123456789', NOW() - INTERVAL 6 DAY), -- Payment ID 1 (for Appointment 1) - Basic Checkup (500k) + ECG (300k) = 800k
 (5, 400000, 'bank_transfer', 'completed', 'TXN123456790', NOW() - INTERVAL 9 DAY), -- Payment ID 2 (for Appointment 5) - Skin Consultation (400k)
 (8, 1300000, 'credit_card', 'completed', 'TXN123456791', NOW() - INTERVAL 13 DAY); -- Payment ID 3 (for Appointment 8) - Neuro Consultation (600k) + EEG (700k) = 1.3M
-
-
--- Insert sample data into Review table
--- appointmentId must match existing Appointment IDs marked as 'completed'.
-INSERT INTO Review (appointmentId, rating, comment, reviewDate) VALUES
-(1, 5, 'Dr. John Smith was very thorough and explained everything clearly. Highly recommend!', CURDATE() - INTERVAL 6 DAY), -- Review ID 1 (for Appointment 1)
-(5, 5, 'Dr. Pham Thi B diagnosed my skin condition quickly and the treatment worked great.', CURDATE() - INTERVAL 9 DAY), -- Review ID 2 (for Appointment 5)
-(8, 5, 'Dr. Tran Thi D finally found relief for my migraines. Thank you!', CURDATE() - INTERVAL 13 DAY), -- Review ID 3 (for Appointment 8)
-(11, 4, 'Dr. Dang Thi F gave good advice for my knee pain. The exercises have been helping.', CURDATE() - INTERVAL 20 DAY); -- Review ID 4 (for Appointment 11)
-
-
--- Insert sample data into Billing table
--- Links to AppointmentServices, TestResult, or Medication
--- Uses Payment IDs 1, 2, 3
-INSERT INTO Billing (appointmentServiceId, amount, status, paymentId, itemDescription) VALUES
-(1, 500000, 'paid', 1, 'Basic Heart Checkup'), -- Billing ID 1 (for ApptService 1, linked to Appt 1, paid by Payment 1)
-(2, 300000, 'paid', 1, 'ECG Test'), -- Billing ID 2 (for ApptService 2, linked to Appt 1, paid by Payment 1)
-(3, 400000, 'paid', 2, 'Skin Consultation'), -- Billing ID 3 (for ApptService 3, linked to Appt 5, paid by Payment 2)
-(4, 600000, 'paid', 3, 'Neurological Consultation'), -- Billing ID 4 (for ApptService 4, linked to Appt 8, paid by Payment 3)
-(5, 700000, 'paid', 3, 'EEG Test'); -- Billing ID 5 (for ApptService 5, linked to Appt 8, paid by Payment 3)
-
--- Insert sample data into Billing table (for TestResults)
--- Uses Result IDs 1, 2, 3
-INSERT INTO Billing (testResultId, amount, status, paymentId, itemDescription) VALUES
-(1, 300000, 'paid', 1, 'ECG Test Result Fee'), -- Billing ID 6 (for TestResult 1, implicitly linked to Appt 1 via MedicalRecord 1, paid by Payment 1) - Note: Amount may differ from service price depending on hospital billing rules
-(2, 600000, 'paid', 2, 'Skin Biopsy Result Fee'), -- Billing ID 7 (for TestResult 2, implicitly linked to Appt 5 via MedicalRecord 2, paid by Payment 2)
-(3, 700000, 'paid', 3, 'EEG Test Result Fee'); -- Billing ID 8 (for TestResult 3, implicitly linked to Appt 8 via MedicalRecord 3, paid by Payment 3)
 
 
 -- Display a message to confirm completion
