@@ -1,0 +1,86 @@
+<main class="flex-1 p-6">
+  <div class="bg-white p-6 rounded-lg shadow-md">
+    <h1 class="text-2xl font-semibold mb-4 text-gray-800">Test Requests</h1>
+    
+    <!-- Thanh tìm kiếm và bộ lọc -->
+    <div class="mb-6 flex items-center space-x-4">
+      <div class="flex-1">
+        <input id="searchInput" type="text" placeholder="Search by patient name..." class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+      <div>
+        <select id="statusFilter" class="p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="">All Statuses</option>
+          <option value="incomplete">Incomplete</option>
+          <option value="done">Done</option>
+          <option value="in_progress">In Progress</option>
+          <option value="decline">Decline</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Bảng danh sách yêu cầu xét nghiệm -->
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white border rounded-lg">
+        <thead>
+          <tr class="bg-gray-100">
+            <th class="p-3 text-left text-gray-600">Test ID</th>
+            <th class="p-3 text-left text-gray-600">Patient Name</th>
+            <th class="p-3 text-left text-gray-600">Test Type</th>
+            <th class="p-3 text-left text-gray-600">Status</th>
+            <th class="p-3 text-left text-gray-600">Request Date</th>
+          </tr>
+        </thead>
+        <tbody id="testRequestsTable">
+          {{#each testRequests}}
+            <tr class="border-t">
+              <td class="p-3">{{testId}}</td>
+              <td class="p-3">{{patientName}}</td>
+              <td class="p-3">{{testType}}</td>
+              <td class="p-3">
+                <span class="inline-block px-2 py-1 text-sm font-semibold rounded-full 
+                  {{#if (eq status 'done')}}bg-green-100 text-green-600{{/if}}
+                  {{#if (eq status 'in_progress')}}bg-blue-100 text-blue-600{{/if}}
+                  {{#if (eq status 'incomplete')}}bg-yellow-100 text-yellow-600{{/if}}
+                  {{#if (eq status 'decline')}}bg-red-100 text-red-600{{/if}}">
+                  {{status}}
+                </span>
+              </td>
+              <td class="p-3">{{format_date requestDate}}</td>
+            </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<!-- Script để xử lý tìm kiếm và lọc -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('searchInput');
+    const statusFilter = document.getElementById('statusFilter');
+    const tableBody = document.getElementById('testRequestsTable');
+    const originalRows = Array.from(tableBody.getElementsByTagName('tr'));
+
+    function filterRows() {
+      const searchTerm = searchInput.value.toLowerCase();
+      const status = statusFilter.value.toLowerCase();
+
+      const filteredRows = originalRows.filter(row => {
+        const patientName = row.cells[1].textContent.toLowerCase();
+        const rowStatus = row.cells[3].textContent.trim().toLowerCase();
+
+        const matchesSearch = patientName.includes(searchTerm);
+        const matchesStatus = status === '' || rowStatus === status;
+
+        return matchesSearch && matchesStatus;
+      });
+
+      tableBody.innerHTML = '';
+      filteredRows.forEach(row => tableBody.appendChild(row));
+    }
+
+    searchInput.addEventListener('input', filterRows);
+    statusFilter.addEventListener('change', filterRows);
+  });
+</script>

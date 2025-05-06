@@ -453,14 +453,31 @@ body {
   margin-right: 5px;
 }
 
+.status-indicator {
+  margin-top: 8px;
+  display: flex;
+}
+
 .status-badge {
-  display: inline-block;
-  padding: 5px 12px;
-  border-radius: 20px;
+  padding: 4px 10px;
+  border-radius: 15px;
   font-size: 12px;
-  font-weight: 500;
-  text-align: center;
-  transition: all 0.2s ease;
+  font-weight: 600;
+  color: white;
+  display: inline-block;
+  text-transform: capitalize;
+}
+
+.status-badge.examined {
+  background-color: #36B37E;
+}
+
+.status-badge.examining {
+  background-color: #FFAB00;
+}
+
+.status-badge.waiting {
+  background-color: #0D99FF;
 }
 
 /* Status specific styles */
@@ -525,6 +542,20 @@ body {
 .schedule-list-item:hover .appointment-content {
   background-color: white;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+/* No appointments message */
+.no-appointments {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 150px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin: 20px 0;
+  color: #6c757d;
+  font-style: italic;
+  border: 1px dashed #dee2e6;
 }
 
 /* Responsive Design */

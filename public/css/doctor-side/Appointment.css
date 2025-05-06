@@ -147,6 +147,33 @@
     border-bottom: 1px solid rgba(0, 110, 185, 0.2);
   }
   
+  .appointments-list {
+    max-height: 600px;
+    overflow-y: auto;
+    padding-right: 5px;
+    margin-right: -5px;
+    scrollbar-width: thin;
+  }
+  
+  .appointments-list::-webkit-scrollbar {
+    width: 4px;
+    display: block;
+  }
+  
+  .appointments-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+  
+  .appointments-list::-webkit-scrollbar-thumb {
+    background: #006eb9;
+    border-radius: 10px;
+  }
+  
+  .appointments-list::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+  }
+  
   .appointment-card {
     background-color: #e6f5ff;
     border-radius: 12px;
@@ -156,11 +183,18 @@
     border: 1px solid rgba(0, 110, 185, 0.2);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     transition: all 0.2s;
+    cursor: pointer;
   }
   
   .appointment-card:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     transform: translateY(-2px);
+  }
+  
+  .appointment-card.active {
+    background-color: #d0e8ff;
+    border: 1px solid #006eb9;
+    box-shadow: 0 0 0 3px rgba(0, 110, 185, 0.15);
   }
   
   .appointment-time {
@@ -209,18 +243,21 @@
     background-color: #36B37E;
     color: #fff;
     box-shadow: 0 2px 4px rgba(54, 179, 126, 0.3);
+    text-transform: capitalize;
   }
   
   .status-examining {
     background-color: #FFAB00;
     color: #fff;
     box-shadow: 0 2px 4px rgba(255, 171, 0, 0.3);
+    text-transform: capitalize;
   }
   
   .status-waiting {
     background-color: #0D99FF;
     color: #fff;
     box-shadow: 0 2px 4px rgba(13, 153, 255, 0.3);
+    text-transform: capitalize;
   }
   
   .appointment-number {
@@ -479,4 +516,31 @@
   .filter-btn:hover {
     background-color: #28a745; 
     color: #fff;
+  }
+  
+  .no-appointments {
+    padding: 30px;
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    border: 1px dashed #ced4da;
+    border-radius: 8px;
+    margin: 20px 0;
+  }
+  
+  .error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 20px 0;
+    text-align: center;
+    border: 1px solid #f5c6cb;
+  }
+  
+  .no-appointment-selected {
+    padding: 50px 20px;
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
   }
