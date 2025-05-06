@@ -1,9 +1,12 @@
-<link rel="stylesheet" href="/public/css/admin-side/add-doctor.css"> {{!-- Reuse form styling --}}
+{{#section 'css'}}
+<link rel="stylesheet" href="/public/css/admin.css">
+<link rel="stylesheet" href="/public/css/admin-side/add-service.css">
+{{/section}}
 
 <div class="content-header">
     <div>
         <h1 class="page-title">{{pageTitle}}</h1>
-        <p class="page-subtitle">Add a new service or test by filling out the form below.</p>
+        <p class="page-subtitle">Add a new service by filling out the form below.</p>
     </div>
     <div class="header-actions">
         <a href="/admin/manage_service" class="btn btn-outline">
@@ -13,93 +16,120 @@
 </div>
 
 {{#if error}}
-<div class="alert alert-danger alert-dismissible fade show">
-    <i class="fas fa-exclamation-circle"></i> <span>{{error}}</span>
-    <button type="button" class="close" data-dismiss="alert">×</button>
+<div class="alert alert-danger">
+    <i class="fas fa-exclamation-circle"></i>
+    <span>{{error}}</span>
+    <button type="button" class="close" data-dismiss="alert">&times;</button>
 </div>
 {{/if}}
+
 {{#if flashMessage}}
 <div class="alert alert-{{flashMessage.type}} alert-dismissible fade show">
-     <i class="fas fa-{{#if (eq flashMessage.type 'success')}}check-circle{{else}}exclamation-circle{{/if}}"></i>
+    <i class="fas fa-{{#if (eq flashMessage.type 'success')}}check-circle{{else}}exclamation-circle{{/if}}"></i>
     <span>{{flashMessage.message}}</span>
-    <button type="button" class="close" data-dismiss="alert">×</button>
+    <button type="button" class="close" data-dismiss="alert">&times;</button>
 </div>
 {{/if}}
 
 <div class="card form-card">
     <div class="card-body">
-        <form id="serviceForm" action="/admin/manage_service/add" method="POST" novalidate>
-            <div class="form-section">
-                 <h3 class="section-title">Service Details</h3>
+        <form id="serviceForm" method="POST" action="/admin/manage_service/add" enctype="multipart/form-data">
+            <div class="row">
+                <div class="col-md-9">
+                    <!-- Basic Information Section -->
+                    <div class="form-section">
+                        <h3 class="section-title">Basic Information</h3>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="name">Service Name <span class="required">*</span></label>
+                                <input type="text" class="form-control" id="name" name="name" value="{{service.name}}" required>
+                                <small class="form-text text-muted">Enter a unique name for the service</small>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="type">Service Type <span class="required">*</span></label>
+                                <select class="form-control" id="type" name="type" required>
+                                    <option value="" disabled {{#unless service.type}}selected{{/unless}}>Select Type</option>
+                                    <option value="service" {{#if (eq service.type "service")}}selected{{/if}}>Service</option>
+                                    <option value="test" {{#if (eq service.type "test")}}selected{{/if}}>Test</option>
+                                    <option value="procedure" {{#if (eq service.type "procedure")}}selected{{/if}}>Procedure</option>
+                                </select>
+                            </div>
+                        </div>
 
-                 <div class="form-group">
-                    <label for="name">Service/Test Name <span class="required">*</span></label>
-                    <input type="text" class="form-control" id="name" name="name" value="{{service.name}}" required aria-describedby="name-feedback">
-                    <small class="form-text text-muted">The name of the medical service or lab test.</small>
-                    <div id="name-feedback"></div>
-                    <div class="invalid-feedback">Please enter the service/test name.</div>
-                </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="price">Price (VND) <span class="required">*</span></label>
+                                <input type="number" class="form-control" id="price" name="price" value="{{service.price}}" required>
+                                <small class="form-text text-muted">Enter the service price in VND</small>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="duration">Duration (minutes) <span class="required">*</span></label>
+                                <input type="number" class="form-control" id="duration" name="duration" value="{{service.duration}}" required>
+                                <small class="form-text text-muted">Estimated time to complete the service</small>
+                            </div>
+                        </div>
 
-                <div class="form-row">
-                    <div class="form-group col-md-4">
-                        <label for="type">Type <span class="required">*</span></label>
-                        <select class="form-control" id="type" name="type" required>
-                            <option value="" disabled {{#unless service.type}}selected{{/unless}}>Select Type</option>
-                            <option value="service" {{#if (eq service.type "service")}}selected{{/if}}>Service</option>
-                            <option value="test" {{#if (eq service.type "test")}}selected{{/if}}>Test</option>
-                        </select>
-                        <div class="invalid-feedback">Please select the type.</div>
-                    </div>
-                    <div class="form-group col-md-4">
-                        <label for="price">Price <span class="required">*</span></label>
-                        <div class="input-group">
-                            <div class="input-group-prepend"><span class="input-group-text">$</span></div>
-                            <input type="number" step="0.01" min="0" class="form-control" id="price" name="price" value="{{service.price}}" required>
-                             <div class="invalid-feedback">Please enter a valid, non-negative price.</div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="category">Category <span class="required">*</span></label>
+                                <input type="text" class="form-control" id="category" name="category" value="{{service.category}}" required>
+                                <small class="form-text text-muted">Service category for organization</small>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="specialtyId">Specialty <span class="required">*</span></label>
+                                <select class="form-control" id="specialtyId" name="specialtyId" required>
+                                    <option value="" disabled {{#unless service.specialtyId}}selected{{/unless}}>Select Specialty</option>
+                                    {{#each specialties}}
+                                    <option value="{{this.specialtyId}}" {{#if (eq ../service.specialtyId this.specialtyId)}}selected{{/if}}>{{this.name}}</option>
+                                    {{/each}}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="4">{{service.description}}</textarea>
+                            <small class="form-text text-muted">Detailed description of the service</small>
                         </div>
                     </div>
-                     <div class="form-group col-md-4">
-                        <label for="duration">Duration (minutes)</label>
-                        <input type="number" min="0" class="form-control" id="duration" name="duration" value="{{service.duration}}">
-                        <small class="form-text text-muted">Estimated time in minutes (optional).</small>
-                         <div class="invalid-feedback">Duration must be a non-negative number.</div>
-                    </div>
                 </div>
 
-                 <div class="form-row">
-                    <div class="form-group col-md-6">
-                        <label for="category">Category</label>
-                        <input type="text" class="form-control" id="category" name="category" value="{{service.category}}">
-                        <small class="form-text text-muted">E.g., "Consultation", "Radiology", "Blood Test", "Surgery".</small>
+                <div class="col-md-3">
+                    <!-- Service Image Upload -->
+                    <div class="form-section">
+                        <h3 class="section-title">Service Image</h3>
+                        <div class="service-image-upload">
+                            <div class="image-preview" id="imagePreview">
+                                <i class="fas fa-image"></i>
+                                <span>Upload Image</span>
+                            </div>
+                            <input type="file" id="image" name="image" accept="image/*" class="image-input">
+                            <button type="button" class="btn btn-outline-primary btn-sm btn-block mt-2" id="uploadImageBtn">
+                                <i class="fas fa-upload"></i> Choose Image
+                            </button>
+                            <small class="form-text text-muted">
+                                Recommended: Square image, max 2MB.<br>
+                                Allowed formats: JPG, PNG, GIF
+                            </small>
+                        </div>
                     </div>
-                    <div class="form-group col-md-6">
-                        <label for="specialtyId">Related Specialty</label>
-                        <select class="form-control" id="specialtyId" name="specialtyId">
-                            <option value="" selected>-- General / None --</option>
-                            {{#each specialties}}
-                            <option value="{{specialtyId}}" {{#if (eq ../service.specialtyId specialtyId)}}selected{{/if}}>{{name}}</option>
-                            {{/each}}
-                        </select>
-                         <small class="form-text text-muted">Assign to a specialty if applicable.</small>
+
+                    <!-- Status Settings -->
+                    <div class="form-section">
+                        <h3 class="section-title">Status Settings</h3>
+                        <div class="form-group">
+                            <label for="status">Status</label>
+                            <select class="form-control" id="status" name="status">
+                                <option value="active" {{#if (eq service.status "active")}}selected{{/if}}>Active</option>
+                                <option value="inactive" {{#if (eq service.status "inactive")}}selected{{/if}}>Inactive</option>
+                            </select>
+                            <small class="form-text text-muted">
+                                Set the initial availability status of the service
+                            </small>
+                        </div>
                     </div>
                 </div>
-
-                 <div class="form-group">
-                    <label for="description">Description</label>
-                    <textarea class="form-control" id="description" name="description" rows="3">{{service.description}}</textarea>
-                    <small class="form-text text-muted">Details about the service or test (optional).</small>
-                </div>
-
-                 <div class="form-group">
-                     <label for="status">Status</label>
-                     <select class="form-control" id="status" name="status">
-                         <option value="active" selected>Active</option>
-                         <option value="inactive">Inactive</option>
-                     </select>
-                      <small class="form-text text-muted">Inactive services cannot be selected for appointments.</small>
-                 </div>
-             </div>
-
+            </div>
 
             <div class="form-actions">
                 <button type="button" class="btn btn-outline-secondary" onclick="location.href='/admin/manage_service'">
@@ -114,73 +144,61 @@
 </div>
 
 <script>
-     // --- Client-side validation (Name uniqueness, standard validation) ---
-     document.addEventListener('DOMContentLoaded', function() {
-         const serviceForm = document.getElementById('serviceForm');
-         const nameInput = document.getElementById('name');
-         const nameFeedbackEl = document.getElementById('name-feedback');
-         const priceInput = document.getElementById('price');
-         const durationInput = document.getElementById('duration');
+    document.addEventListener('DOMContentLoaded', function() {
+        // Image upload preview
+        const imageInput = document.getElementById('image');
+        const imagePreview = document.getElementById('imagePreview');
+        const uploadImageBtn = document.getElementById('uploadImageBtn');
 
-         let isNameAvailable = false;
-         let nameCheckTimeout = null;
+        uploadImageBtn.addEventListener('click', function() {
+            imageInput.click();
+        });
 
-         const checkNameAvailability = async () => {
-             // (Same AJAX name check logic as add_medication.hbs, using the correct API path)
-             const name = nameInput.value.trim();
-             nameFeedbackEl.innerHTML = ''; nameInput.classList.remove('is-invalid', 'is-valid');
-             if (!name) { isNameAvailable = false; return; }
-             nameFeedbackEl.innerHTML = '<small class="text-muted">Checking name...</small>';
-             try {
-                 const response = await fetch(`/admin/manage_service/api/check-name?name=${encodeURIComponent(name)}`); // API path for services
-                 const data = await response.json();
-                 if (response.ok) {
-                     if (data.isUnique) { nameFeedbackEl.innerHTML = '<small class="text-success">Name is available!</small>'; nameInput.classList.add('is-valid'); isNameAvailable = true; }
-                     else { nameFeedbackEl.innerHTML = '<small class="text-danger">This service/test name already exists.</small>'; nameInput.classList.add('is-invalid'); isNameAvailable = false; }
-                 } else { nameFeedbackEl.innerHTML = '<small class="text-warning">Could not verify name uniqueness.</small>'; isNameAvailable = true; }
-             } catch (error) { nameFeedbackEl.innerHTML = '<small class="text-warning">Network error checking name.</small>'; isNameAvailable = true; }
-         };
+        imageInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
 
-         nameInput.addEventListener('blur', checkNameAvailability);
-         nameInput.addEventListener('input', () => { clearTimeout(nameCheckTimeout); nameInput.classList.remove('is-invalid', 'is-valid'); nameFeedbackEl.innerHTML = ''; isNameAvailable = false; nameCheckTimeout = setTimeout(checkNameAvailability, 1000); });
+                reader.onload = function(e) {
+                    imagePreview.innerHTML = '';
+                    imagePreview.style.backgroundImage = `url('${e.target.result}')`;
+                    imagePreview.classList.add('has-image');
+                }
 
-         // Form Submission
-         serviceForm.addEventListener('submit', async function(event) {
-             event.preventDefault(); event.stopPropagation();
-             await checkNameAvailability();
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
 
-             // Basic price/duration check
-             const priceValue = parseFloat(priceInput.value);
-             let isPriceValid = !isNaN(priceValue) && priceValue >= 0;
-             if (!isPriceValid) priceInput.classList.add('is-invalid'); else priceInput.classList.remove('is-invalid');
+        // Form validation
+        const serviceForm = document.getElementById('serviceForm');
 
-             const durationValue = durationInput.value ? parseInt(durationInput.value, 10) : null;
-             let isDurationValid = durationValue === null || (!isNaN(durationValue) && durationValue >= 0);
-             if (!isDurationValid) durationInput.classList.add('is-invalid'); else durationInput.classList.remove('is-invalid');
+        serviceForm.addEventListener('submit', function(event) {
+            if (!serviceForm.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
 
+                // Highlight all invalid fields
+                const invalidFields = serviceForm.querySelectorAll(':invalid');
+                invalidFields.forEach(field => {
+                    field.parentElement.classList.add('has-error');
+                });
 
-             const isFormValid = serviceForm.checkValidity();
-             serviceForm.classList.add('was-validated');
+                // Scroll to first invalid field
+                if (invalidFields.length > 0) {
+                    invalidFields[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    invalidFields[0].focus();
+                }
+            }
 
-             if (isFormValid && isNameAvailable && isPriceValid && isDurationValid) {
-                 console.log('Form is valid, submitting...');
-                 const submitButton = serviceForm.querySelector('button[type="submit"]');
-                 if(submitButton){ submitButton.disabled = true; submitButton.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...'; }
-                 serviceForm.submit();
-             } else {
-                 console.log('Form validation failed.');
-                 let firstInvalidField = serviceForm.querySelector(':invalid');
-                  if (!isNameAvailable && (!firstInvalidField || firstInvalidField !== nameInput)) { firstInvalidField = nameInput; }
-                  if (!isPriceValid && (!firstInvalidField || firstInvalidField !== priceInput)) { firstInvalidField = priceInput; }
-                  if (!isDurationValid && (!firstInvalidField || firstInvalidField !== durationInput)) { firstInvalidField = durationInput; }
+            serviceForm.classList.add('was-validated');
+        });
 
-                 if (firstInvalidField) { firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' }); firstInvalidField.focus({ preventScroll: true }); }
-             }
-         });
-
-         // Real-time feedback remove for price/duration
-         priceInput.addEventListener('input', function() { const v = parseFloat(this.value); if (!isNaN(v) && v >= 0) this.classList.remove('is-invalid'); });
-         durationInput.addEventListener('input', function() { const v = this.value ? parseInt(this.value, 10) : null; if (v === null || (!isNaN(v) && v >= 0)) this.classList.remove('is-invalid'); });
-
-     });
+        // Remove error class when field is corrected
+        serviceForm.querySelectorAll('input, select, textarea').forEach(field => {
+            field.addEventListener('input', function() {
+                if (this.checkValidity()) {
+                    this.parentElement.classList.remove('has-error');
+                }
+            });
+        });
+    });
 </script>

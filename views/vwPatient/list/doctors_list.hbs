@@ -1,0 +1,107 @@
+{{#section 'css'}}
+  <link rel="stylesheet" href="/css/patient-side/doctors-list.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+{{/section}}
+
+<div class="container doctors-page py-5">
+  <div class="page-header text-center mb-5">
+    <h1 class="display-4 fw-bold text-primary">{{title}}</h1>
+    <div class="separator"></div>
+    <p class="lead mt-3 text-secondary">{{description}}</p>
+  </div>
+  
+  <div class="filters-section shadow-sm rounded p-4 mb-5 bg-light">
+    <form action="/patient/doctors" method="GET" class="filter-form">
+      <div class="form-group">
+        <label for="specialty" class="form-label fw-bold">Filter by Specialty:</label>
+        <div class="input-group">
+          <select name="specialty" id="specialty" class="form-control form-select" onchange="this.form.submit()">
+            <option value="">All Specialties</option>
+            {{#each specialties}}
+              <option value="{{id}}" {{#if (eq ../selectedSpecialtyId id)}}selected{{/if}}>
+                {{name}} ({{doctor_count}} Doctors)
+              </option>
+            {{/each}}
+          </select>
+          <button type="submit" class="btn btn-outline-primary">
+            <i class="fas fa-filter"></i> Filter
+          </button>
+        </div>
+      </div>
+    </form>
+    
+    {{#if selectedSpecialty}}
+      <div class="active-filter mt-3 p-2 bg-white rounded">
+        <span>Filtered by: <strong class="text-primary">{{selectedSpecialty}}</strong></span>
+        <a href="/patient/doctors" class="clear-filter btn btn-sm btn-light ms-2">
+          <i class="fas fa-times"></i> Clear
+        </a>
+      </div>
+    {{/if}}
+  </div>
+  
+  {{#if error}}
+    <div class="alert alert-danger shadow-sm">
+      <i class="fas fa-exclamation-circle me-2"></i> {{error}}
+    </div>
+  {{else}}
+    {{#if doctors.length}}
+      <div class="row g-4">
+        {{#each doctors}}
+          <div class="col-md-6 col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="{{multiply @index 100}}">
+            <div class="doctor-card h-100 shadow-sm">
+              <div class="doctor-image">
+                <img src="{{#if image}}{{image}}{{else}}/img/default-doctor.png{{/if}}" alt="Dr. {{name}}" class="img-fluid">
+                <div class="experience-badge">
+                  <i class="fas fa-briefcase ml-3"></i> {{experience_years}} years
+                </div>
+              </div>
+              <div class="doctor-info p-3">
+                <h3 class="doctor-name">Dr. {{name}}</h3>
+                <p class="specialties"><i class="fas fa-stethoscope me-2"></i>{{specialties}}</p>
+                <div class="doctor-actions mt-3">
+                  <a href="/patient/doctor/{{id}}" class="btn btn-primary w-100 mb-2">
+                    <i class="fas fa-user-md me-2"></i>View Profile
+                  </a>
+                  <a href="/patient/book-appointment?doctor={{id}}" class="btn btn-outline-primary w-100">
+                    <i class="far fa-calendar-check me-2"></i>Book Appointment
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        {{/each}}
+      </div>
+    {{else}}
+      <div class="empty-state text-center py-5" data-aos="fade-up">
+        <i class="fas fa-user-md empty-icon mb-4"></i>
+        <h3 class="mb-3">No Doctors Found</h3>
+        {{#if selectedSpecialty}}
+          <p class="text-muted mb-4">We couldn't find any doctors for the selected specialty. Please try a different specialty or view all doctors.</p>
+          <a href="/patient/doctors" class="btn btn-primary">
+            <i class="fas fa-users me-2"></i>View All Doctors
+          </a>
+        {{else}}
+          <p class="text-muted">We couldn't find any doctors at the moment.</p>
+        {{/if}}
+      </div>
+    {{/if}}
+  {{/if}}
+</div>
+
+{{#section 'js'}}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize AOS animations
+      AOS.init({
+        duration: 800,
+        easing: 'ease-in-out',
+        once: true
+      });
+      
+      // Highlight the current navigation item
+      document.querySelector('nav a[href="/patient/doctors"]').classList.add('active');
+    });
+  </script>
+{{/section}} 

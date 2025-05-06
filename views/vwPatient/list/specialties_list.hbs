@@ -1,0 +1,87 @@
+{{#section 'css'}}
+  <link rel="stylesheet" href="/css/patient-side/specialties-list.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+{{/section}}
+
+<div class="container specialties-page py-5">
+  <div class="page-header text-center mb-5">
+    <h1 class="display-4 fw-bold text-primary">{{title}}</h1>
+    <div class="separator"></div>
+    <p class="lead mt-3 text-secondary">{{description}}</p>
+  </div>
+  
+  {{#if error}}
+    <div class="alert alert-danger shadow-sm">
+      <i class="fas fa-exclamation-circle me-2"></i> {{error}}
+    </div>
+  {{else}}
+    {{#if specialties.length}}
+      <div class="row g-5">
+        {{#each specialties}}
+          <div class="col-md-6 col-lg-4 mb-3" data-aos="fade-up" data-aos-delay="{{multiply @index 100}}">
+            <div class="specialty-card h-100 shadow rounded overflow-hidden">
+              <div class="specialty-header bg-light p-4 text-center">
+                <div class="specialty-icon mb-3">
+                  <img src="{{icon}}" alt="">
+                </div>
+                <h3 class="specialty-name mb-0">{{name}}</h3>
+              </div>
+              <div class="specialty-info p-4">
+                <p class="description mb-4">{{description}}</p>
+                <div class="stats d-flex justify-content-between mb-4">
+                  <div class="stat-item d-flex align-items-center">
+                    <div class="stat-icon me-2 bg-primary text-white rounded-circle p-2">
+                      <i class="fas fa-user-md"></i>
+                    </div>
+                    <div class="stat-text ml-2">
+                      <span class="fw-bold">{{doctor_count}}</span> Doctors
+                    </div>
+                  </div>
+                  <div class="stat-item d-flex align-items-center">
+                    <div class="stat-icon me-2 bg-info text-white rounded-circle p-2">
+                      <i class="fas fa-stethoscope"></i>
+                    </div>
+                    <div class="stat-text ml-2">
+                      <span class="fw-bold">{{serviceCount}}</span> Services
+                    </div>
+                  </div>
+                </div>
+                <div class="specialty-actions d-grid gap-2">
+                  <a href="/patient/specialty/{{id}}" class="btn btn-primary">
+                    <i class="fas fa-info-circle me-2"></i>View Details
+                  </a>
+                  <a href="/patient/doctors?specialty={{id}}" class="btn btn-outline-primary">
+                    <i class="fas fa-user-md me-2"></i>Find Doctors
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        {{/each}}
+      </div>
+    {{else}}
+      <div class="empty-state text-center py-5" data-aos="fade-up">
+        <i class="fas fa-heartbeat empty-icon mb-4 display-1 text-muted"></i>
+        <h3 class="mb-3">No Specialties Found</h3>
+        <p class="text-muted">We couldn't find any medical specialties at the moment.</p>
+      </div>
+    {{/if}}
+  {{/if}}
+</div>
+
+{{#section 'js'}}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize AOS animations
+      AOS.init({
+        duration: 800,
+        easing: 'ease-in-out',
+        once: true
+      });
+      
+      // Highlight the current navigation item
+      document.querySelector('nav a[href="/patient/specialties"]').classList.add('active');
+    });
+  </script>
+{{/section}} 

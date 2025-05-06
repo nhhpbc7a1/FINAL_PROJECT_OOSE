@@ -27,18 +27,29 @@
         <table class="table table-hover">
             <thead>
                 <tr>
-                    <th scope="col">Specialty Name</th>
-                    <th scope="col">Head Doctor</th>
-                    <th scope="col">Description</th>
-                    <th scope="col">Action</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Head Doctor</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody id="specialty-table-body">
                 {{#each specialties}}
                 <tr class="specialty-row" data-id="{{specialtyId}}" data-name="{{toLowerCase name}}">
-                    <td>{{name}}</td>
-                    <td>{{#if headDoctorName}}{{headDoctorName}}{{else}}<span class="text-muted">None</span>{{/if}}</td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            {{#if icon}}
+                            <img src="{{icon}}" alt="{{name}}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 5px; margin-right: 10px;">
+                            {{else}}
+                            <div style="width: 40px; height: 40px; background-color: #f8f9fa; border-radius: 5px; margin-right: 10px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-briefcase-medical text-muted"></i>
+                            </div>
+                            {{/if}}
+                            <span>{{name}}</span>
+                        </div>
+                    </td>
                     <td>{{#if description}}{{truncate description 100}}{{else}}<span class="text-muted">N/A</span>{{/if}}</td>
+                    <td>{{#if headDoctorName}}{{headDoctorName}}{{else}}<span class="text-muted">None</span>{{/if}}</td>
                     <td>
                         <div class="action-buttons">
                             <a href="/admin/manage_specialty/edit/{{specialtyId}}" class="btn btn-icon" title="Edit Specialty">

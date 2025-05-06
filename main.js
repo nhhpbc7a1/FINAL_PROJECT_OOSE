@@ -1,4 +1,5 @@
 import express from 'express';
+import expressFileUpload from 'express-fileupload'; // Thêm import express-fileupload
 import numeral from 'numeral';
 import { dirname, extname } from 'path';
 import { fileURLToPath } from 'url';
@@ -6,8 +7,10 @@ import { engine } from 'express-handlebars';
 import hbs_sections from 'express-handlebars-sections';
 import moment from 'moment';
 import session from 'express-session';
-import fileUpload from 'express-fileupload';
 import { authAdmin, authDoctor, authLabtech, authPatient } from './middlewares/auth.route.js';
+
+import { formatDate, formatDay, times, arrayFind, removeFilterUrl, eq, lte, subtract, or } from './views/helpers/hbs_helpers.js';
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
@@ -16,34 +19,30 @@ app.use(express.urlencoded({
     extended: true,
 }));
 
+
 // Add JSON body parser middleware for AJAX requests
 app.use(express.json());
 
-// File upload middleware
-app.use(fileUpload({
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
-    useTempFiles: true,
-    tempFileDir: '/tmp/',
-    createParentPath: true, // Tự động tạo thư mục cha nếu không tồn tại
-    debug: false // Enable debugging để xem logs
-}));
-
 app.engine('hbs', engine({
     extname: '.hbs',
-    defaultLayout: 'patient',
+    defaultLayout: 'labtech',
     partialsDir: __dirname + '/views/partials',
     helpers: {
         format_price(value) {
             return numeral(value).format('0,000') + ' VNĐ';
+        },
+        format_date(date) {
+            return moment(date).format('DD/MM/YYYY');
+        },
+        eq(a, b) {
+            return a === b;
         },
         section: function(name, options) {
             if (!this._sections) this._sections = {};
             this._sections[name] = options.fn(this);
             return null;
         },
-        eq: function(v1, v2) {
-            return v1 === v2;
-        },
+        eq: eq,
         ne: function(v1, v2) {
             return v1 !== v2;
         },
@@ -53,29 +52,23 @@ app.engine('hbs', engine({
         gt: function(v1, v2) {
             return v1 > v2;
         },
-        lte: function(v1, v2) {
-            return v1 <= v2;
-        },
+        lte: lte,
         gte: function(v1, v2) {
             return v1 >= v2;
         },
         and: function() {
             return Array.prototype.slice.call(arguments, 0, -1).every(Boolean);
         },
-        or: function() {
-            return Array.prototype.slice.call(arguments, 0, -1).some(Boolean);
+        or: or,
+        formatDate(date) {
+            return moment(date).format('DD/MM/YYYY');
         },
-        formatDate: function(date, format) {
-            if (!date) return '';
 
-            // Kiểm tra xem date có phải là đối tượng Date hay không
-            try {
-                return moment(date).format(format || 'DD/MM/YYYY');
-            } catch (error) {
-                console.error('Error formatting date:', error);
-                return 'Invalid date';
-            }
-        },
+        formatDay: formatDay,
+        times: times,
+        arrayFind: arrayFind,
+        removeFilterUrl: removeFilterUrl,
+        subtract: subtract,
         formatDateTime: function(date, format) {
             if (!date) return '';
 
@@ -134,9 +127,6 @@ app.engine('hbs', engine({
         add: function(a, b) {
             return a + b;
         },
-        subtract: function(a, b) {
-            return a - b;
-        },
         multiply: function(a, b) {
             return a * b;
         },
@@ -194,27 +184,15 @@ app.set('view engine', 'hbs');
 app.set('views', './views');
 
 app.use('/public', express.static('public'));
+app.use('/uploads', express.static('uploads'));
 
-app.set('trust proxy', 1) // trust first proxy
+app.set('trust proxy', 1);
 app.use(session({
     secret: 'keyboard cat',
     resave: false,
     saveUninitialized: true,
     cookie: {}
-}))
-
-app.use(async function (req, res, next) {
-    if (!req.session.auth) {
-        req.session.auth = false;
-    }
-    else {
-        console.log(req.session.auth);
-        console.log(req.session.authUser);
-    }
-    res.locals.auth = req.session.auth;
-    res.locals.authUser = req.session.authUser;
-    next();
-});
+}));
 
 
 app.get('/', (_req, res) => {

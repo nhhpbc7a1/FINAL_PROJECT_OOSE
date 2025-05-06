@@ -3,32 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Book Appointment</title>
+    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
         integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="/public/css/patient-side/viewAppointment.css">
+    
+    <!-- jQuery UI for datepicker -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    
+    <!-- Common CSS -->
+    <link rel="stylesheet" href="/public/css/patient-side/common.css">
+    
+    <!-- Page specific CSS -->
     {{{_sections.css}}}
 </head>
 <body>
-    {{!--view status  --}}
     <div class="view-appointment-container">
         <div class="view-appointment--modal-header">
             <div class="button-step-group">
-                <button class="information-step-button">
+                <button class="information-step-button {{#if (eq currentStep 'input-form')}}active{{/if}}">
                     <img src="/public/images/icon/icons8-stethoscope-32 (2).png" alt="">
+                    <span class="step-label">Step 1: Information</span>
                 </button>
                 <div class="separate-step-line"></div>
-                <button class="email-verify-step-button">
+                <button class="email-verify-step-button {{#if (eq currentStep 'verify-email')}}active{{/if}}">
                     <img src="/public/images/icon/icons8-send-email-32.png" alt="">
+                    <span class="step-label">Step 2: Email Verification</span>
                 </button>
                 <div class="separate-step-line"></div>
-                <button class="payment-step-button">
+                <button class="payment-step-button {{#if (eq currentStep 'make-payment')}}active{{/if}}">
                     <img src="/public/images/icon/icons8-payment-32 (1).png" alt="">
+                    <span class="step-label">Step 3: Payment</span>
                 </button>
                 <div class="separate-step-line"></div>
-                <button class="status-step-button">
+                <button class="status-step-button {{#if (eq currentStep 'view-appointment')}}active{{/if}}">
                     <img src="/public/images/icon/icons8-status-32.png" alt="">
+                    <span class="step-label">Step 4: Appointment Details</span>
                 </button>
             </div>
         </div>
@@ -36,5 +47,13 @@
             {{{body}}}
         </div>
     </div>
+
+    <!-- jQuery first, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Page specific JS -->
+    {{{_sections.js}}}
 </body>
 </html>

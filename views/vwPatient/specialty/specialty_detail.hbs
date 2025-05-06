@@ -1,0 +1,202 @@
+{{!-- Specialty Detail Page --}}
+<link rel="stylesheet" href="/public/css/patient-side/specialty-detail.css">
+
+<div class="specialty-header">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-2 text-center">
+        {{#if specialty.icon}}
+        <img src="{{specialty.icon}}" alt="{{specialty.name}}" class="specialty-icon">
+        {{else}}
+        <div class="default-specialty-icon">
+          <i class="fas fa-stethoscope"></i>
+        </div>
+        {{/if}}
+      </div>
+      <div class="col-md-10">
+        <h1>{{specialty.name}}</h1>
+        <p class="lead">{{specialty.description}}</p>
+        {{#if specialty.headDoctorName}}
+        <p><strong>Head Doctor:</strong> {{specialty.headDoctorName}}</p>
+        {{/if}}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container specialty-content py-5">
+  <!-- Doctor List Section -->
+  <section class="doctors-section mb-5">
+    <div class="section-header d-flex justify-content-between align-items-center">
+      <h2>Our Doctors</h2>
+      
+    </div>
+    
+    <div class="row">
+      {{#if doctors.length}}
+        {{#each doctors}}
+        <div class="col-md-4 mb-4">
+          <div class="doctor-card">
+            <div class="doctor-card-header">
+              {{#if profileImage}}
+              <img src="{{profileImage}}" alt="{{fullName}}" class="doctor-image">
+              {{else}}
+              <div class="default-doctor-image">
+                <i class="fas fa-user-md"></i>
+              </div>
+              {{/if}}
+            </div>
+            <div class="doctor-card-body">
+              <h4>{{fullName}}</h4>
+              <p class="doctor-specialty">{{specialtyName}}</p>
+              <div class="doctor-info">
+                <p><i class="fas fa-graduation-cap"></i> Experience: {{experience}} years</p>
+                <p><i class="fas fa-id-badge"></i> License: {{licenseNumber}}</p>
+              </div>
+              <a href="/doctor/{{doctorId}}" class="btn btn-outline-primary btn-sm">View Profile</a>
+            </div>
+          </div>
+        </div>
+        {{/each}}
+      {{else}}
+        <div class="col-12">
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> No doctors available for this specialty at the moment.
+          </div>
+        </div>
+      {{/if}}
+    </div>
+  </section>
+  
+  <!-- Services Section -->
+  <section class="services-section mb-5">
+    <div class="section-header">
+      <h2>Available Services</h2>
+    </div>
+    
+    <div class="row">
+      {{#if services.length}}
+        {{#each services}}
+        <div class="col-md-4 mb-4">
+          <div class="service-card">
+            <div class="service-card-header">
+              {{#if image}}
+              <img src="{{image}}" alt="{{name}}" class="service-image">
+              {{else}}
+              <div class="default-service-image">
+                <i class="fas fa-briefcase-medical"></i>
+              </div>
+              {{/if}}
+            </div>
+            <div class="service-card-body">
+              <h4>{{name}}</h4>
+              <p class="service-type badge {{#if (eq type 'service')}}badge-primary{{else}}badge-info{{/if}}">{{type}}</p>
+              <div class="service-info">
+                <p><i class="fas fa-money-bill-wave"></i> Price: {{price}} VND</p>
+                <p><i class="fas fa-clock"></i> Duration: {{duration}} minutes</p>
+              </div>
+              <p class="service-description">{{truncate description 100}}</p>
+            </div>
+          </div>
+        </div>
+        {{/each}}
+      {{else}}
+        <div class="col-12">
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> No services available for this specialty at the moment.
+          </div>
+        </div>
+      {{/if}}
+    </div>
+  </section>
+  
+  <!-- Schedule Section -->
+  <section class="schedule-section">
+    <div class="section-header">
+      <h2>Doctor Schedules</h2>
+      <p>View doctor availability for the next 7 days</p>
+    </div>
+    
+    {{#if schedules.schedulesByDoctor.length}}
+      <div class="schedule-table-responsive">
+        <table class="table table-bordered schedule-table">
+          <thead>
+            <tr>
+              <th>Doctor</th>
+              {{#each schedules.dates}}
+              <th class="text-center">
+                {{formatDate this}}
+                <small class="d-block">{{formatDay this}}</small>
+              </th>
+              {{/each}}
+            </tr>
+          </thead>
+          <tbody>
+            {{#each schedules.schedulesByDoctor}}
+            <tr>
+              <td class="doctor-cell">
+                <div class="d-flex align-items-center">
+                  {{#if doctor.profileImage}}
+                  <img src="{{doctor.profileImage}}" alt="{{doctor.fullName}}" class="small-doctor-image">
+                  {{else}}
+                  <div class="small-default-doctor-image">
+                    <i class="fas fa-user-md"></i>
+                  </div>
+                  {{/if}}
+                  <span>{{doctor.fullName}}</span>
+                </div>
+              </td>
+              
+              {{#each ../schedules.dates}}
+              <td class="schedule-cell">
+                {{#with (lookup ../schedulesByDate this) as |schedulesForDate|}}
+                  {{#if schedulesForDate.length}}
+                    {{#each schedulesForDate}}
+                    <div class="time-slot time-slot-{{status}}">
+                      <span class="time">{{startTime}} - {{endTime}}</span>
+                      <span class="status">{{status}}</span>
+                      {{#if (eq status "available")}}
+                      <a href="/book-appointment/{{../../../doctor.doctorId}}?date={{workDate}}&scheduleId={{scheduleId}}" class="btn btn-sm btn-primary book-btn">Book</a>
+                      {{/if}}
+                    </div>
+                    {{/each}}
+                  {{else}}
+                    <div class="no-schedule">
+                      <span>No schedule</span>
+                    </div>
+                  {{/if}}
+                {{/with}}
+              </td>
+              {{/each}}
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+    {{else}}
+      <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> No schedules available for doctors in this specialty.
+      </div>
+    {{/if}}
+  </section>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Convert price to formatted string with thousand separators
+    document.querySelectorAll('.service-info p:nth-child(1)').forEach(function(el) {
+      const priceText = el.textContent;
+      const priceValue = priceText.match(/\d+/);
+      if (priceValue) {
+        const formattedPrice = parseInt(priceValue[0]).toLocaleString('vi-VN');
+        el.innerHTML = `<i class="fas fa-money-bill-wave"></i> Price: ${formattedPrice} VND`;
+      }
+    });
+    
+    // Add scroll hint if the schedule table is too wide
+    const tableWrapper = document.querySelector('.schedule-table-responsive');
+    if (tableWrapper && tableWrapper.scrollWidth > tableWrapper.clientWidth) {
+      tableWrapper.classList.add('has-scroll');
+    }
+  });
+</script> 

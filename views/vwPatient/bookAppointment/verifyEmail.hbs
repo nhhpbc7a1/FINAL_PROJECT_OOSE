@@ -1,0 +1,72 @@
+{{#section 'css'}}
+    <link rel="stylesheet" href="/public/css/patient-side/bookAppointment.css">
+{{/section}}
+
+{{#section 'js'}}
+<script>
+    $(document).ready(function() {
+        // Handle verification submission
+        $(".submit-button").click(function(e) {
+            e.preventDefault();
+            
+            const verificationCode = $("#verification-code").val();
+            
+            if (!verificationCode || verificationCode.trim() === '') {
+                $("#error-message").text("Please enter the verification code").show();
+                return;
+            }
+            
+            // Show loading state
+            $(".submit-button").prop('disabled', true).text('Verifying...');
+            $("#error-message").hide();
+            
+            // Submit verification code via AJAX
+            $.ajax({
+                url: '/patient/book-appointment/verify-email',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ verificationCode }),
+                success: function(response) {
+                    if (response.success) {
+                        window.location.href = response.redirectUrl;
+                    }
+                },
+                error: function(xhr) {
+                    const response = xhr.responseJSON;
+                    $("#error-message").text(response.message || "Verification failed. Please check your code and try again.").show();
+                    $(".submit-button").prop('disabled', false).text('Continue');
+                }
+            });
+        });
+        
+        // Handle back button
+        $(".back-button").click(function() {
+            window.location.href = '/patient/book-appointment/input-form';
+        });
+    });
+</script>
+{{/section}}
+
+<div class="book-appointment-container">
+    <div class="modal-header">
+        <h2>VERIFY</h2>
+        <h1>Email</h1>
+    </div>
+    <div class="book-appointment-modal-container d-flex align-items-start">
+        <div class="book-appointment-modal" style="width: 500px;">
+            <div class="">
+                <div class="form-group">
+                    <label for="verification-code">Please check your email for a message with your verification code. Your code is 6 numbers in length.</label>
+                    <p class="text-info small">The verification code has been sent to your email address. If you don't see it, please check your spam folder.</p>
+                    <input type="text" class="form-control" id="verification-code" placeholder="Enter verification code">
+                    <div id="error-message" class="text-danger mt-2" style="display:none;"></div>
+                </div>
+
+                <div class="d-flex">
+                    <button class="back-button">Back</button>
+                    <button class="submit-button ml-3">Continue</button>
+                </div>
+            </div>
+        </div>      
+    </div>
+</div>

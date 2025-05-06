@@ -1,99 +1,214 @@
 {{#section 'css'}}
     <link rel="stylesheet" href="/public/css/patient-side/bookAppointment.css">
 {{/section}}
+
+{{#section 'js'}}
+<script>
+    $(document).ready(function() {
+        // Initialize datepickers
+        $("#birthday").datepicker({
+            dateFormat: 'dd/mm/yy',
+            changeMonth: true,
+            changeYear: true,
+            yearRange: "-100:+0"
+        });
+        
+        $("#appointment-date").datepicker({
+            dateFormat: 'dd/mm/yy',
+            minDate: 0, // Disallow past dates
+            maxDate: "+3M" // Allow booking up to 3 months in advance
+        });
+
+        // Handle specialty change to load services via AJAX
+        $("#specialty").change(function() {
+            const specialtyId = $(this).val();
+            if (specialtyId) {
+                // Load services for this specialty using AJAX
+                $.ajax({
+                    url: `/patient/book-appointment/get-services?specialtyId=${specialtyId}`,
+                    type: 'GET',
+                    success: function(response) {
+                        // Clear current options
+                        $("#service").html('<option value="" disabled selected>Select Service</option>');
+                        
+                        // Add new options based on the response
+                        if(response && response.services && response.services.length > 0) {
+                            response.services.forEach(service => {
+                                $("#service").append(`<option value="${service.id}">${service.name} (${formatCurrency(service.price)} VND)</option>`);
+                            });
+                            $("#service-container").show();
+                        } else {
+                            $("#service-container").hide();
+                        }
+                    },
+                    error: function() {
+                        // In case of error, hide service selection
+                        $("#service-container").hide();
+                    }
+                });
+            } else {
+                // If no specialty selected, hide service dropdown
+                $("#service-container").hide();
+            }
+        });
+
+        // Function to format currency
+        function formatCurrency(value) {
+            if (value === undefined || value === null) return '0';
+            return new Intl.NumberFormat('vi-VN').format(value);
+        }
+
+        // Handle form submission
+        $(".submit-button").click(function(e) {
+            e.preventDefault();
+            
+            // Collect form data
+            const formData = {
+                name: $("#name").val(),
+                email: $("#email").val(),
+                phone: $("#phone").val(),
+                birthday: $("#birthday").val(),
+                gender: $("#gender").val(),
+                address: $("#address").val(),
+                specialtyId: $("#specialty").val(),
+                serviceId: $("#service").val(), // Now a single service ID
+                appointmentDate: $("#appointment-date").val(),
+                symptom: $("#symptom").val()
+            };
+
+            // Validate form
+            if(!formData.name || !formData.email || !formData.phone || !formData.birthday || 
+               !formData.gender || !formData.address || !formData.specialtyId || 
+               !formData.appointmentDate) {
+                alert("Please fill in all required fields");
+                return;
+            }
+
+            // Submit form via AJAX
+            console.log('Submitting form data:', formData);
+            $.ajax({
+                url: '/patient/book-appointment/input-form',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData),
+                success: function(response) {
+                    if(response.success) {
+                        window.location.href = response.redirectUrl;
+                    }
+                },
+                error: function(xhr) {
+                    const response = xhr.responseJSON;
+                    alert(response.message || "An error occurred. Please try again.");
+                    console.error('Error response:', response);
+                }
+            });
+        });
+
+        // Handle back button
+        $(".back-button").click(function() {
+            window.location.href = '/';
+        });
+
+        // Initially hide service container until a specialty is selected
+        $("#service-container").hide();
+    });
+</script>
+{{/section}}
+
 <div class="book-appointment-container">
     <div class="modal-header">
         <h2>BOOK AN</h2>
         <h1>Appointment</h1>
     </div>
+    
+    {{#if error}}
+    <div class="alert alert-danger">
+        {{error}}
+    </div>
+    {{/if}}
+    
     <div class="book-appointment-modal-container">
         <div class="book-appointment-modal">
+            <div class="section-header">
+                <h3>Patient Information</h3>
+            </div>
             <div class="modal-body">
                 <div class="input-group">
-                    <input type="text" id="name" placeholder="Name">
+                    <input type="text" id="name" placeholder="Full Name" value="{{userInfo.fullName}}">
                 </div>
                 <div class="input-group">
-                    <input type="tel" id="phone" placeholder="Phone Number">
+                    <input type="tel" id="phone" placeholder="Phone Number" value="{{userInfo.phoneNumber}}">
                 </div>
                 <div class="input-group">
-                    <div class="birthday-input">
-                        <input type="text" id="birthday" placeholder="Birthday">
+                    <div class="birthday-input" style="width: 100%;">
+                        <input type="text" id="birthday" placeholder="Birthday" value="{{userInfo.dob}}" >
                         <img src="/public/images/icon/icons8-calendar-32.png" alt="" width="20px">
                     </div>
                 </div>
                 <div class="input-group">
-                    <input type="email" id="email" placeholder="Email">
+                    <input type="email" id="email" placeholder="Email" value="{{userInfo.email}}">
                 </div>
-                    <div class="input-group">
+                <div class="input-group">
+                    <div class="select-wrapper" style="width: 100%;">
+                        <select id="gender">
+                            <option value="" disabled {{#unless userInfo.gender}}selected{{/unless}}>Gender</option>
+                            <option value="male" {{#if (eq userInfo.gender "male")}}selected{{/if}}>Male</option>
+                            <option value="female" {{#if (eq userInfo.gender "female")}}selected{{/if}}>Female</option>
+                            <option value="other" {{#if (eq userInfo.gender "other")}}selected{{/if}}>Other</option>
+                        </select>
+                        <img src="/public/images/icon/icons8-arrow-down-24 (3).png" alt="">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="address" placeholder="Address" value="{{userInfo.address}}">
+                </div>
+            </div>
+            
+            <div class="section-header">
+                <h3>Booking Information</h3>
+            </div>
+            
+            <div class="booking-info">
+                <div class="input-group">
                     <div class="appoinment-date-input">
                         <input type="text" id="appointment-date" placeholder="Appointment Date">
                         <img src="/public/images/icon/icons8-calendar-32.png" alt="" width="20px">
                     </div>
                 </div>
-                    <div class="input-group">
-                    <input type="text" id="id" placeholder="ID">
-                </div>
+                
                 <div class="input-group">
-                    <div class="select-wrapper">
-                        <select id="gender">
-                            <option value="" disabled selected>Gender</option>
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                            <option value="other">Other</option>
+                    <div class="select-wrapper-service">
+                        <select id="specialty">
+                            <option value="" disabled selected>Select Specialty</option>
+                            {{#each specialties}}
+                                <option value="{{id}}">{{name}}</option>
+                            {{/each}}
                         </select>
                         <img src="/public/images/icon/icons8-arrow-down-24 (3).png" alt="">
-
                     </div>
                 </div>
-                <div class="input-group">
-                    <input type="text" id="address" placeholder="Address">
+                
+                <div class="input-group" id="service-container">
+                    <div class="select-wrapper-service">
+                        <select id="service">
+                            <option value="" disabled selected>Select Service</option>
+                            {{#each services}}
+                                <option value="{{id}}">{{name}} ({{formatCurrency price}} VND)</option>
+                            {{/each}}
+                        </select>
+                        <img src="/public/images/icon/icons8-arrow-down-24 (3).png" alt="">
+                    </div>
+                </div>
+                
+                <div class="input-group symptom">
+                    <textarea id="symptom" placeholder="Symptoms and reasons for appointment" rows="3"></textarea>
                 </div>
             </div>
-            <div class="input-group">
-                <div class="select-wrapper-service ">
-                    <select id="service">
-                        <option value="" disabled selected>Service</option>
-                        <option value="Hematology - Blood Transfusion">Hematology</option>
-                        <option value="Neurology">Neurology</option>
-                        <option value="Rheumatology">Rheumatology</option>
-                        <option value="Pediatrics">Pediatrics</option>
-                        <option value="Cardiology">Cardiology</option>
-                    </select>
-                    <img src="/public/images/icon/icons8-arrow-down-24 (3).png" alt="">
-                </div>
-            </div>
-            <div class="input-group symptom">
-                <input type="text" id="symptom" placeholder="Symptom">
-            </div>
-            <div>
-                <label for="specialty" class="lbl-department">Department</label>
-                    <div class="radio-options">
-                    <label>
-                        <input type="radio" name="department" value="pediatric">
-                        <span class="radio-label-text">Pediatric</span>
-                    </label>
-                    <label>
-                        <input type="radio" name="department" value="obstetrics" checked>
-                        <span class="radio-label-text">Rheumatology</span>
-                    </label>
-                    <label>
-                        <input type="radio" name="department" value="cardiology">
-                        <span class="radio-label-text">Cardiology</span>
-                    </label>
-                    <label>
-                        <input type="radio" name="department" value="neurology">
-                        <span class="radio-label-text">Neurology</span>
-                    </label>
-                    <label>
-                        <input type="radio" name="department" value="psychiatry">
-                        <span class="radio-label-text">Hematology</span>
-                    </label>
-                </div>
-            </div>
+            
             <div class="button-group">
                 <button class="back-button">Back</button>
                 <button class="submit-button">Submit</button>
             </div>
         </div>
     </div>
- </div>
+</div>
