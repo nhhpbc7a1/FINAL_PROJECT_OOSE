@@ -22,6 +22,19 @@ app.use(express.urlencoded({
     extended: true,
 }));
 
+
+// Add JSON body parser middleware for AJAX requests
+app.use(express.json());
+
+// File upload middleware
+app.use(fileUpload({
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+    useTempFiles: true,
+    tempFileDir: '/tmp/',
+    createParentPath: true, // Tự động tạo thư mục cha nếu không tồn tại
+    debug: false // Enable debugging để xem logs
+}));
+
 app.engine('hbs', engine({
     extname: '.hbs',
     defaultLayout: 'labtech',
@@ -134,6 +147,9 @@ app.engine('hbs', engine({
         max: function(a, b) {
             return Math.max(a, b);
         },
+        round: function(value) {
+            return Math.round(value);
+        },
         range: function(start, end) {
             let result = [];
             for (let i = start; i < end; i++) {
@@ -152,6 +168,13 @@ app.engine('hbs', engine({
             }
             // Trả về chuỗi gốc nếu không cần cắt hoặc không hợp lệ
             return typeof str === 'string' ? str : ''; // Trả về rỗng nếu không phải string
+        },
+        limitTo: function(arr, limit) {
+            // Check if arr is an array and has length
+            if (Array.isArray(arr) && arr.length > 0) {
+                return arr.slice(0, limit);
+            }
+            return arr || [];
         },
         moment: function(date, format) {
             // Helper to use moment.js operations in templates

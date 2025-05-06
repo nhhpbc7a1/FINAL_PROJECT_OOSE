@@ -1,4 +1,369 @@
-use FINAL_PROJECT_OOSE;
+
+-- -- Database creation
+CREATE DATABASE IF NOT EXISTS FINAL_PROJECT_OOSE;
+USE FINAL_PROJECT_OOSE;
+
+-- Create Role table
+CREATE TABLE IF NOT EXISTS Role (
+    roleId INT AUTO_INCREMENT PRIMARY KEY,
+    roleName VARCHAR(50) NOT NULL UNIQUE
+);
+
+-- Create User table
+CREATE TABLE IF NOT EXISTS User (
+    userId INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL, -- Storing hashed passwords
+    fullName VARCHAR(100) NOT NULL,
+    phoneNumber VARCHAR(20) NOT NULL,
+    address VARCHAR(255),
+    gender ENUM('male', 'female', 'other') NOT NULL,
+    dob DATE,
+    profileImage VARCHAR(255), -- Path or URL to image
+    accountStatus ENUM('active', 'inactive', 'pending') DEFAULT 'pending',
+    createdDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    roleId INT NOT NULL,
+    FOREIGN KEY (roleId) REFERENCES Role(roleId) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- Create Notification table
+CREATE TABLE IF NOT EXISTS Notification (
+    notificationId INT AUTO_INCREMENT PRIMARY KEY,
+    userId INT, -- Can be NULL for system notifications
+    title VARCHAR(100) NOT NULL,
+    content TEXT NOT NULL,
+    isRead BOOLEAN DEFAULT FALSE,
+    createdDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (userId) REFERENCES User(userId) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- Create Hospital table
+CREATE TABLE IF NOT EXISTS Hospital (
+    hospitalId INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    phoneNumber VARCHAR(20) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    website VARCHAR(255),
+    description TEXT,
+    logo VARCHAR(255), -- Path or URL to logo image
+    workingHours TEXT -- e.g., 'Mon-Fri 8am-5pm'
+);
+
+-- Create Patient table (Links to User)
+CREATE TABLE IF NOT EXISTS Patient (
+    patientId INT AUTO_INCREMENT PRIMARY KEY,
+    userId INT UNIQUE NOT NULL, -- Each patient must have a user account
+    dob DATE NOT NULL,
+    gender ENUM('male', 'female', 'other') NOT NULL,
+    bloodType VARCHAR(10),
+    medicalHistory TEXT, -- Summary or brief notes
+    FOREIGN KEY (userId) REFERENCES User(userId) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- Create Administrator table (Links to User)
+CREATE TABLE IF NOT EXISTS Administrator (
+    adminId INT AUTO_INCREMENT PRIMARY KEY,
+    userId INT UNIQUE NOT NULL, -- Each admin must have a user account
+    position VARCHAR(100),
+    FOREIGN KEY (userId) REFERENCES User(userId) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- Create Specialty table
+CREATE TABLE IF NOT EXISTS Specialty (
+    specialtyId INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    description TEXT,
+    hospitalId INT, -- Which hospital offers this specialty
+    headDoctorId INT, -- Foreign key added later after Doctor table creation
+    FOREIGN KEY (hospitalId) REFERENCES Hospital(hospitalId) ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+-- Create Room table
+CREATE TABLE IF NOT EXISTS Room (
+    roomId INT AUTO_INCREMENT PRIMARY KEY,
+    roomNumber VARCHAR(20) NOT NULL,
+    specialtyId INT, -- Which specialty primarily uses this room (can be NULL for general rooms)
+    capacity INT, -- e.g., number of beds or examination stations
+    roomType ENUM('examination', 'operation', 'laboratory', 'consultation', 'emergency', 'general') NOT NULL,
+    status ENUM('available', 'occupied', 'maintenance') DEFAULT 'available',
+    description TEXT,
+    FOREIGN KEY (specialtyId) REFERENCES Specialty(specialtyId) ON DELETE SET NULL ON UPDATE CASCADE,
+    UNIQUE KEY (roomNumber, specialtyId) -- Optional: room numbers unique within a specialty or globally unique
+);
+
+-- Create Doctor table (Links to User)
+CREATE TABLE IF NOT EXISTS Doctor (
+    doctorId INT AUTO_INCREMENT PRIMARY KEY,
+    userId INT UNIQUE NOT NULL, -- Each doctor must have a user account
+    specialtyId INT,
+    licenseNumber VARCHAR(50) NOT NULL UNIQUE,
+    experience INT, -- Years of experience
+    education TEXT, -- e.g., MD, PhD, degrees and institutions
+    certifications TEXT, -- e.g., Board certified, specific training
+    bio TEXT,
+    FOREIGN KEY (userId) REFERENCES User(userId) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (specialtyId) REFERENCES Specialty(specialtyId) ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+-- Update Specialty with foreign key to headDoctor after Doctor table is created
+ALTER TABLE Specialty
+ADD FOREIGN KEY (headDoctorId) REFERENCES Doctor(doctorId) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- Create LabTechnician table (Links to User)
+CREATE TABLE IF NOT EXISTS LabTechnician (
+    technicianId INT AUTO_INCREMENT PRIMARY KEY,
+    userId INT UNIQUE NOT NULL, -- Each technician must have a user account
+    specialization VARCHAR(100), -- e.g., Phlebotomy, Microbiology
+    specialtyId INT, -- Which specialty they are associated with (can be NULL)
+    FOREIGN KEY (userId) REFERENCES User(userId) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (specialtyId) REFERENCES Specialty(specialtyId) ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+-- Create Schedule table (Flexible for Doctor or LabTechnician)
+CREATE TABLE IF NOT EXISTS Schedule (
+    scheduleId INT AUTO_INCREMENT PRIMARY KEY,
+    doctorId INT,
+    labTechnicianId INT,
+    roomId INT, -- Where the schedule takes place (e.g., examination room, lab)
+    workDate DATE NOT NULL,
+    startTime TIME NOT NULL,
+    endTime TIME NOT NULL,
+    status ENUM('available', 'booked', 'unavailable', 'completed') DEFAULT 'available', -- For booking status
+    createdDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY (doctorId, workDate, startTime), -- Prevent double booking doctor
+    UNIQUE KEY (labTechnicianId, workDate, startTime), -- Prevent double booking technician
+    UNIQUE KEY (roomId, workDate, startTime), -- Prevent double booking room
+    CHECK ((doctorId IS NOT NULL AND labTechnicianId IS NULL) OR (doctorId IS NULL AND labTechnicianId IS NOT NULL)), -- Must be either doctor or technician
+    FOREIGN KEY (doctorId) REFERENCES Doctor(doctorId) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (labTechnicianId) REFERENCES LabTechnician(technicianId) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (roomId) REFERENCES Room(roomId) ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+-- Create Service table (Consultations, Tests, Procedures)
+CREATE TABLE IF NOT EXISTS Service (
+    serviceId INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    price DECIMAL(10, 2) NOT NULL,
+    duration INT,  -- Estimated duration in minutes
+    type ENUM('service', 'test', 'procedure') NOT NULL, -- Consultation is a 'service', Lab work is a 'test', Surgery is a 'procedure'
+    category VARCHAR(100), -- e.g., 'Examination', 'Diagnostic Imaging', 'Laboratory'
+    specialtyId INT, -- Which specialty provides this service (can be NULL for general services)
+    status ENUM('active', 'inactive') DEFAULT 'active',
+    FOREIGN KEY (specialtyId) REFERENCES Specialty(specialtyId) ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+-- Create Appointment table (Links Patient to Schedule and Doctor/Specialty)
+CREATE TABLE IF NOT EXISTS Appointment (
+    appointmentId INT AUTO_INCREMENT PRIMARY KEY,
+    patientId INT NOT NULL,
+    specialtyId INT, -- Specialty of the appointment
+    appointmentDate DATE NOT NULL,
+    appointmentTime TIME, -- Specific time if not linked directly to a schedule slot time
+    reason TEXT, -- Reason for visit provided by patient
+    queueNumber INT, -- Optional queue number for the day/time
+    estimatedTime TIME, -- Estimated time of appointment (if queue system used)
+    doctorId INT, -- Doctor assigned to the appointment (can be NULL initially)
+    roomId INT, -- Room assigned for the appointment (can be NULL initially)
+    scheduleId INT, -- Link to a specific schedule slot if applicable
+    status ENUM('pending', 'confirmed', 'cancelled', 'completed', 'waiting_payment', 'paid') DEFAULT 'pending',
+    emailVerified BOOLEAN DEFAULT FALSE, -- If patient's email was verified for booking
+    paymentStatus ENUM('pending', 'completed', 'failed', 'refunded') DEFAULT 'pending', -- Status of payment for this appointment's services/fees
+    patientAppointmentStatus ENUM('waiting', 'examining', 'examined') DEFAULT 'waiting',
+    createdDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (patientId) REFERENCES Patient(patientId) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (specialtyId) REFERENCES Specialty(specialtyId) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (doctorId) REFERENCES Doctor(doctorId) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (roomId) REFERENCES Room(roomId) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (scheduleId) REFERENCES Schedule(scheduleId) ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+-- Create AppointmentServices table (Many-to-Many link between Appointment and Service)
+CREATE TABLE IF NOT EXISTS AppointmentServices (
+    appointmentServiceId INT AUTO_INCREMENT PRIMARY KEY,
+    appointmentId INT NOT NULL,
+    serviceId INT NOT NULL,
+    price DECIMAL(10, 2) NOT NULL, -- Price at the time of service
+    notes TEXT, -- Specific notes about this service for this appointment
+    status ENUM('pending', 'completed', 'cancelled') DEFAULT 'pending', -- Status of this specific service within the appointment
+    FOREIGN KEY (appointmentId) REFERENCES Appointment(appointmentId) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (serviceId) REFERENCES Service(serviceId) ON DELETE RESTRICT ON UPDATE CASCADE -- Restrict deletion if service is linked to an appointment
+);
+
+-- Create MedicalRecord table (Stores encounter notes, diagnosis, etc.)
+CREATE TABLE IF NOT EXISTS MedicalRecord (
+    recordId INT AUTO_INCREMENT PRIMARY KEY,
+    appointmentId INT UNIQUE NOT NULL, -- Each medical record links to a specific appointment
+    diagnosis TEXT,
+    notes TEXT, -- Clinical notes from the doctor
+    recommendations TEXT, -- Treatment plan, follow-up instructions
+    createdDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    followupDate DATE, -- Recommended date for next visit
+    FOREIGN KEY (appointmentId) REFERENCES Appointment(appointmentId) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- Create File table for storing files (lab results, images, reports)
+CREATE TABLE IF NOT EXISTS File (
+    fileId INT AUTO_INCREMENT PRIMARY KEY,
+    fileName VARCHAR(255) NOT NULL,
+    filePath VARCHAR(255) NOT NULL, -- Path to the stored file
+    fileType VARCHAR(50) NOT NULL, -- MIME type or extension (e.g., 'application/pdf', 'image/jpeg')
+    fileSize INT NOT NULL, -- File size in bytes
+    uploadDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    description TEXT,
+    uploadedByUserId INT, -- User who uploaded the file
+    FOREIGN KEY (uploadedByUserId) REFERENCES User(userId) ON DELETE SET NULL ON UPDATE CASCADE
+);
+CREATE TABLE IF NOT EXISTS TestRequest (
+    requestId INT AUTO_INCREMENT PRIMARY KEY,
+    appointmentId INT NOT NULL,
+    serviceId INT NOT NULL,
+    requestDate DATE NOT NULL,
+    status ENUM('pending', 'completed', 'cancelled') NOT NULL,
+    notes TEXT,
+    requestedByDoctorId INT NOT NULL,
+    FOREIGN KEY (appointmentId) REFERENCES Appointment(appointmentId) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (serviceId) REFERENCES Service(serviceId) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (requestedByDoctorId) REFERENCES Doctor(doctorId) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- Create TestResult table (Links to MedicalRecord, Service, Technician, File)dsadasd
+CREATE TABLE IF NOT EXISTS TestResult (
+    resultId INT AUTO_INCREMENT PRIMARY KEY,
+    recordId INT, -- Links to a medical record (can be NULL if test is not tied to a specific doctor visit record)
+    appointmentId INT, -- Added link directly to appointment for tests ordered independently
+    serviceId INT NOT NULL, -- Which service/test this result is for
+    technicianId INT, -- Who performed the test
+    roomId INT, -- Where the test was performed (e.g., lab room)
+    resultText TEXT, -- Textual representation of results (e.g., qualitative results)
+    resultNumeric DECIMAL(10, 2), -- Numeric result if applicable
+    resultFileId INT, -- Link to the actual report file (PDF, image)
+    resultType ENUM('text', 'numeric', 'file', 'image', 'pdf', 'other') NOT NULL, -- Type of primary result storage
+    normalRange VARCHAR(100), -- Reference range for the test
+    unit VARCHAR(50), -- Units for numeric results
+    interpretation TEXT, -- Doctor's interpretation of the result
+    performedDate TIMESTAMP NULL DEFAULT NULL, -- When the test was physically performed
+    reportedDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- When the result was entered/uploaded
+    status ENUM('pending', 'in_progress', 'completed', 'cancelled') DEFAULT 'pending',
+    FOREIGN KEY (recordId) REFERENCES MedicalRecord(recordId) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (appointmentId) REFERENCES Appointment(appointmentId) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (serviceId) REFERENCES Service(serviceId) ON DELETE RESTRICT ON UPDATE CASCADE,
+    FOREIGN KEY (technicianId) REFERENCES LabTechnician(technicianId) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (roomId) REFERENCES Room(roomId) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (resultFileId) REFERENCES File(fileId) ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+-- Create Medication table
+CREATE TABLE IF NOT EXISTS Medication (
+    medicationId INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    description TEXT,
+    dosage VARCHAR(50), -- Common dosage form/strength (e.g., '5mg tablet', '10mg/ml solution')
+    price DECIMAL(10, 2) NOT NULL,
+    category VARCHAR(100), -- e.g., 'Antibiotic', 'Pain Reliever', 'Antihypertensive'
+    manufacturer VARCHAR(100),
+    sideEffects TEXT,
+    stockQuantity INT DEFAULT 0 -- Added stock quantity
+);
+
+-- Create Prescription table (Links to MedicalRecord and Doctor)
+CREATE TABLE IF NOT EXISTS Prescription (
+    prescriptionId INT AUTO_INCREMENT PRIMARY KEY,
+    recordId INT UNIQUE NOT NULL, -- Each prescription links to a medical record entry
+    doctorId INT NOT NULL, -- Doctor who issued the prescription
+    prescriptionDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    notes TEXT, -- General notes for the pharmacist or patient
+    status ENUM('active', 'completed', 'cancelled') DEFAULT 'active',
+    FOREIGN KEY (recordId) REFERENCES MedicalRecord(recordId) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (doctorId) REFERENCES Doctor(doctorId) ON DELETE RESTRICT ON UPDATE CASCADE -- Doctor must exist
+);
+
+-- Create PrescriptionDetail table (Many-to-Many link between Prescription and Medication)
+CREATE TABLE IF NOT EXISTS PrescriptionDetail (
+    detailId INT AUTO_INCREMENT PRIMARY KEY,
+    prescriptionId INT NOT NULL,
+    medicationId INT NOT NULL,
+    dosage VARCHAR(100), -- Specific dosage for this prescription line
+    frequency VARCHAR(100), -- How often to take (e.g., 'Once daily', 'Every 8 hours')
+    duration VARCHAR(100), -- How long to take (e.g., '7 days', 'Until finished')
+    instructions TEXT, -- Specific instructions for the patient
+    FOREIGN KEY (prescriptionId) REFERENCES Prescription(prescriptionId) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (medicationId) REFERENCES Medication(medicationId) ON DELETE RESTRICT ON UPDATE CASCADE -- Medication must exist
+);
+
+-- Create Payment table (Links to Appointment or other billable items)
+CREATE TABLE IF NOT EXISTS Payment (
+    paymentId INT AUTO_INCREMENT PRIMARY KEY,
+    appointmentId INT, -- Can be NULL if payment is for something else (e.g., medication refill)
+    amount DECIMAL(10, 2) NOT NULL,
+    method ENUM('credit_card', 'debit_card', 'cash', 'bank_transfer', 'e_wallet', 'insurance', 'other') NOT NULL,
+    status ENUM('pending', 'completed', 'failed', 'refunded') DEFAULT 'pending',
+    transactionId VARCHAR(100), -- Transaction ID from payment gateway
+    paymentDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    notes TEXT,
+    FOREIGN KEY (appointmentId) REFERENCES Appointment(appointmentId) ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+-- Create EmailVerification table (For user registration verification)
+CREATE TABLE IF NOT EXISTS EmailVerification (
+    verificationId INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    verificationCode VARCHAR(50) NOT NULL,
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expiresAt TIMESTAMP NULL DEFAULT NULL,
+    verified BOOLEAN DEFAULT FALSE
+);
+
+-- Create Review table (For patient feedback on appointments)
+CREATE TABLE IF NOT EXISTS Review (
+    reviewId INT AUTO_INCREMENT PRIMARY KEY,
+    appointmentId INT UNIQUE NOT NULL, -- One review per appointment
+    rating INT CHECK (rating >= 1 AND rating <= 5), -- Rating from 1 to 5
+    comment TEXT,
+    reviewDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (appointmentId) REFERENCES Appointment(appointmentId) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- Create Billing table (To track charges and link to payments)
+CREATE TABLE IF NOT EXISTS Billing (
+    billingId INT AUTO_INCREMENT PRIMARY KEY,
+    appointmentId INT, -- Link to appointment for consultation/procedure charges
+    appointmentServiceId INT, -- Link to specific service within an appointment
+    testResultId INT, -- Link to a lab test result that needs billing
+    medicationId INT, -- Link to medication dispensed/billed
+    itemDescription VARCHAR(255) NOT NULL, -- Description of the billed item
+    amount DECIMAL(10, 2) NOT NULL, -- Amount charged
+    billingDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('pending', 'billed', 'paid', 'cancelled') DEFAULT 'pending',
+    paymentId INT, -- Link to the payment that covered this bill item (can be NULL if partially paid or pending)
+    FOREIGN KEY (appointmentId) REFERENCES Appointment(appointmentId) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (appointmentServiceId) REFERENCES AppointmentServices(appointmentServiceId) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (testResultId) REFERENCES TestResult(resultId) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (medicationId) REFERENCES Medication(medicationId) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (paymentId) REFERENCES Payment(paymentId) ON DELETE SET NULL ON UPDATE CASCADE
+    -- Removed the conflicting CHECK constraint for simplicity in this sample data;
+    -- in a real application, you might enforce this logic in application code
+    -- or use a more complex, carefully crafted CHECK constraint.
+);
+
+-- Create TestRequest table (For test requests)
+CREATE TABLE IF NOT EXISTS TestRequest (
+    requestId INT AUTO_INCREMENT PRIMARY KEY,
+    appointmentId INT NOT NULL,
+    serviceId INT NOT NULL,
+    requestDate DATE NOT NULL,
+    status ENUM('pending', 'completed', 'cancelled') NOT NULL,
+    notes TEXT,
+    requestedByDoctorId INT NOT NULL,
+    FOREIGN KEY (appointmentId) REFERENCES Appointment(appointmentId) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (serviceId) REFERENCES Service(serviceId) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (requestedByDoctorId) REFERENCES Doctor(doctorId) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+
 
 -- -- Insert sample data
 
@@ -464,63 +829,69 @@ INSERT INTO EmailVerification (email, verificationCode, expiresAt, verified) VAL
 -- Insert sample data into Appointment table
 -- Patient IDs 1-50, Doctor IDs 1-20, Schedule IDs 1-40, Specialty IDs 1-10, Room IDs 1-20 are available
 -- Mapped original data's patientId/doctorId to the actual AUTO_INCREMENT IDs from previous inserts.
-INSERT INTO Appointment (patientId, doctorId, scheduleId, specialtyId, appointmentDate, appointmentTime, reason, status) VALUES
+INSERT INTO Appointment (
+    patientId,
+    doctorId,
+    scheduleId,
+    specialtyId,
+    appointmentDate,
+    appointmentTime,
+    reason,
+    status,
+    emailVerified,
+    paymentStatus,
+    patientAppointmentStatus,
+    queueNumber,
+    estimatedTime
+)
+VALUES
 -- Cardiology Appointments (Specialty ID 1)
--- patientId, doctorId, scheduleId, specialtyId, appointmentDate, appointmentTime, reason, status
-(1, 1, 1, 1, CURDATE() - INTERVAL 7 DAY, '07:30:00', 'Chest pain and shortness of breath', 'completed'), -- Appt ID 1 (Patient 1, Dr 1, Sched 1, Spec 1)
-(6, 1, 2, 1, CURDATE(), '07:30:00', 'Irregular heartbeat', 'pending'), -- Appt ID 2 (Patient 6, Dr 1, Sched 2, Spec 1)
-(11, 2, 4, 1, CURDATE() - INTERVAL 5 DAY, '13:30:00', 'High blood pressure follow-up', 'completed'), -- Appt ID 3 (Patient 11, Dr 2, Sched 4, Spec 1)
-(16, 2, 5, 1, CURDATE(), '07:30:00', 'Heart palpitations', 'pending'), -- Appt ID 4 (Patient 16, Dr 2, Sched 5, Spec 1)
+(1, 1, 1, 1, CURDATE() - INTERVAL 7 DAY, '07:30:00', 'Chest pain and shortness of breath', 'completed', TRUE, 'completed', 'examined', 1, '07:30:00'),
+(6, 1, 2, 1, CURDATE(), '07:30:00', 'Irregular heartbeat', 'pending', FALSE, 'pending', 'waiting', 2, '07:45:00'),
+(11, 2, 4, 1, CURDATE() - INTERVAL 5 DAY, '13:30:00', 'High blood pressure follow-up', 'completed', TRUE, 'completed', 'examined', 3, '13:30:00'),
+(16, 2, 5, 1, CURDATE(), '07:30:00', 'Heart palpitations', 'pending', FALSE, 'pending', 'waiting', 4, '07:45:00'),
 
 -- Dermatology Appointments (Specialty ID 2)
--- patientId, doctorId, scheduleId, specialtyId, appointmentDate, appointmentTime, reason, status
-(2, 3, 6, 2, CURDATE() - INTERVAL 10 DAY, '07:30:00', 'Persistent rash on arms', 'completed'), -- Appt ID 5 (Patient 2, Dr 3, Sched 6, Spec 2)
-(7, 3, 7, 2, CURDATE(), '13:30:00', 'Acne treatment follow-up', 'pending'), -- Appt ID 6 (Patient 7, Dr 3, Sched 7, Spec 2)
-(12, 4, 8, 2, CURDATE() + INTERVAL 1 DAY, '07:30:00', 'Suspicious mole on back', 'pending'), -- Appt ID 7 (Patient 12, Dr 4, Sched 8, Spec 2)
+(2, 3, 6, 2, CURDATE() - INTERVAL 10 DAY, '07:30:00', 'Persistent rash on arms', 'completed', TRUE, 'completed', 'examined', 1, '07:30:00'),
+(7, 3, 7, 2, CURDATE(), '13:30:00', 'Acne treatment follow-up', 'pending', FALSE, 'pending', 'waiting', 2, '13:45:00'),
+(12, 4, 8, 2, CURDATE() + INTERVAL 1 DAY, '07:30:00', 'Suspicious mole on back', 'pending', FALSE, 'pending', 'waiting', 3, '07:45:00'),
 
 -- Neurology Appointments (Specialty ID 3)
--- patientId, doctorId, scheduleId, specialtyId, appointmentDate, appointmentTime, reason, status
-(3, 5, 9, 3, CURDATE() - INTERVAL 14 DAY, '07:30:00', 'Frequent migraines', 'completed'), -- Appt ID 8 (Patient 3, Dr 5, Sched 9, Spec 3)
-(8, 5, 10, 3, CURDATE(), '13:30:00', 'Persistent dizziness', 'pending'), -- Appt ID 9 (Patient 8, Dr 5, Sched 10, Spec 3)
-(13, 6, 11, 3, CURDATE() + INTERVAL 1 DAY, '07:30:00', 'Numbness in left arm', 'pending'), -- Appt ID 10 (Patient 13, Dr 6, Sched 11, Spec 3)
+(3, 5, 9, 3, CURDATE() - INTERVAL 14 DAY, '07:30:00', 'Frequent migraines', 'completed', TRUE, 'completed', 'examined', 1, '07:30:00'),
+(8, 5, 10, 3, CURDATE(), '13:30:00', 'Persistent dizziness', 'pending', FALSE, 'pending', 'waiting', 2, '13:45:00'),
+(13, 6, 11, 3, CURDATE() + INTERVAL 1 DAY, '07:30:00', 'Numbness in left arm', 'pending', FALSE, 'pending', 'waiting', 3, '07:45:00'),
 
 -- Orthopedics Appointments (Specialty ID 4)
--- patientId, doctorId, scheduleId, specialtyId, appointmentDate, appointmentTime, reason, status
-(4, 7, 12, 4, CURDATE() - INTERVAL 21 DAY, '13:30:00', 'Knee pain after running', 'completed'), -- Appt ID 11 (Patient 4, Dr 7, Sched 12, Spec 4)
-(9, 7, 13, 4, CURDATE(), '07:30:00', 'Back pain evaluation', 'pending'), -- Appt ID 12 (Patient 9, Dr 7, Sched 13, Spec 4)
-(14, 8, 14, 4, CURDATE() + INTERVAL 1 DAY, '13:30:00', 'Shoulder mobility issues', 'pending'), -- Appt ID 13 (Patient 14, Dr 8, Sched 14, Spec 4)
+(4, 7, 12, 4, CURDATE() - INTERVAL 21 DAY, '13:30:00', 'Knee pain after running', 'completed', TRUE, 'completed', 'examined', 1, '13:30:00'),
+(9, 7, 13, 4, CURDATE(), '07:30:00', 'Back pain evaluation', 'pending', FALSE, 'pending', 'waiting', 2, '07:45:00'),
+(14, 8, 14, 4, CURDATE() + INTERVAL 1 DAY, '13:30:00', 'Shoulder mobility issues', 'pending', FALSE, 'pending', 'waiting', 3, '13:45:00'),
 
 -- Pediatrics Appointments (Specialty ID 5)
--- patientId, doctorId, scheduleId, specialtyId, appointmentDate, appointmentTime, reason, status
-(41, 9, 15, 5, CURDATE() - INTERVAL 3 DAY, '07:30:00', 'Annual checkup for 6-year-old', 'completed'), -- Appt ID 14 (Patient 41, Dr 9, Sched 15, Spec 5)
-(42, 9, 16, 5, CURDATE(), '13:30:00', 'Persistent cough in 3-year-old', 'pending'), -- Appt ID 15 (Patient 42, Dr 9, Sched 16, Spec 5)
-(43, 10, 17, 5, CURDATE() + INTERVAL 1 DAY, '07:30:00', 'Fever and rash in 8-year-old', 'pending'), -- Appt ID 16 (Patient 43, Dr 10, Sched 17, Spec 5)
+(41, 9, 15, 5, CURDATE() - INTERVAL 3 DAY, '07:30:00', 'Annual checkup for 6-year-old', 'completed', TRUE, 'completed', 'examined', 1, '07:30:00'),
+(42, 9, 16, 5, CURDATE(), '13:30:00', 'Persistent cough in 3-year-old', 'pending', FALSE, 'pending', 'waiting', 2, '13:45:00'),
+(43, 10, 17, 5, CURDATE() + INTERVAL 1 DAY, '07:30:00', 'Fever and rash in 8-year-old', 'pending', FALSE, 'pending', 'waiting', 3, '07:45:00'),
 
 -- Gastroenterology Appointments (Specialty ID 6)
--- patientId, doctorId, scheduleId, specialtyId, appointmentDate, appointmentTime, reason, status
-(5, 11, 18, 6, CURDATE() - INTERVAL 8 DAY, '13:30:00', 'Persistent heartburn', 'completed'), -- Appt ID 17 (Patient 5, Dr 11, Sched 18, Spec 6)
-(10, 11, 19, 6, CURDATE(), '07:30:00', 'Abdominal pain evaluation', 'pending'), -- Appt ID 18 (Patient 10, Dr 11, Sched 19, Spec 6)
-(15, 12, 20, 6, CURDATE() + INTERVAL 1 DAY, '13:30:00', 'Chronic diarrhea investigation', 'pending'), -- Appt ID 19 (Patient 15, Dr 12, Sched 20, Spec 6)
+(5, 11, 18, 6, CURDATE() - INTERVAL 8 DAY, '13:30:00', 'Persistent heartburn', 'completed', TRUE, 'completed', 'examined', 1, '13:30:00'),
+(10, 11, 19, 6, CURDATE(), '07:30:00', 'Abdominal pain evaluation', 'pending', FALSE, 'pending', 'waiting', 2, '07:45:00'),
+(15, 12, 20, 6, CURDATE() + INTERVAL 1 DAY, '13:30:00', 'Chronic diarrhea investigation', 'pending', FALSE, 'pending', 'waiting', 3, '13:45:00'),
 
 -- Ophthalmology Appointments (Specialty ID 7)
--- patientId, doctorId, scheduleId, specialtyId, appointmentDate, appointmentTime, reason, status
-(20, 13, 21, 7, CURDATE() - INTERVAL 12 DAY, '07:30:00', 'Blurry vision', 'completed'), -- Appt ID 20 (Patient 20, Dr 13, Sched 21, Spec 7)
-(25, 14, 22, 7, CURDATE(), '13:30:00', 'Eye irritation and redness', 'pending'), -- Appt ID 21 (Patient 25, Dr 14, Sched 22, Spec 7)
+(20, 13, 21, 7, CURDATE() - INTERVAL 12 DAY, '07:30:00', 'Blurry vision', 'completed', TRUE, 'completed', 'examined', 1, '07:30:00'),
+(25, 14, 22, 7, CURDATE(), '13:30:00', 'Eye irritation and redness', 'pending', FALSE, 'pending', 'waiting', 2, '13:45:00'),
 
 -- Pulmonology Appointments (Specialty ID 8)
--- patientId, doctorId, scheduleId, specialtyId, appointmentDate, appointmentTime, reason, status
-(30, 15, 23, 8, CURDATE() - INTERVAL 15 DAY, '13:30:00', 'Chronic cough, smoker', 'completed'), -- Appt ID 22 (Patient 30, Dr 15, Sched 23, Spec 8)
-(35, 16, 24, 8, CURDATE(), '07:30:00', 'Sleep apnea evaluation', 'pending'), -- Appt ID 23 (Patient 35, Dr 16, Sched 24, Spec 8)
+(30, 15, 23, 8, CURDATE() - INTERVAL 15 DAY, '13:30:00', 'Chronic cough, smoker', 'completed', TRUE, 'completed', 'examined', 1, '13:30:00'),
+(35, 16, 24, 8, CURDATE(), '07:30:00', 'Sleep apnea evaluation', 'pending', FALSE, 'pending', 'waiting', 2, '07:45:00'),
 
 -- Endocrinology Appointments (Specialty ID 9)
--- patientId, doctorId, scheduleId, specialtyId, appointmentDate, appointmentTime, reason, status
-(40, 17, 25, 9, CURDATE() - INTERVAL 9 DAY, '07:30:00', 'Type 2 diabetes follow-up', 'completed'), -- Appt ID 24 (Patient 40, Dr 17, Sched 25, Spec 9)
-(45, 18, 26, 9, CURDATE(), '13:30:00', 'Thyroid function check', 'pending'), -- Appt ID 25 (Patient 45, Dr 18, Sched 26, Spec 9)
+(40, 17, 25, 9, CURDATE() - INTERVAL 9 DAY, '07:30:00', 'Type 2 diabetes follow-up', 'completed', TRUE, 'completed', 'examined', 1, '07:30:00'),
+(45, 18, 26, 9, CURDATE(), '13:30:00', 'Thyroid function check', 'pending', FALSE, 'pending', 'waiting', 2, '13:45:00'),
 
 -- Oncology Appointments (Specialty ID 10)
--- patientId, doctorId, scheduleId, specialtyId, appointmentDate, appointmentTime, reason, status
-(50, 19, 27, 10, CURDATE() - INTERVAL 4 DAY, '13:30:00', 'Post-chemotherapy follow-up', 'completed'), -- Appt ID 26 (Patient 50, Dr 19, Sched 27, Spec 10)
-(21, 20, 28, 10, CURDATE(), '07:30:00', 'Initial consultation for breast lump', 'pending'); -- Appt ID 27 (Patient 21, Dr 20, Sched 28, Spec 10)
+(50, 19, 27, 10, CURDATE() - INTERVAL 4 DAY, '13:30:00', 'Post-chemotherapy follow-up', 'completed', TRUE, 'completed', 'examined', 1, '13:30:00'),
+(21, 20, 28, 10, CURDATE(), '07:30:00', 'Initial consultation for breast lump', 'pending', FALSE, 'pending', 'waiting', 2, '07:45:00');
+
 
 
 -- Insert sample data into AppointmentServices table
@@ -546,18 +917,32 @@ INSERT INTO MedicalRecord (appointmentId, diagnosis, notes, recommendations, fol
 (8, 'Migraine without aura', 'Frequent severe headaches, photo- and phonophobia.', 'Trigger identification, acute treatment with triptan, consider preventative therapy.', CURDATE() + INTERVAL 3 WEEK); -- Record ID 3 (for Appointment 8)
 
 
+-- Insert sample data into TestRequest table
+INSERT INTO TestRequest (appointmentId, serviceId, requestDate, status, notes, requestedByDoctorId) VALUES
+-- Requests for completed appointments
+(1, 3, CURDATE() - INTERVAL 7 DAY, 'completed', 'Test request for ECG Test', 1), -- Request ID 1 (for Appointment 1, Dr. 1)
+(5, 6, CURDATE() - INTERVAL 10 DAY, 'completed', 'Test request for Skin Biopsy', 3), -- Request ID 2 (for Appointment 5, Dr. 3)
+(8, 9, CURDATE() - INTERVAL 14 DAY, 'completed', 'Test request for EEG Test', 5), -- Request ID 3 (for Appointment 8, Dr. 5)
+
+-- Pending requests for current appointments
+(6, 3, CURDATE(), 'pending', 'Test request for ECG Test', 1), -- Request ID 4 (for Appointment 6, Dr. 1)
+(9, 10, CURDATE(), 'pending', 'Test request for MRI Brain', 5), -- Request ID 5 (for Appointment 9, Dr. 5)
+(10, 12, CURDATE(), 'pending', 'Test request for X-Ray', 11), -- Request ID 6 (for Appointment 10, Dr. 11)
+(16, 4, CURDATE(), 'pending', 'Test request for Echocardiogram', 2); -- Request ID 7 (for Appointment 16, Dr. 2)
+
+
 -- Insert sample data into TestResult table
 -- recordId, serviceId, technicianId, roomId, resultFileId, resultType, status must match existing IDs/enums
 -- technicianId refers to technicianId (AUTO_INCREMENT), not userId.
-INSERT INTO TestResult (recordId, appointmentId, serviceId, technicianId, roomId, resultText, resultFileId, resultType, normalRange, unit, interpretation, status, performedDate) VALUES
+INSERT INTO TestResult (recordId, appointmentId, requestId, serviceId, technicianId, roomId, resultText, resultFileId, resultType, normalRange, unit, interpretation, status, performedDate) VALUES
 -- ECG Test Result (for Medical Record 1, related to Appointment 1)
-(1, 1, 3, 1, 1, 'Heart rate: 78 bpm, Regular rhythm, Normal QRS complex', 1, 'file', '60-100', 'bpm', 'Normal ECG at rest. Clinical symptoms suggest exertional ischemia.', 'completed', CURDATE() - INTERVAL 7 DAY), -- Result ID 1
+(1, 1, 1, 3, 1, 1, 'Heart rate: 78 bpm, Regular rhythm, Normal QRS complex', 1, 'file', '60-100', 'bpm', 'Normal ECG at rest. Clinical symptoms suggest exertional ischemia.', 'completed', CURDATE() - INTERVAL 7 DAY), -- Result ID 1
 
 -- Skin Biopsy Result (for Medical Record 2, related to Appointment 5)
-(2, 5, 6, 2, 5, NULL, 3, 'file', NULL, NULL, 'Histology shows epidermal spongiosis and superficial perivascular inflammation consistent with acute contact dermatitis.', 'completed', CURDATE() - INTERVAL 9 DAY), -- Result ID 2
+(2, 5, 2, 6, 2, 5, NULL, 3, 'file', NULL, NULL, 'Histology shows epidermal spongiosis and superficial perivascular inflammation consistent with acute contact dermatitis.', 'completed', CURDATE() - INTERVAL 9 DAY), -- Result ID 2
 
 -- EEG Test Result (for Medical Record 3, related to Appointment 8)
-(3, 8, 9, 3, 6, 'Normal brain wave activity', 1, 'file', 'N/A', 'N/A', 'No epileptiform activity or focal slowing detected.', 'completed', CURDATE() - INTERVAL 13 DAY); -- Result ID 3
+(3, 8, 3, 9, 3, 6, 'Normal brain wave activity', 1, 'file', 'N/A', 'N/A', 'No epileptiform activity or focal slowing detected.', 'completed', CURDATE() - INTERVAL 13 DAY); -- Result ID 3
 
 -- Insert sample data into Medication table
 INSERT INTO Medication (name, description, dosage, price, category, manufacturer, sideEffects) VALUES

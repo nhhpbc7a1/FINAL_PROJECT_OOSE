@@ -1,5 +1,5 @@
 import express from 'express';
-import appointmentService from '../../services/appointment.service.js';
+import appointmentService from '../../services/doctor-side-service/appointment.service.js';
 
 const router = express.Router();
 

@@ -247,6 +247,148 @@ body {
   border: 1px dashed #e1e8ed;
 }
 
+/* Data Table Styles */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 14px;
+}
+
+.data-table thead th {
+  background-color: #f8f9fa;
+  color: #495057;
+  font-weight: 600;
+  text-align: left;
+  padding: 12px 15px;
+  border-bottom: 2px solid #e1e8ed;
+}
+
+.data-table tbody td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #e1e8ed;
+  color: #212529;
+  vertical-align: middle;
+}
+
+.data-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.status-badge.confirmed {
+  background-color: #d1e7dd;
+  color: #0f5132;
+}
+
+.status-badge.pending {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-badge.completed {
+  background-color: #cfe2ff;
+  color: #084298;
+}
+
+.status-badge.cancelled {
+  background-color: #f8d7da;
+  color: #842029;
+}
+
+.status-badge.normal {
+  background-color: #d1e7dd;
+  color: #0f5132;
+}
+
+.status-badge.abnormal {
+  background-color: #f8d7da;
+  color: #842029;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #495057;
+  background-color: #f8f9fa;
+  border: 1px solid #e1e8ed;
+}
+
+.action-btn:hover {
+  background-color: #e9ecef;
+}
+
+.action-btn.view:hover {
+  color: #006eb9;
+  border-color: #006eb9;
+}
+
+.action-btn.download:hover {
+  color: #198754;
+  border-color: #198754;
+}
+
+.action-btn.print:hover {
+  color: #6f42c1;
+  border-color: #6f42c1;
+}
+
+.file-badge {
+  display: inline-block;
+  background-color: #e9ecef;
+  color: #495057;
+  padding: 3px 6px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+/* Responsive styling for data tables */
+@media (max-width: 992px) {
+  .data-table {
+    display: block;
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 576px) {
+  .tab-content {
+    padding: 15px 10px;
+  }
+  
+  .data-table thead th, 
+  .data-table tbody td {
+    padding: 10px 8px;
+    font-size: 13px;
+  }
+}
+
+/* Ensure reason text doesn't overflow */
+.reason-cell {
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .patient-header {
@@ -307,4 +449,71 @@ body {
   .column {
     padding: 10px;
   }
+}
+
+/* View All and See All button styles */
+.view-all-btn {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #f0f9ff;
+  color: #006eb9;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s;
+  gap: 6px;
+}
+
+.view-all-btn:hover {
+  background-color: #e1f3fe;
+}
+
+.see-all-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.see-all-btn {
+  display: inline-block;
+  padding: 8px 15px;
+  background-color: #f8f9fa;
+  color: #495057;
+  border: 1px solid #e1e8ed;
+  border-radius: 5px;
+  font-size: 14px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.see-all-btn:hover {
+  background-color: #e9ecef;
+  color: #212529;
 } 
+.new-prescription-btn {
+  display: flex;
+  align-items: center;
+  background-color: #006eb9;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.new-prescription-btn svg {
+  margin-right: 6px;
+}
+
+.new-prescription-btn:hover {
+  background-color: #005a96;
+}
+
+/* In the placeholder content, center the button */
+.placeholder-content .new-prescription-btn {
+  margin: 15px auto 0;
+}
