@@ -170,7 +170,7 @@
                           <td>{{formattedTime}}</td>
                           <td>{{specialtyName}}</td>
                           <td>{{doctorName}}</td>
-                          <td>{{roomNumber}}</td>
+                          <td>{{#if roomNumber}}{{roomNumber}}{{else}}Not assigned{{/if}}</td>
                           <td>
                             <span class="status-badge {{patientAppointmentStatus}}">{{patientAppointmentStatus}}</span>
                           </td>

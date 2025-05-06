@@ -36,7 +36,7 @@
         <div class="page-header">
                 <h1 class="page-title">Medical examination form</h1>
                 <div class="page-actions">
-                  <button class="test-request-btn">Test Request</button>
+                <button class="test-request-btn">Test Request</button>
                 </div>
         </div>
 
@@ -51,6 +51,11 @@
               <span>{{appointment.patientGenderFormatted}}</span>
               <span class="patient-code">Code: P-{{appointment.patientId}}</span>
               <span class="badge">{{appointment.patientAppointmentStatus}}</span>
+              {{#if appointment.roomNumber}}
+              <span class="room-info">Room: {{appointment.roomNumber}}</span>
+              {{else}}
+              <span class="room-info">Room: Not assigned</span>
+              {{/if}}
             </div>
           </div>
         </div>

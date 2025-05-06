@@ -448,12 +448,47 @@
   }
   
   .examining-tag {
-    background-color: white;
-    color: #FF9500;
-    padding: 2px 10px;
-    border-radius: 20px;
+    display: inline-block;
+    background-color: #FF9800;
+    color: white;
     font-size: 12px;
     font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-left: 10px;
+  }
+  
+  .waiting-tag {
+    display: inline-block;
+    background-color: #2196F3;
+    color: white;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-left: 10px;
+  }
+  
+  .examined-tag {
+    display: inline-block;
+    background-color: #4CAF50;
+    color: white;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-left: 10px;
+  }
+  
+  .status-tag {
+    display: inline-block;
+    background-color: #9E9E9E;
+    color: white;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-left: 10px;
   }
   
   .test-request-card {

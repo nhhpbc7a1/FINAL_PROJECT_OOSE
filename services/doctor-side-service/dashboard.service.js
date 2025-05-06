@@ -46,6 +46,16 @@ export default {
                 .where('TestResult.status', 'completed')
                 .whereRaw('TestResult.performedDate >= NOW() - INTERVAL 7 DAY');
             
+            // First, let's debug the Room data
+            const roomsCheckQuery = db('Room')
+                .select('roomId', 'roomNumber', 'specialtyId')
+                .limit(5);
+
+            // And check appointments with roomId
+            const appointmentsWithRoomQuery = db('Appointment')
+                .select('appointmentId', 'roomId')
+                .where('doctorId', doctorId)
+                .where('appointmentDate', today);
        
             const scheduleQuery = db('Appointment')
                 .join('Patient', 'Appointment.patientId', '=', 'Patient.patientId')
@@ -58,6 +68,7 @@ export default {
                     'Appointment.estimatedTime',
                     'Appointment.reason',
                     'Appointment.patientAppointmentStatus',
+                    'Appointment.roomId', // Add roomId for debugging
                     'User.fullName as patientName',
                     'Specialty.name as specialtyName',
                     'Room.roomNumber'
@@ -88,6 +99,8 @@ export default {
                 allAppointments,
                 todayAppointments,
                 pendingTestResultsResult,
+                roomsCheck,
+                appointmentsWithRoom,
                 scheduleResults,
                 allAppointmentsForCalendar
             ] = await Promise.all([
@@ -95,11 +108,15 @@ export default {
                 allAppointmentsQuery,
                 todayAppointmentsQuery,
                 pendingTestResultsQuery,
+                roomsCheckQuery,
+                appointmentsWithRoomQuery,
                 scheduleQuery,
                 allAppointmentsForCalendarQuery
             ]);
 
             console.log("Today's appointments count:", todayAppointments.length);
+            console.log("Sample rooms in database:", roomsCheck);
+            console.log("Appointments with roomId:", appointmentsWithRoom);
             
             // Process appointment status counts with today's appointments
             const appointmentCounts = {
@@ -134,6 +151,11 @@ export default {
                 } else if (appointment.patientAppointmentStatus === 'examining') {
                     statusClass = 'examining';
                 }
+                
+                // Debug line for tracking room number
+                console.log(`Appointment ${appointment.appointmentId} room data:`, 
+                    appointment.roomNumber ? `Room ${appointment.roomNumber}` : 'No room assigned',
+                    `(roomId: ${appointment.roomId || 'null'})`);
                 
                 return {
                     ...appointment,

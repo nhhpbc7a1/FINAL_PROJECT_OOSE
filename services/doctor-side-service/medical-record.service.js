@@ -180,9 +180,9 @@ export default {
       // Get all medical records for the patient via appointments
       const records = await db('MedicalRecord')
         .join('Appointment', 'MedicalRecord.appointmentId', '=', 'Appointment.appointmentId')
-        .join('Doctor', 'Appointment.doctorId', '=', 'Doctor.doctorId')
-        .join('User', 'Doctor.userId', '=', 'User.userId')
-        .join('Specialty', 'Doctor.specialtyId', '=', 'Specialty.specialtyId')
+        .leftJoin('Doctor', 'Appointment.doctorId', '=', 'Doctor.doctorId')
+        .leftJoin('User', 'Doctor.userId', '=', 'User.userId')
+        .leftJoin('Specialty', 'Appointment.specialtyId', '=', 'Specialty.specialtyId')
         .where('Appointment.patientId', patientId)
         .select(
           'MedicalRecord.*',
@@ -202,7 +202,107 @@ export default {
       return formattedRecords;
     } catch (error) {
       console.error(`Error getting medical history for patient ${patientId}:`, error);
-      throw new Error('Failed to get patient medical history');
+      console.error('Error details:', error.message);
+      // Return empty array instead of throwing
+      return [];
+    }
+  },
+  
+  /**
+   * Get patient medical records for the API endpoint
+   * @param {number} patientId - The patient ID
+   * @returns {Promise<Array>} - List of formatted medical records
+   */
+  async getPatientMedicalRecordsForAPI(patientId) {
+    try {
+      console.log(`Starting lookup for patient ${patientId}'s medical records`);
+      
+      // First check if the patient has any appointments that are "examined"
+      const examinedAppointments = await db('Appointment')
+        .where('patientId', patientId)
+        .where('patientAppointmentStatus', 'examined')
+        .select('appointmentId')
+        .orderBy('appointmentDate', 'desc');
+      
+      console.log(`Found ${examinedAppointments.length} examined appointments for patient ${patientId}:`);
+      console.log(examinedAppointments);
+      
+      // Log all appointmentIds that have medical records
+      const medicalRecordsCheck = await db('MedicalRecord')
+        .join('Appointment', 'MedicalRecord.appointmentId', '=', 'Appointment.appointmentId')
+        .where('Appointment.patientId', patientId)
+        .select('MedicalRecord.recordId', 'MedicalRecord.appointmentId')
+        .orderBy('MedicalRecord.createdDate', 'desc');
+      
+      console.log(`Found ${medicalRecordsCheck.length} medical records for patient ${patientId}:`);
+      console.log(medicalRecordsCheck);
+      
+      // Get all medical records for the patient via appointments
+      const records = await db('MedicalRecord')
+        .join('Appointment', 'MedicalRecord.appointmentId', '=', 'Appointment.appointmentId')
+        .leftJoin('Doctor', 'Appointment.doctorId', '=', 'Doctor.doctorId')
+        .leftJoin('User', 'Doctor.userId', '=', 'User.userId')
+        .leftJoin('Specialty', 'Appointment.specialtyId', '=', 'Specialty.specialtyId')
+        .where('Appointment.patientId', patientId)
+        .select(
+          'MedicalRecord.recordId as id',
+          'MedicalRecord.diagnosis',
+          'MedicalRecord.notes',
+          'MedicalRecord.recommendations',
+          'MedicalRecord.createdDate as createdAt',
+          'Appointment.appointmentDate',
+          'Appointment.reason as title',
+          'User.fullName as doctorName',
+          'Specialty.name as specialtyName'
+        )
+        .orderBy('MedicalRecord.createdDate', 'desc');
+      
+      // Add debugging to see what's coming back
+      console.log(`Found ${records.length} formatted medical records for patient ${patientId}`);
+      if (records.length > 0) {
+        console.log('First record:', records[0]);
+      }
+      
+      return records;
+    } catch (error) {
+      console.error(`Error fetching medical records for patient ID ${patientId}:`, error);
+      console.error('Error details:', error.message);
+      // Return empty array instead of throwing
+      return [];
+    }
+  },
+  
+  /**
+   * Debug function to check if MedicalRecord table has data
+   * @returns {Promise<Array>} - Sample medical records
+   */
+  async debugCheckMedicalRecords() {
+    try {
+      // Get a sample of medical records
+      const records = await db('MedicalRecord')
+        .select('*')
+        .limit(5);
+      
+      console.log(`Found ${records.length} sample medical records:`);
+      console.log(records);
+      
+      // Get total count
+      const [countResult] = await db('MedicalRecord').count('* as total');
+      const totalRecords = countResult.total;
+      
+      console.log(`Total medical records in database: ${totalRecords}`);
+      
+      return {
+        sampleRecords: records,
+        totalRecords
+      };
+    } catch (error) {
+      console.error('Error checking medical records:', error);
+      return {
+        error: error.message,
+        sampleRecords: [],
+        totalRecords: 0
+      };
     }
   }
 }; 

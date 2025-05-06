@@ -36,7 +36,19 @@
               <span>{{patient.patientAge}} years old</span>
               <span>{{patient.patientGenderFormatted}}</span>
               <span>Code: P-{{patient.patientId}}</span>
-              <span class="examining-tag">Examining</span>
+              {{#if patient.patientAppointmentStatus}}
+                {{#if (eq patient.patientAppointmentStatus "examining")}}
+                  <span class="examining-tag">Examining</span>
+                {{else if (eq patient.patientAppointmentStatus "waiting")}}
+                  <span class="waiting-tag">Waiting</span>
+                {{else if (eq patient.patientAppointmentStatus "examined")}}
+                  <span class="examined-tag">Examined</span>
+                {{else}}
+                  <span class="status-tag">{{patient.patientAppointmentStatus}}</span>
+                {{/if}}
+              {{else}}
+                <span class="examining-tag">Examining</span>
+              {{/if}}
             </div>
           </div>
         </div>
