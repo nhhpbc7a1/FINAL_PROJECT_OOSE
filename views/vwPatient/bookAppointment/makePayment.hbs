@@ -2,6 +2,50 @@
     <link rel="stylesheet" href="/public/css/patient-side/makePayment.css">
 {{/section}}
 
+{{#section 'js'}}
+<script>
+    $(document).ready(function() {
+        // Handle payment button
+        $(".pay-button").click(function(e) {
+            e.preventDefault(); 
+            
+            const paymentData = {
+                amount: $("#total-amount").val(),
+                paymentMethod: "VNPAY",
+                transactionId: generateTransactionId() // Generate a random transaction ID for demo purposes
+            };
+            
+            // Submit payment data via AJAX
+            $.ajax({
+                url: '/patient/book-appointment/process-payment',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(paymentData),
+                success: function(response) {
+                    if (response.success) {
+                        window.location.href = response.redirectUrl;
+                    }
+                },
+                error: function(xhr) {
+                    const response = xhr.responseJSON;
+                    alert(response.message || "Payment processing failed. Please try again.");
+                }
+            });
+        });
+        
+        // Handle back button
+        $(".back-button").click(function() {
+            window.location.href = '/patient/book-appointment/verify-email';
+        });
+        
+        // Helper function to generate a mock transaction ID
+        function generateTransactionId() {
+            return "VNPAY_" + Math.floor(Math.random() * 1000000000);
+        }
+    });
+</script>
+{{/section}}
+
 <div class="payment-modal-body">
     <div class="modal-header">
         <h2>MAKE</h2>
@@ -12,19 +56,19 @@
             <h5>Patient Information</h5>
             <div class="modal-body">
                 <div class="input-group">
-                    <input type="text" id="name" placeholder="Name">
+                    <input type="text" id="name" value="{{appointment.fullName}}" readonly>
                 </div>
                 <div class="input-group">
-                    <input type="tel" id="phone" placeholder="Phone Number">
+                    <input type="tel" id="phone" value="{{appointment.phoneNumber}}" readonly>
                 </div>
                 <div class="input-group">
                     <div class="birthday-input">
-                        <input type="text" id="birthday" placeholder="Birthday">
+                        <input type="text" id="birthday" value="{{formatDate appointment.birthday}}" readonly>
                         <img src="/public/images/icon/icons8-calendar-32.png" alt="" width="20px">
                     </div>
                 </div>                           
                 <div class="input-group">
-                    <input type="text" id="address" placeholder="Address">
+                    <input type="text" id="address" value="{{appointment.address}}" readonly>
                 </div>
             </div>
             <hr class="custom-separate-line">
@@ -32,19 +76,30 @@
             <div class="modal-body-appointment mt-3">
                 <div>
                     <img src="/public/images/icon/icon-department.png" alt="">
-                    <span id="department-name">Department name</span>
+                    <b>Specialty:</b>
+                    <span id="department-name">{{appointment.specialtyName}}</span>
                 </div>
-                <div>
+                <div>   
                     <img src="/public/images/icon/icons8-service-32 (1).png" alt="">
-                    <span id="service-name">Service name</span>
+                    <b>Service:</b>
+                    <span id="service-name">
+                        {{#if appointment.services.length}}
+                            {{#each appointment.services}}
+                                {{name}}{{#unless @last}}, {{/unless}}
+                            {{/each}}
+                        {{else}}
+                            No additional services
+                        {{/if}}
+                    </span>
                 </div>                                
                 <div>
                     <img src="/public/images/icon/icons8-time-32.png" alt="">
-                    <span id="appointment-date">Appointment Date</span>
+                    <b>Date:</b>
+                    <span id="appointment-date">{{formatDate appointment.appointmentDate}}</span>
                 </div>                                
                 <div>
                     <img src="/public/images/icon/icons8-payment-32 (1) copy.png" alt="">
-                    <span id="total-cost" style="color: #16A90F;">Total cost</span>
+                    <span id="total-cost" style="color: #16A90F;">{{formatCurrency totalAmount}} VND</span>
                 </div>                                
             </div>
         </div>
@@ -52,15 +107,24 @@
 </div>
 <div class="payment-modal-footer">
     <div class="payment-fee">
-        <p>Examination fee</p>
-        <p>Extra Service</p>
+        {{#if appointment.services.length}}
+        <p>Services</p>
+        {{else}}
+        <p>No services selected</p>
+        {{/if}}
         <p class="temporary-fee">Temporary payment</p>
     </div>
     <div class="payment-value">
-        <p>1000000</p>
-        <p>1000000</p>
-        <p class="total-value">2000000</p>
+        {{#if appointment.services.length}}
+        <p>
+            {{formatCurrency totalAmount}} VND
+        </p>
+        {{else}}
+        <p>0 VND</p>
+        {{/if}}
+        <p class="total-value">{{formatCurrency totalAmount}} VND</p>
     </div>
+    <input type="hidden" id="total-amount" value="{{totalAmount}}">
     <div class="button-group">
         <button class="back-button">Back</button>
         <button class="pay-button">

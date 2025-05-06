@@ -3,13 +3,25 @@
 import moment from 'moment';
 
 // Format a date using moment.js
-export function formatDate(date, format = 'MMM DD, YYYY') {
-  if (!date) return '';
+export function formatDate(date, format = 'DD/MM/YYYY') {
+  if (!date) return 'N/A';
+  
   try {
-    return moment(date).format(format);
+    // Nếu là chuỗi dạng DD/MM/YYYY, trả về luôn
+    if (typeof date === 'string' && /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(date)) {
+      return date;
+    }
+    
+    // Thử chuyển đổi sang moment và format
+    const momentDate = moment(date);
+    if (!momentDate.isValid()) {
+      return 'Invalid date';
+    }
+    
+    return momentDate.format(format);
   } catch (error) {
-    console.error('Error formatting date:', error);
-    return '';
+    console.error('Error formatting date:', error, date);
+    return 'Error';
   }
 }
 
@@ -69,3 +81,16 @@ export function removeFilterUrl(paramName) {
 }
 
 // Các helpers khác nếu đã có 
+
+// Format a number as currency
+export function formatCurrency(value) {
+  if (value === undefined || value === null) return '';
+  
+  try {
+    // Format as Vietnamese currency with thousands separators
+    return new Intl.NumberFormat('vi-VN').format(value);
+  } catch (error) {
+    console.error('Error formatting currency:', error);
+    return value.toString();
+  }
+} 

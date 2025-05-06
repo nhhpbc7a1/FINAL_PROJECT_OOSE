@@ -17,7 +17,7 @@
 <body>
     <header>
        <div class="container_upHeader" style="background-color: black">H</div>
-       <div class="container_downHeader mt-3">
+       <div class="container_downHeader mt-3 container">
             <a class="logo d-flex" href="/">     
                     <img src="/public/images/EternalCare.png" alt="Logo">
                     {{!-- <div class="logo-text">EternalCare</div> --}}
@@ -41,7 +41,7 @@
                 </button>
             </div>
         </div>
-        <nav style="background-color: white;" class="mt-2">
+        <nav style="background-color: white;" class="mt-2 container     ">
             <div class="nav_container" >
                 <ul>
                     <li>
@@ -61,7 +61,7 @@
         </nav>
     </header>
     
-    <main class="container-fluid">
+    <main class="container">
         {{{body}}}
     </main>
      <footer>
@@ -94,13 +94,15 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>EternalHospital_CaringHand_HealingHeart.</p>
-            <div class="bottom-links">
-                <a href="#">Privacy Policy</a>
-                <span>|</span>
-                <a href="#">Disclaimer</a>
-                <span>|</span>
-                <a href="#">Contact Us</a>
+            <div class="container d-flex justify-content-between">
+                <p>EternalHospital_CaringHand_HealingHeart.</p>
+                <div class="bottom-links">
+                    <a href="#">Privacy Policy</a>
+                    <span>|</span>
+                    <a href="#">Disclaimer</a>
+                    <span>|</span>
+                    <a href="#">Contact Us</a>
+                </div>
             </div>
         </div>
     </footer> 

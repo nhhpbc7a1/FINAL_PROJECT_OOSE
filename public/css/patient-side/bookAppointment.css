@@ -5,21 +5,24 @@
     min-height: 100vh;
     background-color: #FBFBFB; /* Light blue background */
     margin-bottom: 30px;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
 }
 .book-appointment-modal-container{
     flex-grow: 1; /* Cho phép container form chiếm không gian còn lại */
     display: flex;
     justify-content: center; /* Căn giữa form theo chiều ngang */
-    align-items: center;
+    align-items: flex-start;
     background-color: #FBFBFB;
-
 }
 .book-appointment-modal {
     background-color: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    padding: 10px 30px;
-    width: 750px; 
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 600px;
 }
 
 .modal-header {
@@ -64,187 +67,200 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 15px;
     padding-top: 30px;
-
+    margin-bottom: 0;
+    padding-top: 15px;
 }
 
 .input-group {
-    display: flex;
-    position: relative;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
+    margin-bottom: 20px;
 }
 
-
-.input-group input[type="text"],
-.input-group input[type="tel"],
-.input-group input[type="email"],
-.input-group input[type="password"] {
-    border: 1px solid #81BAEE; /* Light blue border */
-    background-color: #F2F2F2;
-    border-radius: 50px;
-    padding: 15px;
-    font-size: 16px;
-    color: #333;
-    
-}
-
-.input-group input::placeholder {
-    color: #13467E; /* Light blue placeholder */
-}
-
-.birthday-input, .appoinment-date-input {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-input{
-    width: 300px;
-    margin: 10px;
-}
-.input-group img{
-    position: absolute;
-    margin-right: 20px;
-    right: 5px; /* Khoảng cách từ mép phải của .birthday-input */
-    top: 50%;
-    transform: translateY(-50%); /* Căn giữa dọc hình ảnh */
-    width: 20px; /* Kích thước hình ảnh */
-    height: auto;
-    pointer-events: none; 
-
-}
-.birthday-input input {
-    padding-right: 30px; /* Space for the icon */
-
-}
-.select-wrapper {
-    position: relative;
-    background-color: #F2F2F2;
-    border: 1px solid #81BAEE; /* Light blue border */
-    border-radius: 50px;
-    overflow: hidden;
-    width: 300px;
-    margin: 10px;
-}
-
-.select-wrapper select {
+.input-group input, 
+.input-group select,
+.input-group textarea,
+.form-control {
     width: 100%;
-    padding: 15px;
-    background-color: #F2F2F2;
-    border-radius: 50px;
-    border: 1px solid #8baac7; /* Light blue border */
-    color: #13467E;
-    border: none;
-    appearance: none;
-    /* cursor: pointer; */
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 15px;
+    font-family: inherit;
 }
 
+.input-group input:focus,
+.input-group select:focus,
+.input-group textarea:focus,
+.form-control:focus {
+    outline: none;
+    border-color: #4A73E8;
+    box-shadow: 0 0 0 2px rgba(74, 115, 232, 0.2);
+}
+
+.select-wrapper,
+.select-wrapper-service {
+    position: relative;
+}
+
+.select-wrapper select,
 .select-wrapper-service select {
-    width: 100%;
-    padding: 15px;
-    background-color: #F2F2F2;
-    border-radius: 50px;
-    border: 1px solid #8baac7; /* Light blue border */
-    color: #13467E;
-    border: none;
     appearance: none;
-    /* cursor: pointer; */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding-right: 40px;
+    width: 100%;
+    cursor: pointer;
 }
-.select-wrapper-service{
+
+.select-wrapper img,
+.select-wrapper-service img {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.birthday-input,
+.appoinment-date-input {
     position: relative;
-    background-color: #F2F2F2;
-    border: 1px solid #81BAEE; /* Light blue border */
-    border-radius: 50px;
-    overflow: hidden;
-    width: 640px;
-    margin: 10px 0px;
-}
-#symptom{
-    margin-top: 30px;
-    width: 640px;
-    height: 70px;
-}
-.radio-group {
-    grid-column: 1 / -1; /* Span across both columns */
 }
 
-.radio-options {
-    display: flex; /* Display labels in a row */
-    gap: 0px; /* Adjust the gap between labels */
-    align-items: center; /* Vertically align radio and text */
-    margin-top: 10px;
+.birthday-input img,
+.appoinment-date-input img {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
 }
-.lbl-department{
-    margin: 20px 30px 10px 30px;
-    color: #13467E;
 
+/* Section headers */
+.section-header {
+    margin: 30px 0 15px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
 }
-.radio-options label {
+
+.section-header h3 {
+    color: #4A73E8;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* Booking info section */
+.booking-info {
+    margin-bottom: 20px;
+}
+
+.booking-info .input-group {
+    margin-bottom: 15px;
+}
+
+/* Service items */
+.service-item {
+    margin-bottom: 10px;
     display: flex;
     align-items: center;
+}
+
+.service-item input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+.service-item label {
+    display: flex;
+    align-items: center;
+    font-size: 15px;
     color: #333;
-    font-size: 0.95em;
-    margin-left: -125px;
 }
 
-.radio-options input[type="radio"] {
-    margin-right: -130px; /* Reduce the margin between radio button and text */
+.services-container {
+    margin: 20px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 20px;
+    background-color: #f9f9f9;
 }
 
-.radio-label-text {
-    /* You can add specific styling for the text if needed */
+.services-list {
+    margin-top: 15px;
+    max-height: 200px;
+    overflow-y: auto;
 }
 
-.password-group {
-    position: relative;
+.symptom input {
+    height: 80px;
+    padding-top: 12px;
 }
 
-.password-input {
-    position: relative;
+.symptom textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.button-group {
     display: flex;
-    align-items: center;
+    justify-content: space-between;
+    margin-top: 30px;
 }
 
-.password-input input {
-    padding-right: 30px; /* Space for the eye icon */
-}
-.button-group{
-    display: flex;
-    gap: 30px; /* Khoảng cách giữa hai nút */
-    justify-content: start;
-    margin-left: 30px;
-}
-.back-button{
-    background-color: white; /* Blue button */
-    color: #13467E;
-    border: 2px solid #13467E;
-    border-radius: 6px;
-    padding: 12px 0px;
-    font-size: 1.1em;
+.back-button {
+    background-color: #f0f0f0;
+    color: #333;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 5px;
     cursor: pointer;
-    margin: 30px 0px;
-    width: 200px;
-    /* display: flex;
-    justify-content: center;
-    align-items: center; */
-
+    font-weight: 600;
+    transition: all 0.3s;
 }
+
+.back-button:hover {
+    background-color: #e0e0e0;
+}
+
 .submit-button {
-    background-color: #13467E; /* Blue button */
+    background-color: #4A73E8;
     color: white;
-    border: 2px solid #13467E;
-    border-radius: 6px;
-    padding: 12px 0px;
-    font-size: 1.1em;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 5px;
     cursor: pointer;
-    margin: 30px 0px;
-    width: 200px;
-    /* display: flex;
-    justify-content: center;
-    align-items: center; */
+    font-weight: 600;
+    transition: all 0.3s;
 }
-.button-group button:hover{
-    background-color: #4AABF2;
+
+.submit-button:hover {
+    background-color: #3a5fc7;
+}
+
+@media (max-width: 768px) {
+    .book-appointment-modal {
+        padding: 20px;
+    }
+    
+    .modal-body {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .input-group input, 
+    .input-group select,
+    .form-control {
+        padding: 10px;
+        font-size: 14px;
+    }
+    
+    .button-group {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .back-button,
+    .submit-button {
+        width: 100%;
+    }
 }
 
 

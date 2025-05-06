@@ -68,16 +68,12 @@ export default {
                 .join('User', 'Doctor.userId', '=', 'User.userId')
                 .join('Specialty', 'Doctor.specialtyId', '=', 'Specialty.specialtyId')
                 .select(
-                    'Doctor.*',
-                    'User.email',
+                    'Doctor.doctorId',
                     'User.fullName',
-                    'User.phoneNumber',
-                    'User.address',
-                    'User.accountStatus',
-                    'User.gender',
-                    'User.dob',
-                    'User.profileImage', // Explicitly select profileImage
-                    'Specialty.name as specialtyName'
+                    'Doctor.experience',
+                    'Doctor.bio',
+                    'Specialty.name as specialtyName',
+                    'User.profileImage' 
                 )
                 .where('Doctor.specialtyId', specialtyId)
                 .andWhere('User.accountStatus', 'active');
@@ -278,6 +274,12 @@ export default {
 
     async getDoctorWithSchedule(doctorId, startDate, endDate) {
         try {
+            // Kiểm tra doctorId có hợp lệ không
+            if (!doctorId || isNaN(doctorId)) {
+                console.error(`Invalid doctor ID: ${doctorId}`);
+                return null;
+            }
+            
             // Get doctor details
             const doctor = await this.findById(doctorId);
 

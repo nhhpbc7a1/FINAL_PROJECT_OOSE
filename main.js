@@ -13,6 +13,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 
+// Parse JSON request bodies
+app.use(express.json());
+
 app.use(express.urlencoded({
     extended: true,
 }));
@@ -57,7 +60,10 @@ app.engine('hbs', engine({
             return Array.prototype.slice.call(arguments, 0, -1).every(Boolean);
         },
         or: or,
-        formatDate: formatDate,
+        formatDate(date) {
+            return moment(date).format('DD/MM/YYYY');
+        },
+
         formatDay: formatDay,
         times: times,
         arrayFind: arrayFind,

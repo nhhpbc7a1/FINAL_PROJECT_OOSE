@@ -1,0 +1,202 @@
+/* Common styles for book appointment process */
+
+/* Step indicators */
+.view-appointment--modal-header {
+    background-color: #87CEEB;
+    padding: 20px 0 40px 0;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 30px;
+}
+
+.button-step-group {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.button-step-group button {
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.3s;
+
+    background-color: white;
+    border: white;
+    outline: 3px solid white;
+    outline-offset: 5px;
+}
+
+.button-step-group button img {
+    width: 24px;
+    height: 24px;
+}
+
+.button-step-group button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.button-step-group button.active {
+    background-color: #4A73E8;
+}
+
+.button-step-group button.active img {
+    filter: brightness(0) invert(1);
+}
+
+.separate-step-line {
+    height: 2px;
+    background-color: #ddd;
+    width: 60px;
+    margin: 0 15px;
+}
+
+.step-label {
+    position: absolute;
+    bottom: -25px;
+    font-size: 12px;
+    white-space: nowrap;
+    color: #666;
+    font-weight: bold;      
+}
+
+button.active .step-label {
+    color: #4A73E8;
+    font-weight: bold;
+}
+
+/* Common form styles */
+.book-appointment-container,
+.payment-modal-body {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.modal-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.modal-header h2 {
+    color: #4A73E8;
+    font-size: 18px;
+    margin-bottom: 0;
+}
+
+.modal-header h1 {
+    font-size: 32px;
+    font-weight: bold;
+    margin-top: 0;
+}
+
+.input-group {
+    margin-bottom: 15px;
+}
+
+.input-group input,
+.input-group select,
+.form-control {
+    width: 100%;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.button-group {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.back-button {
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.submit-button,
+.pay-button,
+.back-to-main-button {
+    background-color: #4A73E8;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* Services container */
+.services-container {
+    margin: 20px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+}
+
+.services-container h5 {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.service-item {
+    margin-bottom: 5px;
+}
+
+/* Custom select styling */
+.select-wrapper {
+    position: relative;
+}
+
+.select-wrapper select {
+    appearance: none;
+    padding-right: 30px;
+}
+
+.select-wrapper img {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+/* Date picker custom styling */
+.birthday-input,
+.appoinment-date-input {
+    position: relative;
+}
+
+.birthday-input img,
+.appoinment-date-input img {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .button-step-group {
+        flex-wrap: wrap;
+    }
+    
+    .separate-step-line {
+        width: 30px;
+    }
+    
+    .step-label {
+        font-size: 10px;
+    }
+} 

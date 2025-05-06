@@ -163,7 +163,7 @@ CREATE TABLE IF NOT EXISTS Appointment (
     roomId INT,
     scheduleId INT,
     status ENUM('pending', 'confirmed', 'cancelled', 'completed', 'waiting_payment', 'paid') DEFAULT 'pending',
-    emailVerified BOOLEAN DEFAULT FALSE,
+    emailVerified BOOLEAN DEFAULT FALSE,        
     paymentStatus ENUM('pending', 'completed', 'failed', 'refunded') DEFAULT 'pending',
     createdDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updatedDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -284,11 +284,13 @@ CREATE TABLE IF NOT EXISTS Payment (
 -- Create EmailVerification table
 CREATE TABLE IF NOT EXISTS EmailVerification (
     verificationId INT AUTO_INCREMENT PRIMARY KEY,
-    email VARCHAR(100) UNIQUE NOT NULL,
+    email VARCHAR(100) NOT NULL,
     verificationCode VARCHAR(50) NOT NULL,
+    appointmentId INT,
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     expiresAt TIMESTAMP NULL DEFAULT NULL,
-    verified BOOLEAN DEFAULT FALSE
+    verified BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (appointmentId) REFERENCES Appointment(appointmentId)
 );
 
 -- Insert default roles
