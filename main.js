@@ -23,15 +23,6 @@ app.use(express.urlencoded({
 // Add JSON body parser middleware for AJAX requests
 app.use(express.json());
 
-// File upload middleware
-app.use(fileUpload({
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
-    useTempFiles: true,
-    tempFileDir: '/tmp/',
-    createParentPath: true, // Tự động tạo thư mục cha nếu không tồn tại
-    debug: false // Enable debugging để xem logs
-}));
-
 app.engine('hbs', engine({
     extname: '.hbs',
     defaultLayout: 'labtech',
@@ -203,21 +194,30 @@ app.use(session({
     cookie: {}
 }));
 
-app.get('/', async function (req, res) {
-    res.redirect('/labtech');
+
+app.get('/', (_req, res) => {
+    res.redirect('/patient');
 });
 
-app.get('/labtech', async function (req, res) {
-    res.render('vwLabtech/pending_test', {
-        title: 'Pending Test List',
-        activeRoute: 'pending'
-    });
-});
 
+import accountRouter from './routes/account.route.js';
+app.use('/account', accountRouter);
+
+import patientRouter from './routes/patient/patient.route.js';
 app.use('/patient', patientRouter);
+
+import doctorRouter from './routes/doctor/doctor.route.js'
+// app.use('/doctor', authDoctor, doctorRouter);
 app.use('/doctor', doctorRouter);
+
+import labtechRouter from './routes/labtech/labtech.route.js'
+// app.use('/labtech', authLabtech, labtechRouter);
 app.use('/labtech', labtechRouter);
+
+import adminRouter from './routes/admin/admin.route.js'
+// app.use('/admin', authAdmin, adminRouter);
 app.use('/admin', adminRouter);
+
 
 app.listen(3000, function () {
     console.log('Server is running at http://localhost:3000');
