@@ -10,6 +10,7 @@ import session from 'express-session';
 import { authAdmin, authDoctor, authLabtech, authPatient } from './middlewares/auth.route.js';
 
 import { formatDate, formatDay, times, arrayFind, removeFilterUrl, eq, lte, subtract, or } from './views/helpers/hbs_helpers.js';
+import homepageService from './services/patient/homepage.service.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -25,7 +26,7 @@ app.use(express.json());
 
 app.engine('hbs', engine({
     extname: '.hbs',
-    defaultLayout: 'labtech',
+    defaultLayout: 'patient',
     partialsDir: __dirname + '/views/partials',
     helpers: {
         format_price(value) {
@@ -194,9 +195,39 @@ app.use(session({
     cookie: {}
 }));
 
+app.use(async function (req, res, next) {
+    if (!req.session.auth) {
+        req.session.auth = false;
+    }
+    else {
+        console.log(req.session.auth);
+        console.log(req.session.authUser);
+    }
+    res.locals.auth = req.session.auth;
+    res.locals.authUser = req.session.authUser;
+    next();
+});
 
-app.get('/', (_req, res) => {
-    res.redirect('/patient');
+app.get('/', async function (req, res) {
+    try {
+        // Get all required data
+        const services = await homepageService.getServices();
+        const specialties = await homepageService.getSpecialties();
+        const doctors = await homepageService.getDoctors();
+
+        res.render('homepage', {
+            services,
+            specialties,
+            doctors
+        });
+    } catch (error) {
+        console.error('Homepage error:', error);
+        res.render('homepage', {
+            services: [],
+            specialties: [],
+            doctors: []
+        });
+    }
 });
 
 
@@ -207,16 +238,16 @@ import patientRouter from './routes/patient/patient.route.js';
 app.use('/patient', patientRouter);
 
 import doctorRouter from './routes/doctor/doctor.route.js'
-// app.use('/doctor', authDoctor, doctorRouter);
-app.use('/doctor', doctorRouter);
+app.use('/doctor', authDoctor, doctorRouter);
+// app.use('/doctor', doctorRouter);
 
 import labtechRouter from './routes/labtech/labtech.route.js'
-// app.use('/labtech', authLabtech, labtechRouter);
-app.use('/labtech', labtechRouter);
+app.use('/labtech', authLabtech, labtechRouter);
+// app.use('/labtech', labtechRouter);
 
 import adminRouter from './routes/admin/admin.route.js'
-// app.use('/admin', authAdmin, adminRouter);
-app.use('/admin', adminRouter);
+app.use('/admin', authAdmin, adminRouter);
+// app.use('/admin', adminRouter);
 
 
 app.listen(3000, function () {

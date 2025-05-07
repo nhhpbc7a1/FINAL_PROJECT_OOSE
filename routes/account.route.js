@@ -1,5 +1,7 @@
 import express from 'express';
+import check from '../middlewares/auth.route.js'
 import userService from '../services/user.service.js';
+import bcrypt from 'bcryptjs';
 
 const router = express.Router();
 
@@ -46,8 +48,67 @@ router.get('/is-available-email', async function (req, res) {
 });
 
 router.get('/login', async function (req, res) {
-    res.render('login');
+    if (req.session.auth) {
+        return res.redirect('/');
+    }
+    res.render('login',{
+        layout: 'patient'           
+    });
 });
+
+router.post('/login', async function (req, res) {
+    const user = await userService.findByEmail(req.body.username);
+
+    if (!user) {
+        return res.render('login', {
+            layout: 'patient',
+            showErrors: true
+        });
+    }
+    
+    if (!bcrypt.compareSync(req.body.raw_password, user.password)) {
+        return res.render('login', {
+            layout: 'patient',
+            showErrors: true
+        });
+    }
+
+
+    req.session.auth = true;
+    req.session.authUser = user;
+    req.session.authUser.roleName = user.roleId == 1 ? 'admin' : user.roleId == 2 ? 'doctor' : user.roleId == 3 ? 'patient' : 'labtech';
+
+    if (user.roleId == 2) {
+        req.session.authUser.doctorId = await userService.getDoctorId(user.userId);
+    }
+    let redirectUrl = '/'; // Default redirect URL
+
+    switch (user.role_id) {
+        case 1:
+            redirectUrl = '/admin'; // URL for admin
+            break;
+        case 2:
+            redirectUrl = '/doctor'; // URL for doctor
+            break;
+        case 3:
+            redirectUrl = '/patient'; // URL for patient
+            break;
+        case 4:
+            redirectUrl = '/labtech'; // URL for lab technician
+            break;
+    }    
+    res.redirect(redirectUrl);
+});
+
+
+
+router.post('/logout', check, function (req, res) {
+    req.session.auth = false;
+    req.session.authUser = null;
+    res.redirect('/');
+    console.log('logged out');
+});
+
 
 router.get('/signup', async function (req, res) {
     res.render('signup');
