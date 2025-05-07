@@ -372,6 +372,7 @@
     border: 1px solid rgba(233, 236, 239, 0.5);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    position: relative;
   }
   
   .profile:hover {
@@ -419,9 +420,12 @@
     margin-left: 5px;
   }
   
-  .profile:hover i {
+  .profile:hover i,
+  .profile-info:hover ~ i,
+  .profile-name:hover ~ i,
+  .profile-role:hover ~ i {
     color: #0D99FF;
-    transform: rotate(180deg);
+    transform: none !important;
   }
   
   /* CSS for menu items with thẻ a */
@@ -998,4 +1002,44 @@
     opacity: 1;
     visibility: visible;
     transform: translateX(-50%) scale(1);
+  }
+  
+  .profile-dropdown {
+    position: absolute;
+    top: 60px;
+    right: 0;
+    min-width: 180px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    padding: 8px 0;
+    border: 1px solid #e9ecef;
+  }
+  
+  .profile-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    color: #2d3748;
+    text-decoration: none;
+    font-size: 15px;
+    transition: background 0.2s, color 0.2s;
+  }
+  
+  .profile-dropdown-item:hover {
+    background: #f1f5f9;
+    color: #0D99FF;
+  }
+  
+  .profile-dropdown-item i {
+    font-size: 18px;
+  }
+  
+  .profile-dropdown-item:hover i {
+    color: #0D99FF;
+    transform: none !important;
   }

@@ -98,6 +98,9 @@
                           </button>
                           <form id="lab-test-form-{{patientId}}" action="/doctor/request-test" method="GET" style="display: none;">
                             <input type="hidden" name="patientId" value="{{patientId}}">
+                            {{#if appointmentId}}
+                              <input type="hidden" name="appointmentId" value="{{appointmentId}}">
+                            {{/if}}
                           </form>
                           <a href="/doctor/prescription-medicine?patientId={{patientId}}" class="btn-prescribe" title="Prescribe Medicine">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

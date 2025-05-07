@@ -140,9 +140,9 @@
       document.querySelector('.test-request-btn').addEventListener('click', function() {
         // Get the appointmentId from the hidden input
         const appointmentId = document.getElementById('appointmentIdInput').value;
-        
+        const patientId = '{{appointment.patientId}}';
         // Navigate to test request form with both patient ID and appointment ID
-        window.location.href = `/doctor/test-request?patientId={{appointment.patientId}}&appointmentId=${appointmentId}`;
+        window.location.href = `/doctor/test-request?patientId=${patientId}&appointmentId=${appointmentId}`;
       });
       
       // We need to handle if prescription-btn exists because it was added manually

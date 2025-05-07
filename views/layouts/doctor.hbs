@@ -67,30 +67,6 @@
               {{/if}}
             </a>
           </li>
-          <li>
-            <a href="/doctor/profile">
-              <span>
-                <i class="ti ti-user-circle"></i>
-                <span>Profile</span>
-              </span>
-            </a>
-          </li>
-          <li>
-            <a href="/doctor/settings">
-              <span>
-                <i class="ti ti-settings"></i>
-                <span>Settings</span>
-              </span>
-            </a>
-          </li>
-          <li>
-            <a href="/logout">
-              <span>
-                <i class="ti ti-logout"></i>
-                <span>Logout</span>
-              </span>
-            </a>
-          </li>
         </ul>
       </div>
     </aside>
@@ -116,13 +92,18 @@
         
         <div class="header-divider"></div>
         
-        <div class="profile">
+        <div class="profile" id="profileDropdownToggle">
           <img src="/api/placeholder/40/40" alt="Profile" />
           <div class="profile-info">
             <span class="profile-name">Dr TobeyNguyen</span>
             <span class="profile-role">Urologist</span>
           </div>
           <i class="ti ti-chevron-down"></i>
+          <div class="profile-dropdown" id="profileDropdownMenu" style="display: none;">
+            <a href="/doctor/dashboard" class="profile-dropdown-item"><i class="ti ti-home"></i> Homepage</a>
+            <a href="/doctor/profile" class="profile-dropdown-item"><i class="ti ti-user"></i> Profile</a>
+            <a href="/auth/logout" class="profile-dropdown-item"><i class="ti ti-logout"></i> Logout</a>
+          </div>
         </div>
       </header>
 
@@ -144,10 +125,18 @@
       updatePageInfo(currentPath);
       
       menuLinks.forEach(link => {
-        if (link.getAttribute('href') === currentPath || 
-            (currentPath.includes(link.getAttribute('href')) && link.getAttribute('href') !== '/')) {
+        // Xác định active cho các trang con
+        if (
+          link.getAttribute('href') === currentPath ||
+          (currentPath.includes(link.getAttribute('href')) && link.getAttribute('href') !== '/') ||
+          (currentPath.includes('/doctor/test-request') && link.getAttribute('href') === '/doctor/appointments') ||
+          (currentPath.includes('/doctor/examination') && link.getAttribute('href') === '/doctor/appointments') ||
+          (currentPath.includes('/doctor/request-test') && link.getAttribute('href') === '/doctor/patients') ||
+          (currentPath.includes('/doctor/prescription-medicine') && link.getAttribute('href') === '/doctor/patients') ||
+          (currentPath.includes('/doctor/patient-details') && link.getAttribute('href') === '/doctor/patients')
+        ) {
           link.parentElement.classList.add('active');
-       } else {
+        } else {
           link.parentElement.classList.remove('active');
         }
       });
@@ -178,6 +167,21 @@
           }
         });
       }
+      
+      // Dropdown for profile
+      const profileToggle = document.getElementById('profileDropdownToggle');
+      const profileMenu = document.getElementById('profileDropdownMenu');
+      if (profileToggle && profileMenu) {
+        profileToggle.addEventListener('click', function(e) {
+          e.stopPropagation();
+          profileMenu.style.display = (profileMenu.style.display === 'block') ? 'none' : 'block';
+        });
+        document.addEventListener('click', function(e) {
+          if (profileMenu.style.display === 'block' && !profileToggle.contains(e.target)) {
+            profileMenu.style.display = 'none';
+          }
+        });
+      }
     });
     
     function updatePageInfo(currentPath) {
@@ -201,13 +205,7 @@
       } else if (currentPath.includes('/doctor/messages')) {
         title = 'Notifications';
         subtitle = 'Your messages and alerts';
-      } else if (currentPath.includes('/doctor/profile')) {
-        title = 'Profile';
-        subtitle = 'Manage your personal information';
-      } else if (currentPath.includes('/doctor/settings')) {
-        title = 'Settings';
-        subtitle = 'Customize your preferences';
-      }
+      } 
       
       pageTitle.textContent = title;
       pageSubtitle.textContent = subtitle;

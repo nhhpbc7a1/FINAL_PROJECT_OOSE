@@ -368,16 +368,13 @@ router.get('/examination', async function (req, res) {
 
 router.get('/test-request', async function (req, res) {
   try {
-  // Get patient ID from query parameters
-  const patientId = req.query.patientId || '';
+    // Get patient ID from query parameters
+    const patientId = req.query.patientId || '';
     const appointmentId = req.query.appointmentId || '';
-    
     if (!patientId && !appointmentId) {
       return res.redirect('/doctor/appointments');
     }
-    
     let patientDetails = null;
-    
     // If we have an appointment ID, get patient details from the appointment
     if (appointmentId) {
       const appointmentDetails = await appointmentService.getAppointmentWithServices(appointmentId);
@@ -395,25 +392,18 @@ router.get('/test-request', async function (req, res) {
           patientAppointmentStatus: appointmentDetails.patientAppointmentStatus || 'examining'
         };
       }
-    } 
+    }
     // Otherwise use the patient ID to get patient details
     else if (patientId) {
       const patient = await patientDetailsService.getPatientDetails(patientId);
       if (patient) {
-        // Get the most recent appointment for this patient to check status
-        let appointmentStatus = 'examining'; // Default status
-        
-        // If we have appointments in the patient details, get the latest status
+        let appointmentStatus = 'examining';
         if (patient.appointments && patient.appointments.length > 0) {
-          // Sort appointments by date, descending
           const sortedAppointments = [...patient.appointments].sort((a, b) => {
             return new Date(b.appointmentDate) - new Date(a.appointmentDate);
           });
-          
-          // Use the status from the most recent appointment
           appointmentStatus = sortedAppointments[0].patientAppointmentStatus || 'examining';
         }
-        
         patientDetails = {
           patientId: patient.patientId,
           patientName: patient.fullName,
@@ -427,15 +417,16 @@ router.get('/test-request', async function (req, res) {
         };
       }
     }
-    
     if (!patientDetails) {
       return res.redirect('/doctor/appointments');
     }
-    
-    // Pass patient details to the template
+    // Lấy danh sách test động
+    const testsByCategory = await testRequestService.getAllActiveTestsByCategory();
+    // Pass patient details và testsByCategory to the template
     res.render('vwDoctor/testRequestForm', { 
       patient: patientDetails,
-      testRequestCode: `TR-${moment().format('YYYYMMDD')}-${Math.floor(1000 + Math.random() * 9000)}`
+      testRequestCode: `TR-${moment().format('YYYYMMDD')}-${Math.floor(1000 + Math.random() * 9000)}`,
+      testsByCategory
     });
   } catch (error) {
     console.error('Error loading test request form:', error);
