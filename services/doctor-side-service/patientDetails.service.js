@@ -106,5 +106,28 @@ export default {
             console.error(`Error fetching patient details for ID ${patientId}:`, error);
             throw new Error('Unable to get patient details');
         }
+    },
+
+    /**
+     * Get just basic patient info including userId
+     * @param {number} patientId 
+     * @returns {Promise<Object>} Basic patient info or null
+     */
+    async getPatientBasicInfo(patientId) {
+        try {
+            return await db('Patient')
+                .join('User', 'Patient.userId', '=', 'User.userId')
+                .select(
+                    'Patient.patientId',
+                    'Patient.userId',
+                    'User.fullName',
+                    'User.email'
+                )
+                .where('Patient.patientId', patientId)
+                .first();
+        } catch (error) {
+            console.error(`Error fetching basic info for patient ${patientId}:`, error);
+            return null;
+        }
     }
 }; 

@@ -19,7 +19,11 @@ router.get('/', async function (req, res) {
       delete req.session.flashMessage;
     }
 
-    const patients = await patientListService.findAll();
+    // Get the doctorId from the session or use a default for testing
+    const doctorId = req.session.authUser?.doctorId || 2; // Fallback to ID 2 for testing
+    
+    // Pass doctorId to service to get only this doctor's patients
+    const patients = await patientListService.findAll(doctorId);
 
     // Calculate age for each patient and format dates
     const patientsWithAge = patients.map(patient => {
@@ -47,18 +51,18 @@ router.get('/', async function (req, res) {
         }
       }
       
-      // Set default current status
-      let currentStatus = patient.appointmentStatus || 'no-appointments';
+      // Get appointment status from database or set default
+      let appointmentStatus = patient.appointmentStatus || 'no-appointments';
       
       return {
         ...patient,
         age,
         lastVisitFormatted,
-        currentStatus
+        appointmentStatus
       };
     });
     
-    console.log("First patient with processed data:", patientsWithAge[0]);
+    console.log(`Processed ${patientsWithAge.length} patients for doctor ID ${doctorId}`);
 
     res.render('vwDoctor/patient', {
       patients: patientsWithAge,

@@ -132,6 +132,19 @@ export default {
             
             console.log(`[Service] Using dates for SQL query: ${formattedStartDate} to ${formattedEndDate}`);
             
+            // First, let's check the available rooms
+            const roomsCheck = await db('Room')
+                .select('roomId', 'roomNumber', 'specialtyId')
+                .limit(5);
+            console.log('[Service] Sample rooms in database:', roomsCheck);
+            
+            // Then check appointments with rooms for this date
+            const appointmentsWithRoomCheck = await db('Appointment')
+                .select('appointmentId', 'roomId')
+                .whereRaw('DATE(appointmentDate) = ?', [formattedStartDate])
+                .limit(10);
+            console.log('[Service] Sample appointments with roomId for this date:', appointmentsWithRoomCheck);
+            
             // Construct and execute the query with safe date format
             const query = db('Appointment')
                 .join('Patient', 'Appointment.patientId', '=', 'Patient.patientId')
@@ -160,6 +173,13 @@ export default {
             // Execute the query
             const result = await query;
             console.log(`[Service] Found ${result.length} appointments for date: ${formattedStartDate}`);
+            
+            // Debug room information for each appointment
+            result.forEach(appointment => {
+                console.log(`[Service] Appointment ${appointment.appointmentId} room data:`, 
+                    appointment.roomNumber ? `Room ${appointment.roomNumber}` : 'No room assigned',
+                    `(roomId: ${appointment.roomId || 'null'})`);
+            });
             
             return result;
         } catch (error) {
@@ -343,6 +363,26 @@ export default {
             
             if (!appointment) return null;
             
+            // Debug room information
+            console.log(`[Service] getAppointmentWithServices: Appointment ${appointmentId} room data:`, 
+                appointment.roomNumber ? `Room ${appointment.roomNumber}` : 'No room assigned',
+                `(roomId: ${appointment.roomId || 'null'})`);
+            
+            // Verify Room exists if roomId is set
+            if (appointment.roomId) {
+                const room = await db('Room')
+                    .select('roomId', 'roomNumber')
+                    .where('roomId', appointment.roomId)
+                    .first();
+                    
+                console.log('[Service] Room lookup for appointment:', room);
+                
+                // Update appointment with room number directly from Room table
+                if (room && room.roomNumber) {
+                    appointment.roomNumber = room.roomNumber;
+                }
+            }
+            
             // Get services associated with this appointment
             const services = await db('AppointmentServices')
                 .join('Service', 'AppointmentServices.serviceId', '=', 'Service.serviceId')
@@ -424,6 +464,33 @@ export default {
         } catch (error) {
             console.error(`Error getting latest appointment for patient ${patientId}:`, error);
             throw new Error('Failed to get latest appointment');
+        }
+    },
+
+    async getPatientAppointments(patientId) {
+        try {
+            return await db('Appointment')
+                .join('Specialty', 'Appointment.specialtyId', '=', 'Specialty.specialtyId')
+                .leftJoin('Doctor', 'Appointment.doctorId', '=', 'Doctor.doctorId')
+                .leftJoin('User as DoctorUser', 'Doctor.userId', '=', 'DoctorUser.userId')
+                .leftJoin('Room', 'Appointment.roomId', '=', 'Room.roomId')
+                .leftJoin('MedicalRecord', 'Appointment.appointmentId', '=', 'MedicalRecord.appointmentId')
+                .select(
+                    'Appointment.*',
+                    'Specialty.name as specialtyName',
+                    'DoctorUser.fullName as doctorName',
+                    'Room.roomNumber',
+                    'MedicalRecord.diagnosis',
+                    'MedicalRecord.notes'
+                )
+                .where('Appointment.patientId', patientId)
+                .orderBy('Appointment.appointmentDate', 'desc')
+                .orderBy('Appointment.estimatedTime', 'desc');
+        } catch (error) {
+            console.error(`Error fetching appointments for patient ${patientId}:`, error);
+            console.error('Error details:', error.message);
+            // Return empty array instead of throwing an error
+            return [];
         }
     }
 }; 
