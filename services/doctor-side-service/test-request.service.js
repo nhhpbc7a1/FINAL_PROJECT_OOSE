@@ -195,5 +195,27 @@ export default {
             console.error('Error counting pending requests by service:', error);
             throw new Error('Unable to count pending requests by service');
         }
+    },
+
+    /**
+     * Lấy tất cả các test đang hoạt động, nhóm theo category
+     * @returns {Promise<Object>} - { category: [service, ...], ... }
+     */
+    async getAllActiveTestsByCategory() {
+        try {
+            const tests = await db('Service')
+                .select('serviceId', 'name', 'description', 'category', 'price', 'duration')
+                .where({ type: 'test', status: 'active' });
+            // Nhóm theo category
+            const grouped = {};
+            for (const test of tests) {
+                if (!grouped[test.category]) grouped[test.category] = [];
+                grouped[test.category].push(test);
+            }
+            return grouped;
+        } catch (error) {
+            console.error('Error fetching active tests by category:', error);
+            throw new Error('Unable to load active tests');
+        }
     }
 }; 

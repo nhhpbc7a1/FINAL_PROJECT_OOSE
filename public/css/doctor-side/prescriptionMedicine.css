@@ -12,8 +12,17 @@ body {
 }
 
 .container {
-  width: 100%;
+  display: flex;
   min-height: 100vh;
+  width: 100%;
+}
+
+.column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  width: 100%;
 }
 
 .content-container {

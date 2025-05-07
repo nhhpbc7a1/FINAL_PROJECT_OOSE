@@ -218,6 +218,9 @@ import adminRouter from './routes/admin/admin.route.js'
 // app.use('/admin', authAdmin, adminRouter);
 app.use('/admin', adminRouter);
 
+// Import and use notification API routes
+import notificationApiRouter from './routes/api/notification.api.js';
+app.use('/api/notifications', notificationApiRouter);
 
 app.listen(3000, function () {
     console.log('Server is running at http://localhost:3000');

@@ -126,7 +126,7 @@ export default {
 
     async delete(medicationId) {
         try {
-            // Dependency check should be done in the route before calling this.
+            // Dependency check should be done in the route before calling this.dsadsadas
             const result = await db('Medication')
                 .where('medicationId', medicationId)
                 .delete();

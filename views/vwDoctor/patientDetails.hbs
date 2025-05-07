@@ -7,28 +7,7 @@
   <link rel="stylesheet" href="/public/css/doctor-side/patientDetails.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <style>
-    /* In the placeholder content, center the button */
-    .placeholder-content .new-prescription-btn {
-      margin: 15px auto 0;
-    }
-    
-    /* Success message styles */
-    .success-message {
-      display: flex;
-      align-items: center;
-      background-color: #E8F5E9;
-      color: #2E7D32;
-      padding: 10px 16px;
-      border-radius: 8px;
-      margin: 16px 0;
-      font-weight: 500;
-    }
-    
-    .success-message svg {
-      margin-right: 8px;
-    }
-  </style>
+ 
 </head>
 <body>
   <div class="container">
@@ -170,7 +149,7 @@
                           <td>{{formattedTime}}</td>
                           <td>{{specialtyName}}</td>
                           <td>{{doctorName}}</td>
-                          <td>{{roomNumber}}</td>
+                          <td>{{#if roomNumber}}{{roomNumber}}{{else}}Not assigned{{/if}}</td>
                           <td>
                             <span class="status-badge {{patientAppointmentStatus}}">{{patientAppointmentStatus}}</span>
                           </td>
