@@ -22,6 +22,34 @@ export default {
         }
     },
 
+    async getAllActive() {
+        try {
+            return await db('Service')
+                .where('status', 'active')
+                .orderBy('name');
+        } catch (error) {
+            console.error('Error fetching active services:', error);
+            throw new Error('Unable to load active services');
+        }
+    },
+
+    async findBySpecialty(specialtyId, includeInactive = false) {
+        try {
+            const query = db('Service')
+                .where('specialtyId', specialtyId)
+                .orderBy('name');
+
+            if (!includeInactive) {
+                query.where('status', 'active');
+            }
+
+            return await query;
+        } catch (error) {
+            console.error(`Error fetching services for specialty ID ${specialtyId}:`, error);
+            throw new Error('Unable to load services for this specialty');
+        }
+    },
+
     async findById(serviceId) {
         try {
             const service = await db('Service')
@@ -32,6 +60,14 @@ export default {
                 )
                 .where('serviceId', serviceId)
                 .first();
+            
+            if (service && service.image) {
+                // Ensure image path is properly formatted
+                if (!service.image.startsWith('http') && !service.image.startsWith('/')) {
+                    service.image = '/' + service.image;
+                }
+            }
+            
             return service || null;
         } catch (error) {
             console.error(`Error fetching service with ID ${serviceId}:`, error);
@@ -71,7 +107,8 @@ export default {
                 type: service.type, // Required field
                 category: service.category || null,
                 specialtyId: service.specialtyId ? parseInt(service.specialtyId, 10) : null,
-                status: service.status || 'active' // Default status
+                status: service.status || 'active', // Default status
+                image: specialty.image || '/public/images/services/default-service.jpg'
             };
 
             // Basic validation

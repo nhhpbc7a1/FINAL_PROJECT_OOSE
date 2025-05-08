@@ -6,17 +6,18 @@
   <title>Prescription Medicine</title>
   <link rel="stylesheet" href="/public/css/doctor-side/prescriptionMedicine.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 </head>
 <body>
   <div class="container">
     <div class="content-container">
       <!-- Back Button -->
       <div class="back-section">
-        <a href="/doctor/dashboard" class="back-link">
+        <a href="/doctor/patient-details?patientId={{patient.patientId}}" class="back-link">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="#6c757d"/>
           </svg>
-          Back to Dashboard
+          Back to Patient Details
         </a>
       </div>
 
@@ -24,7 +25,6 @@
       <div class="page-header">
         <h1>Prescription Medicine</h1>
         <div class="action-buttons">
-          <button class="btn-secondary">Prescription form</button>
           <button class="btn-primary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 6px;">
               <path d="M19 8H5C3.34 8 2 9.34 2 11V17H6V21H18V17H22V11C22 9.34 20.66 8 19 8ZM16 19H8V14H16V19ZM19 12C18.45 12 18 11.55 18 11C18 10.45 18.45 10 19 10C19.55 10 20 10.45 20 11C20 11.55 19.55 12 19 12ZM18 3H6V7H18V3Z" fill="white"/>
@@ -38,22 +38,27 @@
       <div class="patient-card">
         <div class="patient-avatar">
           <div class="avatar-circle">
-            <span>NK</span>
+            <span>{{patient.patientName.[0]}}</span>
           </div>
         </div>
         <div class="patient-info">
-          <h2>NGUYEN LE TUNG CHI</h2>
+          <h2>{{patient.patientName}}</h2>
           <div class="patient-details">
             <div class="detail-item">
-              <span class="label">32 years old</span>
+              <span class="label">{{patient.patientAge}} years old</span>
             </div>
             <div class="detail-item">
-              <span class="label">Female</span>
+              <span class="label">{{#if (eq patient.patientGender "male")}}Male{{else}}Female{{/if}}</span>
             </div>
             <div class="detail-item">
-              <span class="label">Code: P-20250428</span>
+              <span class="label">Code: P-{{patient.patientId}}</span>
             </div>
-            <div class="status-badge examining">Examining</div>
+            {{#if patient.patientBloodType}}
+            <div class="detail-item">
+              <span class="label">Blood Type: {{patient.patientBloodType}}</span>
+            </div>
+            {{/if}}
+            <div class="status-badge {{patient.patientAppointmentStatus}}">{{patient.patientAppointmentStatus}}</div>
           </div>
         </div>
       </div>
@@ -71,15 +76,15 @@
           <div class="prescription-info">
             <div class="prescription-info-item">
               <span class="label">Prescription ID</span>
-              <span class="value">PRE-20250428-001</span>
+              <span class="value">{{prescriptionCode}}</span>
             </div>
             <div class="prescription-info-item">
               <span class="label">Date</span>
-              <span class="value">April 28, 2025</span>
+              <span class="value">{{formatDate currentDate "MMMM D, YYYY"}}</span>
             </div>
             <div class="prescription-info-item">
               <span class="label">Department</span>
-              <span class="value">Internal Medicine</span>
+              <span class="value">{{doctorSpecialty}}</span>
             </div>
           </div>
         </div>
@@ -88,7 +93,7 @@
         <div class="section">
           <h3>Diagnose</h3>
           <div class="form-group">
-            <input type="text" class="form-control" value="Urinary tract Infection" placeholder="Enter diagnosis">
+            <input type="text" class="form-control" placeholder="Enter diagnosis" value="Urinary tract Infection">
           </div>
         </div>
 
@@ -106,120 +111,7 @@
 
           <!-- Drug Cards -->
           <div class="drug-list">
-            <!-- Repeat this card 6 times as shown in the image -->
-            <div class="drug-card">
-              <div class="drug-info">
-                <h4>Ciprofloxacin 500mg</h4>
-                <p>1 viên, 2 lần/ngày, sau ăn, 7 ngày</p>
-              </div>
-              <div class="drug-actions">
-                <button class="btn-icon edit">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25ZM20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z" fill="#006eb9"/>
-                  </svg>
-                </button>
-                <button class="btn-icon delete">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM19 4H15.5L14.5 3H9.5L8.5 4H5V6H19V4Z" fill="#dc3545"/>
-                  </svg>
-                </button>
-              </div>
-            </div>
-            
-            <div class="drug-card">
-              <div class="drug-info">
-                <h4>Paracetamol 500mg</h4>
-                <p>1 viên, 3 lần/ngày, khi đau, 5 ngày</p>
-              </div>
-              <div class="drug-actions">
-                <button class="btn-icon edit">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25ZM20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z" fill="#006eb9"/>
-                  </svg>
-                </button>
-                <button class="btn-icon delete">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM19 4H15.5L14.5 3H9.5L8.5 4H5V6H19V4Z" fill="#dc3545"/>
-                  </svg>
-                </button>
-              </div>
-            </div>
-            
-            <div class="drug-card">
-              <div class="drug-info">
-                <h4>Amoxicillin 250mg</h4>
-                <p>1 viên, 2 lần/ngày, sau ăn, 7 ngày</p>
-              </div>
-              <div class="drug-actions">
-                <button class="btn-icon edit">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25ZM20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z" fill="#006eb9"/>
-                  </svg>
-                </button>
-                <button class="btn-icon delete">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM19 4H15.5L14.5 3H9.5L8.5 4H5V6H19V4Z" fill="#dc3545"/>
-                  </svg>
-                </button>
-              </div>
-            </div>
-            
-            <div class="drug-card">
-              <div class="drug-info">
-                <h4>Ibuprofen 400mg</h4>
-                <p>1 viên, 2 lần/ngày, sau ăn, 5 ngày</p>
-              </div>
-              <div class="drug-actions">
-                <button class="btn-icon edit">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25ZM20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z" fill="#006eb9"/>
-                  </svg>
-                </button>
-                <button class="btn-icon delete">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM19 4H15.5L14.5 3H9.5L8.5 4H5V6H19V4Z" fill="#dc3545"/>
-                  </svg>
-                </button>
-              </div>
-            </div>
-            
-            <div class="drug-card">
-              <div class="drug-info">
-                <h4>Vitamin C 500mg</h4>
-                <p>1 viên, 1 lần/ngày, sau ăn sáng, 14 ngày</p>
-              </div>
-              <div class="drug-actions">
-                <button class="btn-icon edit">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25ZM20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z" fill="#006eb9"/>
-                  </svg>
-                </button>
-                <button class="btn-icon delete">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM19 4H15.5L14.5 3H9.5L8.5 4H5V6H19V4Z" fill="#dc3545"/>
-                  </svg>
-                </button>
-              </div>
-            </div>
-            
-            <div class="drug-card">
-              <div class="drug-info">
-                <h4>Probiotics</h4>
-                <p>1 gói, 1 lần/ngày, sau ăn tối, 10 ngày</p>
-              </div>
-              <div class="drug-actions">
-                <button class="btn-icon edit">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25ZM20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z" fill="#006eb9"/>
-                  </svg>
-                </button>
-                <button class="btn-icon delete">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM19 4H15.5L14.5 3H9.5L8.5 4H5V6H19V4Z" fill="#dc3545"/>
-                  </svg>
-                </button>
-              </div>
-            </div>
+           
           </div>
         </div>
 
@@ -230,29 +122,137 @@
             <textarea class="form-control" rows="3" placeholder="Enter additional instructions">Drink plenty of water (at least 2 liters per day). Avoid alcohol and caffeine. Return to your doctor if symptoms do not improve after 3 days.</textarea>
           </div>
         </div>
-
-        <!-- Doctor's Signature Section -->
-        <div class="section">
-          <h3>Doctor's signature</h3>
-          <div class="signature-box">
-            <div class="signature-placeholder"></div>
-          </div>
           
           <div class="doctor-info">
-            <div class="doctor-avatar">DR</div>
+            <div class="doctor-avatar">{{doctorName.[0]}}{{doctorName.[1]}}</div>
             <div class="doctor-details">
-              <div class="doctor-name">Dr. Nguyen Van A</div>
-              <div class="doctor-specialty">Internal Medicine Specialist</div>
+              <div class="doctor-name">{{doctorName}}</div>
+              <div class="doctor-specialty">{{doctorSpecialty}}</div>
             </div>
           </div>
         </div>
 
         <!-- Action Buttons -->
         <div class="form-actions">
-          <button class="btn-outline">Cancel</button>
+          <button class="btn-outline" id="cancelBtn">Cancel</button>
           <button class="btn-outline">Draft</button>
-          <button class="btn-primary">Save</button>
+          <button class="btn-primary" id="saveBtn">Save</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden form for submitting prescription data -->
+  <form id="prescriptionSubmitForm" action="/doctor/prescription-save" method="POST" style="display: none;">
+    <input type="hidden" name="patientId" value="{{patient.patientId}}">
+    <input type="hidden" name="appointmentId" value="{{patient.appointmentId}}">
+    <input type="hidden" name="doctorId" value="{{doctorId}}">
+    <input type="hidden" name="diagnosis" id="diagnosisInput">
+    <input type="hidden" name="additionalInstructions" id="additionalInstructionsInput">
+    <input type="hidden" name="medications" id="medicationsInput">
+  </form>
+
+  <!-- Drug Selection Popup/Modal -->
+  <div id="drugSelectModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Select Medication</h3>
+        <span class="close">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div class="search-container">
+          <input type="text" id="drugSearchInput" placeholder="Search medications..." class="form-control">
+        </div>
+        <div class="drug-list-container">
+          <table class="drug-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Dosage</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="drugTableBody">
+              <!-- Drug rows will be populated by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-outline" id="cancelDrugSelection">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Drug Details Modal (appears after selecting a drug) -->
+  <div id="drugDetailsModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Medication Details</h3>
+        <span class="close">&times;</span>
+      </div>
+      <div class="modal-body">
+        <form id="drugDetailsForm">
+          <input type="hidden" id="selectedDrugId">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="drugName">Medication</label>
+              <input type="text" id="drugName" class="form-control" readonly>
+            </div>
+            <div class="form-group">
+              <label for="drugDosage">Dosage</label>
+              <input type="text" id="drugDosage" class="form-control" readonly>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="drugCategory">Category</label>
+              <input type="text" id="drugCategory" class="form-control" readonly>
+            </div>
+            <div class="form-group">
+              <label for="drugQuantity">Quantity</label>
+              <input type="number" id="drugQuantity" class="form-control" value="1" min="1">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="drugFrequency">Frequency</label>
+            <select id="drugFrequency" class="form-control">
+              <option value="1 time per day">1 time per day</option>
+              <option value="2 times per day" selected>2 times per day</option>
+              <option value="3 times per day">3 times per day</option>
+              <option value="4 times per day">4 times per day</option>
+              <option value="Every 6 hours">Every 6 hours</option>
+              <option value="Every 8 hours">Every 8 hours</option>
+              <option value="When needed">When needed</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="drugInstructions">Instructions</label>
+              <select id="drugInstructions" class="form-control">
+                <option value="Before meals">Before meals</option>
+                <option value="After meals" selected>After meals</option>
+                <option value="With food">With food</option>
+                <option value="Without food">Without food</option>
+                <option value="Before sleep">Before sleep</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="drugDuration">Duration (days)</label>
+              <input type="number" id="drugDuration" class="form-control" value="7" min="1">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="drugNotes">Notes</label>
+            <textarea id="drugNotes" class="form-control" rows="2"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-outline" id="cancelDrugDetails">Cancel</button>
+        <button class="btn-primary" id="addDrugToList">Add to Prescription</button>
       </div>
     </div>
   </div>
@@ -294,6 +294,309 @@
           this.style.transform = 'translateY(0)';
           this.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.05)';
         });
+      });
+      
+      // Get modal elements
+      const drugSelectModal = document.getElementById('drugSelectModal');
+      const drugDetailsModal = document.getElementById('drugDetailsModal');
+      const drugList = document.getElementById('drugTableBody');
+      
+      // Get buttons and close elements
+      const addDrugBtn = document.querySelector('.add-drug');
+      const closeBtns = document.querySelectorAll('.close');
+      const cancelDrugSelectionBtn = document.getElementById('cancelDrugSelection');
+      const cancelDrugDetailsBtn = document.getElementById('cancelDrugDetails');
+      const addDrugToListBtn = document.getElementById('addDrugToList');
+      
+      // Initialize drug count and storage
+      let drugCount = document.querySelectorAll('.drug-card').length;
+      let prescribedDrugs = [];
+      let allMedications = [];
+      
+      // Update the drug count display
+      const updateDrugCount = () => {
+        const drugCountEl = document.querySelector('.section-header h3');
+        drugCountEl.textContent = `Prescribed drugs (${drugCount})`;
+      };
+      
+      // Function to fetch medications from the API
+      const fetchMedications = async (searchTerm = '', category = '') => {
+        try {
+          let url = '/doctor/api/medications';
+          if (searchTerm) {
+            url += `?search=${encodeURIComponent(searchTerm)}`;
+          } else if (category) {
+            url += `?category=${encodeURIComponent(category)}`;
+          }
+          
+          const response = await fetch(url);
+          if (!response.ok) {
+            throw new Error('Failed to fetch medications');
+          }
+          
+          const data = await response.json();
+          return data.medications;
+        } catch (error) {
+          console.error('Error fetching medications:', error);
+          return [];
+        }
+      };
+      
+      // Function to populate the drug list
+      const populateDrugList = (medications) => {
+        drugList.innerHTML = '';
+        
+        if (medications.length === 0) {
+          const row = document.createElement('tr');
+          row.innerHTML = '<td colspan="5" class="text-center">No medications found</td>';
+          drugList.appendChild(row);
+          return;
+        }
+        
+        medications.forEach(medication => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${medication.name}</td>
+            <td>${medication.description || 'N/A'}</td>
+            <td>${medication.category || 'N/A'}</td>
+            <td>${medication.dosage || 'N/A'}</td>
+            <td>
+              <button class="select-drug-btn" data-id="${medication.medicationId}">Select</button>
+            </td>
+          `;
+          drugList.appendChild(row);
+        });
+        
+        // Add event listeners to the select buttons
+        document.querySelectorAll('.select-drug-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const medicationId = parseInt(this.getAttribute('data-id'));
+            const selectedMedication = medications.find(med => med.medicationId === medicationId);
+            
+            if (selectedMedication) {
+              // Fill the drug details form
+              document.getElementById('selectedDrugId').value = selectedMedication.medicationId;
+              document.getElementById('drugName').value = selectedMedication.name;
+              document.getElementById('drugDosage').value = selectedMedication.dosage || 'N/A';
+              document.getElementById('drugCategory').value = selectedMedication.category || 'N/A';
+              
+              // Hide drug selection modal and show drug details modal
+              drugSelectModal.style.display = 'none';
+              drugDetailsModal.style.display = 'block';
+            }
+          });
+        });
+      };
+      
+      // Function to add drug to the prescription
+      const addDrugToPrescription = (drug) => {
+        // Create drug card element
+        const drugCard = document.createElement('div');
+        drugCard.className = 'drug-card';
+        drugCard.setAttribute('data-id', drug.medicationId);
+        
+        // Format the drug instructions
+        const instructionsText = `${drug.quantity} ${drug.quantity > 1 ? 'tablets' : 'tablet'}, ${drug.frequency}, ${drug.instructions}, ${drug.duration} days`;
+        
+        drugCard.innerHTML = `
+          <div class="drug-info">
+            <h4>${drug.name} ${drug.dosage}</h4>
+            <p>${instructionsText}</p>
+          </div>
+          <div class="drug-actions">
+            <button class="btn-icon edit">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25ZM20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z" fill="#006eb9"/>
+              </svg>
+            </button>
+            <button class="btn-icon delete">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM19 4H15.5L14.5 3H9.5L8.5 4H5V6H19V4Z" fill="#dc3545"/>
+              </svg>
+            </button>
+          </div>
+        `;
+        
+        // Add event listeners to the new card
+        drugCard.addEventListener('mouseenter', function() {
+          this.style.transform = 'translateY(-5px)';
+          this.style.boxShadow = '0 8px 15px rgba(0, 110, 185, 0.15)';
+        });
+        
+        drugCard.addEventListener('mouseleave', function() {
+          this.style.transform = 'translateY(0)';
+          this.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.05)';
+        });
+        
+        // Add edit button functionality
+        drugCard.querySelector('.edit').addEventListener('click', function() {
+          // You would typically load the drug details back into the form here
+          alert('Edit functionality would be implemented here');
+        });
+        
+        // Add delete button functionality
+        drugCard.querySelector('.delete').addEventListener('click', function() {
+          if (confirm('Are you sure you want to remove this medication?')) {
+            drugCard.remove();
+            
+            // Update drug count
+            drugCount--;
+            updateDrugCount();
+            
+            // Remove from prescribed drugs array
+            const index = prescribedDrugs.findIndex(item => item.medicationId === drug.medicationId);
+            if (index !== -1) {
+              prescribedDrugs.splice(index, 1);
+            }
+          }
+        });
+        
+        // Add to DOM
+        document.querySelector('.drug-list').appendChild(drugCard);
+        
+        // Update drug count
+        drugCount++;
+        updateDrugCount();
+        
+        // Add to prescribed drugs array
+        prescribedDrugs.push(drug);
+      };
+      
+      // Load medications data when opening the modal
+      const loadMedications = async () => {
+        const loadingRow = document.createElement('tr');
+        loadingRow.innerHTML = '<td colspan="5" class="text-center">Loading medications...</td>';
+        drugList.innerHTML = '';
+        drugList.appendChild(loadingRow);
+        
+        try {
+          allMedications = await fetchMedications();
+          populateDrugList(allMedications);
+        } catch (error) {
+          console.error('Failed to load medications:', error);
+          drugList.innerHTML = '<tr><td colspan="5" class="text-center">Failed to load medications. Please try again.</td></tr>';
+        }
+      };
+      
+      // Drug search functionality
+      document.getElementById('drugSearchInput').addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase().trim();
+        
+        if (searchTerm === '') {
+          populateDrugList(allMedications);
+        } else {
+          const filteredDrugs = allMedications.filter(drug => 
+            (drug.name && drug.name.toLowerCase().includes(searchTerm)) || 
+            (drug.category && drug.category.toLowerCase().includes(searchTerm)) || 
+            (drug.description && drug.description.toLowerCase().includes(searchTerm))
+          );
+          
+          populateDrugList(filteredDrugs);
+        }
+      });
+      
+      // Event listener for Add Drug button
+      addDrugBtn.addEventListener('click', function() {
+        drugSelectModal.style.display = 'block';
+        loadMedications(); // Load medications when opening the modal
+      });
+      
+      // Close modals when clicking close button or outside
+      closeBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          drugSelectModal.style.display = 'none';
+          drugDetailsModal.style.display = 'none';
+        });
+      });
+      
+      // When user clicks anywhere outside the modal content
+      window.addEventListener('click', function(event) {
+        if (event.target === drugSelectModal) {
+          drugSelectModal.style.display = 'none';
+        }
+        if (event.target === drugDetailsModal) {
+          drugDetailsModal.style.display = 'none';
+        }
+      });
+      
+      // Cancel buttons
+      cancelDrugSelectionBtn.addEventListener('click', function() {
+        drugSelectModal.style.display = 'none';
+      });
+      
+      cancelDrugDetailsBtn.addEventListener('click', function() {
+        drugDetailsModal.style.display = 'none';
+      });
+      
+      // Add drug to list button
+      addDrugToListBtn.addEventListener('click', function() {
+        const medicationId = parseInt(document.getElementById('selectedDrugId').value);
+        const selectedMedication = allMedications.find(med => med.medicationId === medicationId);
+        
+        if (selectedMedication) {
+          // Get form values
+          const drugDetails = {
+            ...selectedMedication,
+            quantity: document.getElementById('drugQuantity').value,
+            frequency: document.getElementById('drugFrequency').value,
+            instructions: document.getElementById('drugInstructions').value,
+            duration: document.getElementById('drugDuration').value,
+            notes: document.getElementById('drugNotes').value
+          };
+          
+          // Add drug to prescription
+          addDrugToPrescription(drugDetails);
+          
+          // Hide the drug details modal
+          drugDetailsModal.style.display = 'none';
+        }
+      });
+      
+      // Initialize drug count display
+      updateDrugCount();
+      
+      // Save button functionality
+      document.getElementById('saveBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Validate that at least one medication is added
+        if (prescribedDrugs.length === 0) {
+          alert('Please add at least one medication to the prescription');
+          return;
+        }
+        
+        // Get diagnosis and additional instructions
+        const diagnosis = document.querySelector('.form-control[placeholder="Enter diagnosis"]').value;
+        const additionalInstructions = document.querySelector('textarea.form-control').value;
+        
+        // Validate diagnosis field
+        if (!diagnosis) {
+          alert('Please enter a diagnosis');
+          return;
+        }
+        
+        // Prepare form inputs
+        document.getElementById('diagnosisInput').value = diagnosis;
+        document.getElementById('additionalInstructionsInput').value = additionalInstructions;
+        document.getElementById('medicationsInput').value = JSON.stringify(prescribedDrugs);
+        
+        // Log form data for debugging
+        console.log('Submitting prescription with:');
+        console.log('PatientId:', '{{patient.patientId}}');
+        console.log('AppointmentId:', '{{patient.appointmentId}}');
+        console.log('DoctorId:', '{{doctorId}}');
+        console.log('Diagnosis:', diagnosis);
+        console.log('Medications:', prescribedDrugs.length);
+        
+        // Submit the form
+        document.getElementById('prescriptionSubmitForm').submit();
+      });
+      
+      // Cancel button functionality
+      document.getElementById('cancelBtn').addEventListener('click', function() {
+        // Redirect back to patient details page
+        const patientId = '{{patient.patientId}}';
+        window.location.href = `/doctor/patient-details?patientId=${patientId}`;
       });
     });
   </script>

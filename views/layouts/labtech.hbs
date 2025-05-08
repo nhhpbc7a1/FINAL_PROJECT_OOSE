@@ -1,18 +1,29 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{title}}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
+    integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.F3/font/bootstrap-icons.min.css">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="/css/technician_styles.css">
+
 </head>
+
 <body class="flex bg-gray-100 font-sans">
   <!-- Sidebar -->
   <aside class="w-64 bg-white shadow-md h-screen p-4">
     <div class="flex items-center mb-6">
-      <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2z"></path>
+      <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2z"></path>
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7l9 6 9-6"></path>
       </svg>
       <h2 class="text-lg font-semibold text-gray-600">Lab Dashboard</h2>
@@ -20,39 +31,94 @@
     <nav>
       <ul>
         <li class="mb-2">
-          <a href="/labtech/pending_test" class="flex items-center p-2 rounded {{#if (eq activeRoute 'pending')}}bg-blue-100 text-blue-600{{else}}text-gray-600 hover:bg-gray-100{{/if}}">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          <a href="/labtech"
+            class="flex items-center p-2 rounded {{#if (eq activeRoute 'pending')}}bg-blue-100 text-blue-600{{else}}text-gray-600 hover:bg-gray-100{{/if}}">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
             Pending Test List
           </a>
         </li>
         <li class="mb-2">
-          <a href="/labtech/work-statistics" class="flex items-center p-2 rounded {{#if (eq activeRoute 'work-statistics')}}bg-blue-100 text-blue-600{{else}}text-gray-600 hover:bg-gray-100{{/if}}">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+          <a href="/labtech/work-statistics"
+            class="flex items-center p-2 rounded {{#if (eq activeRoute 'work-statistics')}}bg-blue-100 text-blue-600{{else}}text-gray-600 hover:bg-gray-100{{/if}}">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+              </path>
             </svg>
             Work Statistics
           </a>
         </li>
         <li class="mb-2">
-          <a href="/labtech/notifications" class="flex items-center p-2 rounded {{#if (eq activeRoute 'notifications')}}bg-blue-100 text-blue-600{{else}}text-gray-600 hover:bg-gray-100{{/if}} relative">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+          <a href="/labtech/notifications"
+            class="flex items-center p-2 rounded {{#if (eq activeRoute 'notifications')}}bg-blue-100 text-blue-600{{else}}text-gray-600 hover:bg-gray-100{{/if}} relative">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+              </path>
             </svg>
             Notifications
             {{#if ../unreadCount}}
-              <span class="absolute top-0 right-0 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">{{../unreadCount}}</span>
+            <span
+              class="absolute top-0 right-0 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">{{../unreadCount}}</span>
             {{/if}}
           </a>
         </li>
+        <li class="mb-2">
+          <a href="/labtech/test-requests"
+            class="flex items-center p-2 rounded {{#if (eq activeRoute 'test-requests')}}bg-blue-100 text-blue-600{{else}}text-gray-600 hover:bg-gray-100{{/if}}">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01m-.01 4h.01">
+              </path>
+            </svg>
+            Test Requests
+          </a>
+        </li>
+        <li class="mb-2">
+          <a href="/labtech/test-results-entry/1"
+            class="flex items-center p-2 rounded {{#if (eq activeRoute 'test-results-entry')}}bg-blue-100 text-blue-600{{else}}text-gray-600 hover:bg-gray-100{{/if}}">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+              </path>
+            </svg>
+            Form Test Results
+          </a>
+        </li>
+        <li class="mb-2">
+          <form id="frmLogout" action="/account/logout" method="post"></form>
+          <a href="javascript: $('#frmLogout').submit()"
+            class="flex items-center p-2 rounded {{#if (eq activeRoute 'test-results-entry')}}bg-blue-100 text-blue-600{{else}}text-gray-600 hover:bg-gray-100{{/if}}">
+            <i class="fa-solid fa-right-from-bracket" style="margin-right: 10px;"></i>
+            Logout
+          </a>
+        </li>
+
       </ul>
     </nav>
   </aside>
-  
+
+
   <!-- Main Content -->
   <main class="flex-1 p-6 pt-10">
     {{{body}}}
   </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct"
+    crossorigin="anonymous"></script>
+
 </body>
+
 </html>

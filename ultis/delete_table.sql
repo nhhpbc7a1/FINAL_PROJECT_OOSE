@@ -1,3 +1,5 @@
+-- Use the database
+USE FINAL_PROJECT_OOSE;
 -- Drop all foreign key constraints first to avoid dependency issues
 SET FOREIGN_KEY_CHECKS = 0;
 

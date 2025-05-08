@@ -8,6 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 
+
 </head>
 <body>
   <div class="container">
@@ -20,22 +21,41 @@
           Back to Appointments
         </a>
 
+        {{#if successMessage}}
+        <div class="success-message">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="#4CAF50"/>
+          </svg>
+          <span>{{successMessage}}</span>
+        </div>
+        {{/if}}
+
+        <!-- Hidden input to store appointmentId -->
+        <input type="hidden" id="appointmentIdInput" value="{{appointment.appointmentId}}" />
+
         <div class="page-header">
                 <h1 class="page-title">Medical examination form</h1>
+                <div class="page-actions">
                 <button class="test-request-btn">Test Request</button>
+                </div>
         </div>
 
         <div class="patient-card">
           <div class="patient-initials">
-            NL
+            {{appointment.patientName.[0]}}
           </div>
           <div class="patient-info">
-            <h3>NGUYEN LE TUNG CHI</h3>
+            <h3>{{appointment.patientName}}</h3>
             <div class="patient-details">
-              <span>32 years old</span>
-              <span>Female</span>
-              <span>Code: P-20250428</span>
-              <span class="badge">Examining</span>
+              <span>{{appointment.patientAge}} years old</span>
+              <span>{{appointment.patientGenderFormatted}}</span>
+              <span class="patient-code">Code: P-{{appointment.patientId}}</span>
+              <span class="badge">{{appointment.patientAppointmentStatus}}</span>
+              {{#if appointment.roomNumber}}
+              <span class="room-info">Room: {{appointment.roomNumber}}</span>
+              {{else}}
+              <span class="room-info">Room: Not assigned</span>
+              {{/if}}
             </div>
           </div>
         </div>
@@ -43,7 +63,7 @@
         <div class="exam-info-card">
           <div class="exam-info-header">
             <div>Medical examination information</div>
-            <div>Code: EX-20250429-0912</div>
+            <div>Code: {{appointment.examinationCode}}</div>
           </div>
 
           <div class="vital-signs">
@@ -114,64 +134,100 @@
       </div>
     </main>
   </div>
-   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
   <script>
-    // Parse the URL query parameters
-    function getQueryParams() {
-      const params = {};
-      const queryString = window.location.search.substring(1);
-      const pairs = queryString.split('&');
-      
-      for (let i = 0; i < pairs.length; i++) {
-        const pair = pairs[i].split('=');
-        params[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
-      }
-      
-      return params;
-    }
-    
-    // When page loads, check for patient ID in URL or from server
+    // When page loads, prepare the Test Request button
     document.addEventListener('DOMContentLoaded', function() {
-      // Check for server-provided patientId (from Handlebars)
-      const serverPatientId = '{{patientId}}';
+      document.querySelector('.test-request-btn').addEventListener('click', function() {
+        // Get the appointmentId from the hidden input
+        const appointmentId = document.getElementById('appointmentIdInput').value;
+        const patientId = '{{appointment.patientId}}';
+        // Navigate to test request form with both patient ID and appointment ID
+        window.location.href = `/doctor/test-request?patientId=${patientId}&appointmentId=${appointmentId}`;
+      });
       
-      // Check for URL query parameter if server didn't provide patientId
-      let patientId = serverPatientId;
-      if (!patientId || patientId === '{{patientId}}') {
-        const params = getQueryParams();
-        patientId = params.patientId || '';
+      // We need to handle if prescription-btn exists because it was added manually
+      const prescriptionBtn = document.querySelector('.prescription-btn');
+      if (prescriptionBtn) {
+        prescriptionBtn.addEventListener('click', function() {
+          // Navigate to the prescription form with patient ID from the current appointment
+          window.location.href = `/doctor/prescription-medicine?patientId={{appointment.patientId}}`;
+        });
       }
       
-      if (patientId) {
-        console.log('Patient ID:', patientId);
+      // Form submission handler
+      document.querySelector('.btn-primary').addEventListener('click', function() {
+        // Get appointmentId from hidden input
+        const appointmentId = document.getElementById('appointmentIdInput').value;
         
-        // Update the patient code on the page
-        const patientCodeElement = document.querySelector('.patient-details span:nth-child(3)');
-        if (patientCodeElement) {
-          patientCodeElement.textContent = `Code: ${patientId}`;
+        // Check if appointmentId exists
+        if (!appointmentId) {
+          alert('Error: AppointmentId is missing. Please go back to appointments page.');
+          return;
         }
         
-        // In a real application, you would:
-        // 1. Fetch patient details using this ID
-        // 2. Update all patient information on the page
-        // 3. Possibly fetch examination history
-      }
-    });
-    
-    // Handle Test Request button click
-    document.querySelector('.test-request-btn').addEventListener('click', function() {
-      // Get patient ID to pass to the test request form
-      const patientCodeElement = document.querySelector('.patient-details span:nth-child(3)');
-      let patientId = '';
-      
-      if (patientCodeElement) {
-        // Extract the ID from the "Code: XXX" text
-        const codeText = patientCodeElement.textContent;
-        patientId = codeText.split(':')[1]?.trim() || '';
-      }
-      
-      // Navigate to the test request form with patient ID as query parameter
-      window.location.href = `/doctor/test-request?patientId=${patientId}`;
+        // Collect vital signs
+        const temperature = document.querySelector('.vital-sign-item:nth-child(1) .vital-sign-input').value;
+        const bloodPressure = document.querySelector('.vital-sign-item:nth-child(2) .vital-sign-input').value;
+        const pulse = document.querySelector('.vital-sign-item:nth-child(3) .vital-sign-input').value;
+        const respiration = document.querySelector('.vital-sign-item:nth-child(4) .vital-sign-input').value;
+        const spO2 = document.querySelector('.vital-sign-item:nth-child(5) .vital-sign-input').value;
+        const weight = document.querySelector('.vital-sign-item:nth-child(6) .vital-sign-input').value;
+        
+        // Collect examination notes
+        const examinationNotes = document.querySelector('.examination-textarea').value;
+        
+        // Create diagnosis text from all collected information
+        const diagnosis = `
+Vital Signs:
+- Temperature: ${temperature}°C
+- Blood Pressure: ${bloodPressure} mmHg
+- Pulse: ${pulse} bpm
+- Respiration: ${respiration} bpm
+- SpO2: ${spO2}%
+- Weight: ${weight} kg
+`;
+        
+        // Create treatment recommendations
+        const recommendations = "Regular follow-up in 2 weeks. Continue monitoring vital signs.";
+        
+        // Calculate follow-up date (2 weeks from now)
+        const today = new Date();
+        const followupDate = new Date(today);
+        followupDate.setDate(today.getDate() + 14);
+        const formattedFollowupDate = followupDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+        
+        // Create the data to send
+        const examinationData = {
+          appointmentId: appointmentId,
+          diagnosis: diagnosis,
+          notes: examinationNotes,
+          recommendations: recommendations,
+          followupDate: formattedFollowupDate
+        };
+        
+        console.log("Sending data with appointmentId:", appointmentId);
+        
+        fetch('/doctor/examination/submit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(examinationData),
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            alert('Examination submitted successfully.');
+            window.location.href = '/doctor/appointments';
+          } else {
+            alert('Error: ' + data.message);
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Failed to submit examination data. Please try again.');
+        });
+      });
     });
   </script>
 </body>

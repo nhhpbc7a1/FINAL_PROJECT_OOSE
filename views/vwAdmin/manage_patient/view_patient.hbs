@@ -1,0 +1,448 @@
+{{!-- View Patient Details --}}
+<link rel="stylesheet" href="/public/css/admin-side/add-doctor.css"> {{!-- Reuse form styling for layout --}}
+
+<div class="content-header">
+    <div>
+        <h1 class="page-title">{{pageTitle}}</h1> {{!-- Should be "View Patient Details" --}}
+        <p class="page-subtitle">Viewing details for patient: {{patient.fullName}} (ID: {{patient.patientId}})</p>
+    </div>
+    <div class="header-actions">
+        <a href="/admin/manage_patient" class="btn btn-outline">
+            <i class="fas fa-arrow-left"></i> Back to Patients
+        </a>
+    </div>
+</div>
+
+{{!-- Error display (if passed from server) --}}
+{{#if error}}
+<div class="alert alert-danger alert-dismissible fade show">
+    <i class="fas fa-exclamation-circle"></i> <span>{{error}}</span>
+    <button type="button" class="close" data-dismiss="alert">×</button>
+</div>
+{{/if}}
+
+<div class="patient-profile-container">
+    <div class="profile-header">
+        <div class="profile-photo">
+            {{#if patient.profilePictureUrl}}
+                <img src="{{patient.profilePictureUrl}}" alt="{{patient.fullName}}">
+            {{else}}
+                <div class="no-photo">
+                    <img src="/public/images/placeholder-user.png" alt="Placeholder" onerror="this.onerror=null; this.src='/public/images/default-avatar.jpg'; if(this.src.includes('default-avatar.jpg')) this.onerror=null; this.parentNode.innerHTML='<i class=\'fas fa-user\'></i>';">
+                </div>
+            {{/if}}
+        </div>
+        <div class="profile-summary">
+            <h2>{{patient.fullName}}</h2>
+            <div class="patient-id">ID: {{patient.patientId}}</div>
+            <div class="patient-status">
+                <span class="status-badge status-{{toLowerCase patient.accountStatus}}">{{patient.accountStatus}}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="profile-tabs">
+        <div class="tab active" data-tab="info">
+            <i class="fas fa-info-circle"></i> Basic Info
+        </div>
+        <div class="tab" data-tab="medical">
+            <i class="fas fa-file-medical"></i> Medical Info
+        </div>
+    </div>
+
+    <div class="profile-content">
+        <!-- Basic Information Section -->
+        <div class="tab-content active" id="info-content">
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-icon"><i class="fas fa-envelope"></i></div>
+                    <div class="info-detail">
+                        <span class="info-label">Email</span>
+                        <span class="info-value">{{patient.email}}</span>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <div class="info-icon"><i class="fas fa-phone"></i></div>
+                    <div class="info-detail">
+                        <span class="info-label">Phone</span>
+                        <span class="info-value">{{#if patient.phoneNumber}}{{patient.phoneNumber}}{{else}}N/A{{/if}}</span>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <div class="info-icon"><i class="fas fa-map-marker-alt"></i></div>
+                    <div class="info-detail">
+                        <span class="info-label">Address</span>
+                        <span class="info-value">{{#if patient.address}}{{patient.address}}{{else}}N/A{{/if}}</span>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <div class="info-icon"><i class="fas fa-birthday-cake"></i></div>
+                    <div class="info-detail">
+                        <span class="info-label">Date of Birth</span>
+                        <span class="info-value">{{#if patient.dob}}{{formatDate patient.dob 'DD/MM/YYYY'}}{{else}}N/A{{/if}}</span>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <div class="info-icon"><i class="fas fa-venus-mars"></i></div>
+                    <div class="info-detail">
+                        <span class="info-label">Gender</span>
+                        <span class="info-value">{{#if patient.gender}}{{patient.gender}}{{else}}N/A{{/if}}</span>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <div class="info-icon"><i class="fas fa-calendar-alt"></i></div>
+                    <div class="info-detail">
+                        <span class="info-label">Registered On</span>
+                        <span class="info-value">{{#if patient.createdDate}}{{formatDateTime patient.createdDate 'DD/MM/YYYY HH:mm'}}{{else}}N/A{{/if}}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Medical Information Section -->
+        <div class="tab-content" id="medical-content">
+            <div class="medical-info-container">
+                <div class="blood-type-badge">
+                    <div class="badge-icon">
+                        <i class="fas fa-tint"></i>
+                    </div>
+                    <div class="badge-detail">
+                        <span class="badge-label">Blood Type</span>
+                        <span class="badge-value">{{#if patient.bloodType}}{{patient.bloodType}}{{else}}N/A{{/if}}</span>
+                    </div>
+                </div>
+                
+                <div class="medical-history">
+                    <h3><i class="fas fa-clipboard-list"></i> Medical History</h3>
+                    <div class="history-content">
+                        {{#if patient.medicalHistory}}
+                            <p>{{patient.medicalHistory}}</p>
+                        {{else}}
+                            <p class="no-data">No medical history recorded.</p>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="profile-actions">
+        <a href="/admin/manage_patient" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to List
+        </a>
+    </div>
+</div>
+
+{{!-- No Script Needed for this simple view --}}
+{{!-- Ensure formatCurrency, formatDate, formatDateTime, truncate, toLowerCase, toUpperCase helpers are globally available --}}
+
+<style>
+    /* Modern Patient Profile Styles */
+    .patient-profile-container {
+        background-color: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    
+    .profile-header {
+        display: flex;
+        align-items: center;
+        padding: 2rem;
+        background: linear-gradient(135deg, #2c3e50, #3498db);
+        color: white;
+    }
+    
+    .profile-photo {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        margin-right: 2rem;
+        background-color: #fff;
+        flex-shrink: 0;
+    }
+    
+    .profile-photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .no-photo {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #ecf0f1;
+        color: #7f8c8d;
+    }
+    
+    .no-photo i {
+        font-size: 3rem;
+    }
+    
+    .profile-summary {
+        flex-grow: 1;
+    }
+    
+    .profile-summary h2 {
+        margin: 0 0 0.5rem;
+        font-size: 1.8rem;
+        font-weight: 600;
+    }
+    
+    .patient-id {
+        font-size: 0.95rem;
+        opacity: 0.8;
+        margin-bottom: 0.75rem;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        text-transform: uppercase;
+    }
+    
+    .status-active {
+        background-color: rgba(46, 204, 113, 0.2);
+        color: #27ae60;
+    }
+    
+    .status-inactive {
+        background-color: rgba(231, 76, 60, 0.2);
+        color: #e74c3c;
+    }
+    
+    .status-suspended {
+        background-color: rgba(241, 196, 15, 0.2);
+        color: #f39c12;
+    }
+    
+    /* Tabs */
+    .profile-tabs {
+        display: flex;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .tab {
+        padding: 1rem 1.5rem;
+        font-weight: 500;
+        color: #7f8c8d;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+    }
+    
+    .tab i {
+        margin-right: 0.5rem;
+    }
+    
+    .tab:hover {
+        color: #3498db;
+        background-color: rgba(52, 152, 219, 0.05);
+    }
+    
+    .tab.active {
+        color: #3498db;
+        border-bottom: 3px solid #3498db;
+        background-color: white;
+    }
+    
+    /* Info Cards Grid */
+    .profile-content {
+        padding: 2rem;
+    }
+    
+    .tab-content {
+        display: none;
+    }
+    
+    .tab-content.active {
+        display: block;
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .info-card {
+        display: flex;
+        align-items: flex-start;
+        padding: 1.25rem;
+        border-radius: 8px;
+        background-color: #f8f9fa;
+        transition: all 0.3s ease;
+    }
+    
+    .info-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        transform: translateY(-2px);
+    }
+    
+    .info-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: rgba(52, 152, 219, 0.1);
+        color: #3498db;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+    
+    .info-detail {
+        flex-grow: 1;
+    }
+    
+    .info-label {
+        display: block;
+        font-size: 0.85rem;
+        color: #7f8c8d;
+        margin-bottom: 0.25rem;
+    }
+    
+    .info-value {
+        font-weight: 500;
+        color: #2c3e50;
+    }
+    
+    /* Medical Info */
+    .medical-info-container {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+    
+    .blood-type-badge {
+        display: flex;
+        align-items: center;
+        padding: 1.5rem;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        width: fit-content;
+    }
+    
+    .badge-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: rgba(231, 76, 60, 0.1);
+        color: #e74c3c;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        font-size: 1.5rem;
+    }
+    
+    .badge-label {
+        display: block;
+        font-size: 0.85rem;
+        color: #7f8c8d;
+        margin-bottom: 0.25rem;
+    }
+    
+    .badge-value {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .medical-history {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+    }
+    
+    .medical-history h3 {
+        font-size: 1.25rem;
+        margin-top: 0;
+        margin-bottom: 1rem;
+        color: #2c3e50;
+        display: flex;
+        align-items: center;
+    }
+    
+    .medical-history h3 i {
+        margin-right: 0.5rem;
+        color: #3498db;
+    }
+    
+    .history-content {
+        background-color: white;
+        border-radius: 8px;
+        padding: 1.25rem;
+        border: 1px solid #e9ecef;
+    }
+    
+    .no-data {
+        color: #95a5a6;
+        font-style: italic;
+    }
+    
+    /* Actions */
+    .profile-actions {
+        padding: 1.5rem 2rem;
+        border-top: 1px solid #e9ecef;
+        text-align: right;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .profile-header {
+            flex-direction: column;
+            text-align: center;
+            padding: 1.5rem;
+        }
+        
+        .profile-photo {
+            margin-right: 0;
+            margin-bottom: 1.5rem;
+        }
+        
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<script>
+    // Tab switching functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabs = document.querySelectorAll('.tab');
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Remove active class from all tabs
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                this.classList.add('active');
+                
+                // Show corresponding content
+                const tabId = this.getAttribute('data-tab');
+                document.getElementById(tabId + '-content').classList.add('active');
+            });
+        });
+    });
+</script>

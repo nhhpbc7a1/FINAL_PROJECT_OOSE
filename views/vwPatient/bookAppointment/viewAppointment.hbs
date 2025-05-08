@@ -2,6 +2,17 @@
     <link rel="stylesheet" href="/public/css/patient-side/viewAppointment.css">
 {{/section}}
 
+{{#section 'js'}}
+<script>
+    $(document).ready(function() {
+        // Handle back to main button
+        $(".back-to-main-button").click(function() {
+            window.location.href = '/';
+        });
+    });
+</script>
+{{/section}}
+
 <div class="payment-modal-body">
     <div class="modal-header">
         <h2>VIEW</h2>
@@ -12,76 +23,101 @@
             <h5>Patient Information</h5>
             <div class="modal-body">
                 <div class="input-group">
-                    <input type="text" id="name" placeholder="Name">
+                    <input type="text" id="name" value="{{appointment.fullName}}" readonly>
                 </div>
                 <div class="input-group">
-                    <input type="tel" id="phone" placeholder="Phone Number">
+                    <input type="tel" id="phone" value="{{appointment.phoneNumber}}" readonly>
                 </div>
                 <div class="input-group">
-                    <div class="birthday-input">
-                        <input type="text" id="birthday" placeholder="Birthday">
+                    <div class="birthday-input" style="width: 100%;">
+                        <input type="text" id="birthday" value="{{appointment.birthday}}" readonly>
                         <img src="/public/images/icon/icons8-calendar-32.png" alt="" width="20px">
                     </div>
                 </div>                           
                 <div class="input-group">
-                    <input type="text" id="address" placeholder="Address">
+                    <input type="text" id="address" value="{{appointment.address}}" readonly>
                 </div>
             </div>
             <hr class="custom-separate-line">
             <h5 class="mt-2">Appointment Information</h5>
             <div class="modal-body-appointment-container">
-                <div class="modal-body-appointment">
-                    <div class="info-row">
-                        <div class="info-label">Specialty</div>
-                        <div class="info-value">Psychology</div>
+                <div class="row" style="width: 100%;">
+                    <div class="modal-body-appointment col-6">
+                        <div class="info-row">
+                            <div class="info-label">Specialty</div>
+                            <div class="info-value">{{appointment.specialtyName}}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Service</div>
+                            <div class="info-value">
+                                {{#if appointment.services.length}}
+                                    {{#each appointment.services}}
+                                        {{name}}{{#unless @last}}, {{/unless}}
+                                    {{/each}}
+                                {{else}}
+                                    Basic Examination Only
+                                {{/if}}
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Doctor</div>
+                            <div class="info-value">
+                                {{#if appointment.doctorName}}
+                                    Dr. {{appointment.doctorName}}
+                                {{else}}
+                                    To be assigned
+                                {{/if}}
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Room's No</div>
+                            <div class="info-value">{{#if appointment.roomNumber}}{{appointment.roomNumber}}{{else}}To be assigned{{/if}}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Order's No</div>
+                            <div class="info-value order-no">{{#if appointment.queueNumber}}{{appointment.queueNumber}}{{else}}To be assigned{{/if}}</div>
+                        </div>
                     </div>
-                    <div class="info-row">
-                        <div class="info-label">Service</div>
-                        <div class="info-value">None</div>
+                    <div class="modal-body-time col-6">
+                        <h5>Appointment Time</h5>
+                        <div class="d-flex justify-content-center flex-column align-items-center">
+                            <div  style="margin: 0;">
+                                <i class="bi bi-calendar" style="color: #FF4A4D; font-size: 22px;"></i>
+                                <span id="appointment-time" style="color: #FF4A4D;">{{#if appointment.appointmentDate}}{{appointment.appointmentDate}}{{else}}{{appointment.appointmentDate}}{{/if}}</span>
+                            </div>
+                            <div style="margin: 0;">
+                                <img src="/public/images/icon/icons8-clock-32 (1).png" alt="">
+                                <span id="appointment-time" style="color: #FF4A4D;">{{#if appointment.estimatedTime}}{{appointment.estimatedTime}}{{else}}{{appointment.appointmentDate}}{{/if}}</span>
+                            </div>
+                        </div>
+                        <p style="color: #E8B716; font-size: 14px;">This is only an estimated time. We sincerely apologize for any inconvenience caused by unexpected delays.</p>
                     </div>
-                    <div class="info-row">
-                        <div class="info-label">Doctor</div>
-                        <div class="info-value">AkiraYuri</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">Room's No</div>
-                        <div class="info-value">A8-04</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">Order's No</div>
-                        <div class="info-value order-no">24</div>
-                    </div>
-                </div>
-                <div class="modal-body-time">
-                    <h5>Appointment Time</h5>
-                    <div>
-                        <img src="/public/images/icon/icons8-clock-32 (1).png" alt="">
-                        <span id="appointment-time" style="color: #FF4A4D;">10/11/2003 10:00 AM</span>
-                    </div>
-                    <p style="color: #E8B716; font-size: 14px;">This is only an estimated time. We sincerely apologize for any inconvenience caused by unexpected delays </p>
-                    {{!-- We sincerely apologize for any inconvenience caused by unexpected delays. --}}
-                </div>
-            </div>
-            <div class="payment-info-container">
-                <div class="payment-img">
-                    <img src="/public/images/icon/icons8-payment-32 (1) copy.png" alt="" width="60px">
-                </div>
-                <div class="payment-fee">
-                    <p>Examination fee</p>
-                    <p>Extra Service</p>
-                </div>
-                <div class="payment-value">
-                    <p>1000000</p>
-                    <p>1000000</p>
-                </div>
-                <div class="total-payment">
-                    <p style="font-weight:700; font-size:large; ">Total</p>
-                    <p class="total-value">1000000</p>
 
                 </div>
             </div>
+            <div class="payment-info-container">
+                <div class="payment-img col-1">
+                    <img src="/public/images/icon/icons8-payment-32 (1) copy.png" alt="" width="60px">
+                </div>
+                <div class="payment-fee col-8">
+                    <p>Examination fee</p>
+                    {{#if appointment.services.length}}
+                    <p>Extra Services</p>
+                    {{/if}}
+                </div>
+                <div class="payment-value col-3">
+                    <p>{{formatCurrency appointment.basePrice}} VND</p>
+                    {{#if appointment.services.length}}
+                    <p>{{formatCurrency appointment.servicesPrice}} VND</p>
+                    {{/if}}
+                </div>
+                <div class="total-payment">
+                    <p style="font-weight:700; font-size:large;">Total</p>
+                    <p class="total-value">{{formatCurrency appointment.totalAmount}} VND</p>
+                </div>
+            </div>
             <div>
-                <button class="back-to-main-button">Back to Mainpage</button>
+                <button class="back-to-main-button">Back to Homepage</button>
             </div>
         </div>
     </div>

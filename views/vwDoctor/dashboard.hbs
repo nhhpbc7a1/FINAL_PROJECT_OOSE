@@ -6,7 +6,7 @@
   <title>Doctor Dashboard</title>
   <link rel="stylesheet" href="/public/css/doctor-side/doctor-dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <!-- FullCalendar CSS -->
+  <!-- FullCalendar CSS haha  -->
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
 </head>
 <body>
@@ -16,18 +16,22 @@
         <div class="left-column">
           <section class="welcome-section">
             <div class="welcome-text">
-              <h1>Hello, Dr. TobeyNguyen</h1>
-              <p>Today, you have <span class="highlight-count">12</span> patients to examine</p>
+              <h1>Hello, Dr. {{doctor.fullName}}</h1>
+              <p>Today, you have <span class="highlight-count">{{dashboard.appointments.total}}</span> patients to examine</p>
             </div>
             <div class="welcome-image">
-              <img src="/public/images/doctor-profile.svg" alt="Doctor" class="doctor-avatar">
+              {{#if doctor.profileImage}}
+                <img src="{{doctor.profileImage}}" alt="Doctor" class="doctor-avatar">
+              {{else}}
+                <img src="/public/images/doctor-profile.svg" alt="Doctor" class="doctor-avatar">
+              {{/if}}
             </div>
           </section>
           
           <section class="overview">
             <div class="section-header">
               <h2>Overview</h2>
-              <p class="date">Monday, April 27, 2025</p>
+              <p class="date">{{dashboard.todayFormatted}}</p>
             </div>
             
             <div class="cards">
@@ -40,14 +44,14 @@
                 <div class="card-content">
                   <div class="card-header">
                     <h3>Total Patients</h3>
-                    <span class="card-badge">10</span>
+                    <span class="card-badge">{{dashboard.totalPatients}}</span>
                   </div>
-                  <p class="card-value">10</p>
+                  <p class="card-value">{{dashboard.totalPatients}}</p>
                   <div class="card-trend positive">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M7 14L12 9L17 14H7Z" fill="currentColor"/>
                     </svg>
-                    <span>8% compared to yesterday</span>
+                    <span>Total patients registered</span>
                   </div>
                 </div>
               </div>
@@ -61,14 +65,20 @@
                 <div class="card-content">
                   <div class="card-header">
                     <h3>Examined</h3>
-                    <span class="card-badge">5</span>
+                    <span class="card-badge">{{dashboard.appointments.completed}}</span>
                   </div>
-                  <p class="card-value">5</p>
+                  <p class="card-value">{{dashboard.appointments.completed}}</p>
                   <div class="card-trend positive">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M7 14L12 9L17 14H7Z" fill="currentColor"/>
                     </svg>
-                    <span>50% completed</span>
+                    <span>
+                      {{#if dashboard.appointments.total}}
+                        {{round (multiply (divide dashboard.appointments.completed dashboard.appointments.total) 100)}}% completed
+                      {{else}}
+                        No appointments today
+                      {{/if}}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -82,14 +92,20 @@
                 <div class="card-content">
                   <div class="card-header">
                     <h3>Waiting</h3>
-                    <span class="card-badge">5</span>
+                    <span class="card-badge">{{dashboard.appointments.waiting}}</span>
                   </div>
-                  <p class="card-value">5</p>
+                  <p class="card-value">{{dashboard.appointments.waiting}}</p>
                   <div class="card-trend positive">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M7 14L12 9L17 14H7Z" fill="currentColor"/>
                     </svg>
-                    <span>50% of the work is done</span>
+                    <span>
+                      {{#if dashboard.appointments.total}}
+                        {{round (multiply (divide dashboard.appointments.waiting dashboard.appointments.total) 100)}}% of today's work
+                      {{else}}
+                        No waiting appointments
+                      {{/if}}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -103,14 +119,21 @@
                 <div class="card-content">
                   <div class="card-header">
                     <h3>Test Results</h3>
-                    <span class="card-badge">3</span>
+                    <span class="card-badge">{{dashboard.pendingTestResults}}</span>
                   </div>
-                  <p class="card-value">3</p>
-                  <div class="card-trend negative">
+                  <p class="card-value">{{dashboard.pendingTestResults}}</p>
+                  <div class="card-trend {{#if dashboard.pendingTestResults}}negative{{else}}positive{{/if}}">
+                    {{#if dashboard.pendingTestResults}}
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M7 10L12 15L17 10H7Z" fill="currentColor"/>
                     </svg>
                     <span>Should be considered</span>
+                    {{else}}
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M7 14L12 9L17 14H7Z" fill="currentColor"/>
+                    </svg>
+                    <span>No pending results</span>
+                    {{/if}}
                   </div>
                 </div>
               </div>
@@ -119,7 +142,7 @@
             
           <section class="calendar-section">
             <div class="section-header">
-              <h2>Calendar</h2>
+              <h2>Appointment Calendar</h2>
               <a href="/doctor/schedule" class="view-all">View Schedule</a>
             </div>
             <div class="calendar-container">
@@ -137,117 +160,41 @@
             </div>
             
             <div class="schedule-list">
-              <div class="schedule-list-item examined">
-                <div class="time-badge">
-                  <span>08:00</span>
-                  <div class="time-line"></div>
-                </div>
-                <div class="appointment-content">
-                  <div class="appointment-title">Periodic Examination</div>
-                  <div class="patient-name">NGUYEN NGUYEN TOAN KHOA</div>
-                  <div class="room-info">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z" fill="#6c757d"/>
-                    </svg>
-                    Internal Medicine - Room 203
+              {{#if dashboard.todaySchedule.length}}
+                {{#each dashboard.todaySchedule}}
+                  <div class="schedule-list-item {{statusClass}}">
+                    <div class="time-badge">
+                      <span>{{timeFormatted}}</span>
+                      {{#unless @last}}
+                      <div class="time-line"></div>
+                      {{/unless}}
+                    </div>
+                    <div class="appointment-content">
+                      <div class="appointment-title">{{reason}}</div>
+                      <div class="patient-name">{{patientName}}</div>
+                      <div class="room-info">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z" fill="#6c757d"/>
+                        </svg>
+                        {{specialtyName}} - Room {{#if roomNumber}}{{roomNumber}}{{else}}Not assigned{{/if}}
+                      </div>
+                      <div class="status-indicator">
+                        <span class="status-badge {{patientAppointmentStatus}}">{{patientAppointmentStatus}}</span>
+                      </div>
+                    </div>
                   </div>
-                  <div class="status-badge">Examined</div>
+                {{/each}}
+              {{else}}
+                <div class="no-appointments">
+                  <p>No appointments scheduled for today.</p>
                 </div>
-              </div>
-              
-              <div class="schedule-list-item examining">
-                <div class="time-badge">
-                  <span>09:15</span>
-                  <div class="time-line"></div>
-                </div>
-                <div class="appointment-content">
-                  <div class="appointment-title">Re-examination</div>
-                  <div class="patient-name">NGUYEN LE TUNG CHI</div>
-                  <div class="room-info">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z" fill="#6c757d"/>
-                    </svg>
-                    Internal Medicine - Room 203
-                  </div>
-                  <div class="status-badge">Examining</div>
-                </div>
-              </div>
-              
-              <div class="schedule-list-item waiting">
-                <div class="time-badge">
-                  <span>10:00</span>
-                  <div class="time-line"></div>
-                </div>
-                <div class="appointment-content">
-                  <div class="appointment-title">Periodic Examination</div>
-                  <div class="patient-name">NGUYEN HOANG HUY</div>
-                  <div class="room-info">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z" fill="#6c757d"/>
-                    </svg>
-                    Internal Medicine - Room 203
-                  </div>
-                  <div class="status-badge">Waiting</div>
-                </div>
-              </div>
-              
-              <div class="schedule-list-item waiting">
-                <div class="time-badge">
-                  <span>11:00</span>
-                  <div class="time-line"></div>
-                </div>
-                <div class="appointment-content">
-                  <div class="appointment-title">Periodic Examination</div>
-                  <div class="patient-name">NGUYEN NGUYEN TOAN KHOA</div>
-                  <div class="room-info">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z" fill="#6c757d"/>
-                    </svg>
-                    Internal Medicine - Room 203
-                  </div>
-                  <div class="status-badge">Waiting</div>
-                </div>
-              </div>
-              
-              <div class="schedule-list-item waiting">
-                <div class="time-badge">
-                  <span>12:00</span>
-                  <div class="time-line"></div>
-                </div>
-                <div class="appointment-content">
-                  <div class="appointment-title">Periodic Examination</div>
-                  <div class="patient-name">NGUYEN NGUYEN TOAN KHOA</div>
-                  <div class="room-info">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z" fill="#6c757d"/>
-                    </svg>
-                    Internal Medicine - Room 203
-                  </div>
-                  <div class="status-badge">Waiting</div>
-                </div>
-              </div>
-              
-              <div class="schedule-list-item waiting last">
-                <div class="time-badge">
-                  <span>13:00</span>
-                </div>
-                <div class="appointment-content">
-                  <div class="appointment-title">Periodic Examination</div>
-                  <div class="patient-name">NGUYEN NGUYEN TOAN KHOA</div>
-                  <div class="room-info">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z" fill="#6c757d"/>
-                    </svg>
-                    Internal Medicine - Room 203
-                  </div>
-                  <div class="status-badge">Waiting</div>
-                </div>
-              </div>
+              {{/if}}
             </div>
           </section>
         </div>
       </div>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -258,53 +205,27 @@
         headerToolbar: {
           left: 'prev,next today',
           center: 'title',
-          right: 'dayGridMonth,timeGridWeek'
+          right: 'dayGridMonth,timeGridWeek,listMonth'
         },
         buttonText: {
           today: 'Today',
           month: 'Month',
-          week: 'Week'
+          week: 'Week',
+          list: 'List'
         },
         themeSystem: 'standard',
-        events: [
-          {
-            title: 'Patient A Examination',
-            start: '2025-05-05T10:00:00',
-            end: '2025-05-05T11:00:00',
-            backgroundColor: '#28a745',
-            borderColor: '#218838'
-          },
-          {
-            title: 'Patient B Consultation',
-            start: '2025-05-06T14:00:00',
-            backgroundColor: '#006eb9',
-            borderColor: '#0056b3'
-          },
-          {
-            title: 'Surgery',
-            start: '2025-05-10T09:00:00',
-            end: '2025-05-10T12:00:00',
-            backgroundColor: '#dc3545',
-            borderColor: '#c82333'
-          },
-          {
-            title: 'Team Meeting',
-            start: '2025-05-15T15:00:00',
-            backgroundColor: '#6c757d',
-            borderColor: '#5a6268'
-          },
-          {
-            title: 'Training Session',
-            start: '2025-05-20T13:00:00',
-            end: '2025-05-20T16:00:00',
-            backgroundColor: '#17a2b8',
-            borderColor: '#138496'
-          }
-        ],
+        events: {{{calendarEvents}}},
         eventTimeFormat: {
           hour: '2-digit',
           minute: '2-digit',
           meridiem: false
+        },
+        eventDisplay: 'block',
+        eventClick: function(info) {
+          // Navigate to the appointment details when clicked
+          const appointmentId = info.event.id;
+          const date = moment(info.event.start).format('YYYY-MM-DD');
+          window.location.href = `/doctor/appointments?date=${date}&appointmentId=${appointmentId}`;
         }
       });
       calendar.render();

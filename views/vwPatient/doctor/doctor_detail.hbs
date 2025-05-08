@@ -1,0 +1,200 @@
+{{#section 'css'}}
+  <link rel="stylesheet" href="/css/patient-side/doctor-detail.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+{{/section}}
+
+<div class="container doctor-detail-page py-5">
+  <div class="doctor-header card shadow-sm mb-5" data-aos="fade-up">
+    <div class="card-body p-4">
+      <div class="row align-items-center">
+        <div class="col-lg-3 col-md-4 mb-4 mb-md-0">
+          <div class="doctor-image position-relative">
+            <img src="{{#if doctor.image}}{{doctor.image}}{{else}}/img/default-doctor.png{{/if}}" 
+                 alt="Dr. {{doctor.name}}" class="img-fluid">
+            <div class="experience-badge">
+              <i class="fas fa-briefcase"></i> {{doctor.experience_years}} years
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-9 col-md-8">
+          <div class="doctor-info">
+            <h1 class="display-5 text-primary mb-3">Dr. {{doctor.name}}</h1>
+            
+            <div class="specialties mb-3">
+              <b>Specialty:</b> 
+              {{#each specialties}}
+                <span class="specialty-badge">
+                  <i class="{{icon}}"></i> {{name}}
+                </span>
+              {{/each}}
+            </div>
+            
+            <div class="doctor-stats mb-4">
+              <div class="stat-item">
+                <div class="stat-icon"><i class="fas fa-star text-warning"></i></div>
+              </div>
+            </div>
+            
+            <div class="doctor-contact mb-4">
+              <div class="row">
+                <div class="col-md-6 mb-2">
+                  <div class="contact-item">
+                    <div class="contact-icon"><i class="fas fa-envelope text-primary"></i></div>
+                    <div class="contact-text"> <b>Email: </b>{{doctor.email}}</div>
+                  </div>
+                </div>
+                <div class="col-md-6 mb-2">
+                  <div class="contact-item">
+                    <div class="contact-icon"><i class="fas fa-phone text-primary"></i></div>
+                    <div class="contact-text"> <b>Phone number:</b> {{doctor.phone_number}}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="doctor-actions">
+              <a href="/patient/book-appointment?doctor={{doctor.id}}" class="btn btn-primary btn-lg">
+                <i class="far fa-calendar-alt me-2"></i> Book an Appointment
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="doctor-tabs-container" data-aos="fade-up" data-aos-delay="100">
+    <ul class="nav nav-tabs nav-fill mb-4" id="doctorTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <a class="nav-link active" id="about-tab" data-toggle="tab" href="#about" role="tab">
+          <i class="fas fa-user-md me-2"></i>About
+        </a>
+      </li>
+      <li class="nav-item" role="presentation">
+        <a class="nav-link" id="schedule-tab" data-toggle="tab" href="#schedule" role="tab">
+          <i class="far fa-calendar-alt me-2"></i>Schedule
+        </a>
+      </li>
+    </ul>
+    
+    <div class="tab-content card shadow-sm" id="doctorTabContent">
+      <!-- About Tab -->
+      <div class="tab-pane fade show active p-4" id="about" role="tabpanel" aria-labelledby="about-tab">
+        <div class="tab-section">
+          <h3 class="section-title"><i class="fas fa-info-circle me-2"></i>Biography</h3>
+          <p class="biography-text">{{doctor.bio}}</p>
+          
+          <h3 class="section-title mt-5"><i class="fas fa-graduation-cap me-2"></i>Education</h3>
+          <div class="education-items">
+            {{#if doctor.education}}
+              {{{doctor.education}}}
+            {{else}}
+              <p class="text-muted">No education information available.</p>
+            {{/if}}
+          </div>
+          
+          <h3 class="section-title mt-5"><i class="fas fa-certificate me-2"></i>Certifications</h3>
+          <div class="certification-items">
+            {{#if doctor.certifications}}
+              {{{doctor.certifications}}}
+            {{else}}
+              <p class="text-muted">No certification information available.</p>
+            {{/if}}
+          </div>
+        </div>
+      </div>
+      
+      <!-- Schedule Tab -->
+      <div class="tab-pane fade p-4" id="schedule" role="tabpanel" aria-labelledby="schedule-tab">
+        <div class="tab-section">
+          <h3 class="section-title"><i class="far fa-calendar-alt me-2"></i>Upcoming Schedule</h3>
+          
+          {{#if schedule.length}}
+            <div class="schedule-wrapper">
+              <div class="row g-4">
+                {{#each schedule}}
+                  <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{multiply @index 100}}">
+                    <div class="schedule-day card h-100">
+                      <div class="day-header card-header">
+                        <h4>{{dayName}}</h4>
+                        <span class="date badge bg-light text-dark">{{dayDate}}</span>
+                      </div>
+                      
+                      <div class="card-body">
+                        <div class="time-slots">
+                          {{#if timeSlots.length}}
+                            {{#each timeSlots}}
+                              <div class="time-slot status-{{status}}">
+                                <div class="time-info">
+                                  <span class="time"><i class="far fa-clock me-2"></i>{{formattedStartTime}} - {{formattedEndTime}}</span>
+                                  <span class="status">
+                                    {{#if (eq status 'available')}}
+                                      <i class="fas fa-check-circle text-success"></i> Available
+                                    {{else if (eq status 'booked')}}
+                                      <i class="fas fa-times-circle text-danger"></i> Booked
+                                    {{else}}
+                                      <i class="fas fa-exclamation-circle text-warning"></i> {{status}}
+                                    {{/if}}
+                                  </span>
+                                </div>
+                                
+                                {{#if (eq status 'available')}}
+                                  <a href="/patient/book-appointment?doctor={{../../../doctor.id}}&schedule={{id}}" class="btn btn-sm btn-outline-primary mt-2">
+                                    <i class="far fa-calendar-check me-1"></i> Book
+                                  </a>
+                                {{/if}}
+                              </div>
+                            {{/each}}
+                          {{else}}
+                            <div class="no-slots">No available time slots</div>
+                          {{/if}}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                {{/each}}
+              </div>
+            </div>
+          {{else}}
+            <div class="empty-state text-center py-5">
+              <i class="far fa-calendar empty-icon mb-4"></i>
+              <h3 class="mb-3">No Schedule Available</h3>
+              <p class="text-muted">No upcoming schedule available for this doctor.</p>
+            </div>
+          {{/if}}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{#section 'js'}}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize AOS animations
+      AOS.init({
+        duration: 800,
+        easing: 'ease-in-out',
+        once: true
+      });
+      
+      // Ensure Bootstrap tabs work properly
+      $('#doctorTabs a').on('click', function (e) {
+        e.preventDefault();
+        $(this).tab('show');
+      });
+      
+      // If there's a hash in the URL, activate the corresponding tab
+      const hash = window.location.hash;
+      if (hash) {
+        $('#doctorTabs a[href="' + hash + '"]').tab('show');
+      }
+      
+      // Change hash when tab is clicked
+      $('#doctorTabs a').on('shown.bs.tab', function (e) {
+        window.location.hash = e.target.hash;
+      });
+    });
+  </script>
+{{/section}} 

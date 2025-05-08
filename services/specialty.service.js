@@ -21,6 +21,39 @@ export default {
         }
     },
 
+    async getAllActive() {
+        try {
+            // Query to get all specialties
+            const query = db('Specialty')
+                .leftJoin('Doctor', 'Specialty.headDoctorId', '=', 'Doctor.doctorId')
+                .leftJoin('User', 'Doctor.userId', '=', 'User.userId')
+                .select(
+                    'Specialty.specialtyId as id',
+                    'Specialty.name',
+                    'Specialty.description',
+                    'Specialty.icon',
+                    'User.fullName as headDoctorName'
+                )
+                .orderBy('Specialty.name');
+            
+            // Check if the status column exists in Specialty table
+            try {
+                const hasStatusColumn = await db.schema.hasColumn('Specialty', 'status');
+                if (hasStatusColumn) {
+                    query.where('Specialty.status', 'active');
+                }
+            } catch (e) {
+                // If error checking column, assume no status column exists
+                console.log('Assuming no status column in Specialty table');
+            }
+            
+            return await query;
+        } catch (error) {
+            console.error('Error fetching active specialties:', error);
+            throw new Error('Unable to load active specialties');
+        }
+    },
+
     async findById(specialtyId) {
         try {
             const specialty = await db('Specialty')
@@ -35,6 +68,14 @@ export default {
                 )
                 .where('Specialty.specialtyId', specialtyId)
                 .first();
+                
+            if (specialty && specialty.icon) {
+                // Ensure icon path is properly formatted
+                if (!specialty.icon.startsWith('http') && !specialty.icon.startsWith('/')) {
+                    specialty.icon = '/' + specialty.icon;
+                }
+            }
+            
             return specialty || null;
         } catch (error) {
             console.error(`Error fetching specialty with ID ${specialtyId}:`, error);
@@ -72,7 +113,8 @@ export default {
                 description: specialty.description || null,
                 hospitalId: specialty.hospitalId || 1, // Default to 1 or handle as needed
                 // Handle potential empty string or null for headDoctorId
-                headDoctorId: specialty.headDoctorId ? parseInt(specialty.headDoctorId, 10) : null
+                headDoctorId: specialty.headDoctorId ? parseInt(specialty.headDoctorId, 10) : null,
+                icon: specialty.icon || '/public/images/specialties/default-specialty.jpg'
             };
 
             const [specialtyId] = await db('Specialty').insert(specialtyData);
@@ -99,6 +141,7 @@ export default {
              if (specialty.hasOwnProperty('headDoctorId')) {
                 specialtyData.headDoctorId = specialty.headDoctorId ? parseInt(specialty.headDoctorId, 10) : null;
              }
+             if (specialty.hasOwnProperty('icon')) specialtyData.icon = specialty.icon;
 
             if (Object.keys(specialtyData).length === 0) {
                  return true; // Nothing to update
