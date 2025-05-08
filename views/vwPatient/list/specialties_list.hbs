@@ -3,11 +3,11 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
 {{/section}}
 
-<div class="container specialties-page py-5">
+<div class="container schedules-page py-5">
   <div class="page-header text-center mb-5">
-    <h1 class="display-4 fw-bold text-primary">{{title}}</h1>
+    <h1 class="display-4 fw-bold text-primary">Doctor Schedules</h1>
     <div class="separator"></div>
-    <p class="lead mt-3 text-secondary">{{description}}</p>
+    <p class="lead mt-3 text-secondary">View available doctor schedules and book your appointment</p>
   </div>
   
   {{#if error}}
@@ -15,55 +15,160 @@
       <i class="fas fa-exclamation-circle me-2"></i> {{error}}
     </div>
   {{else}}
-    {{#if specialties.length}}
-      <div class="row g-5">
-        {{#each specialties}}
-          <div class="col-md-6 col-lg-4 mb-3" data-aos="fade-up" data-aos-delay="{{multiply @index 100}}">
-            <div class="specialty-card h-100 shadow rounded overflow-hidden">
-              <div class="specialty-header bg-light p-4 text-center">
-                <div class="specialty-icon mb-3">
-                  <img src="{{icon}}" alt="">
-                </div>
-                <h3 class="specialty-name mb-0">{{name}}</h3>
+    <!-- Schedule Filters -->
+    <div class="schedule-filters row mb-4">
+      <div class="col-md-4">
+        <div class="filter-item mb-3">
+          <label for="specialty-filter" class="form-label fw-bold">Specialty</label>
+          <select id="specialty-filter" class="form-select">
+            <option value="">All Specialties</option>
+            {{#each specialties}}
+            <option value="{{specialtyId}}">{{name}}</option>
+            {{/each}}
+          </select>
+        </div>
+      </div>
+      
+      <div class="col-md-4">
+        <div class="filter-item mb-3">
+          <label for="date-filter" class="form-label fw-bold">Date</label>
+          <input type="date" id="date-filter" class="form-control" value="{{formatDate (now) 'YYYY-MM-DD'}}">
+        </div>
+      </div>
+      
+      <div class="col-md-4">
+        <div class="filter-item mb-3">
+          <label for="time-filter" class="form-label fw-bold">Time</label>
+          <select id="time-filter" class="form-select">
+            <option value="">All Times</option>
+            <option value="morning">Morning (7:00 - 11:30)</option>
+            <option value="afternoon">Afternoon (13:00 - 16:30)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    {{#if schedules.length}}
+      <!-- Schedule Calendar -->
+      <div class="schedule-calendar card shadow-sm mb-5">
+        <div class="card-header bg-primary text-white py-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <button id="prev-week" class="btn btn-outline-light">
+              <i class="fas fa-chevron-left"></i>
+              <span class="d-none d-md-inline ms-1">Previous Week</span>
+            </button>
+            <div class="date-display">
+              <h4 class="mb-0" id="date-range">{{formatDate startDate "MMM D"}} - {{formatDate endDate "MMM D, YYYY"}}</h4>
+            </div>
+            <button id="next-week" class="btn btn-outline-light">
+              <span class="d-none d-md-inline me-1">Next Week</span>
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+        
+        <div class="card-body p-0">
+          <!-- Calendar Header -->
+          <div class="calendar-header">
+            <div class="calendar-time-header">Time</div>
+            {{#each days}}
+            <div class="calendar-day-header {{#if (eq date (formatDate (now) 'YYYY-MM-DD'))}}today{{/if}}">
+              <div class="calendar-day-name">{{dayName}}</div>
+              <div class="calendar-day-date">{{dayMonth}}</div>
+            </div>
+            {{/each}}
+          </div>
+          
+          <!-- Calendar Body -->
+          <div class="calendar-body">
+            {{#each timeSlots}}
+            <div class="calendar-row">
+              <div class="calendar-time-cell">
+                <div class="time-slot-label">{{label}}</div>
+                <div class="time-slot-description">{{description}}</div>
               </div>
-              <div class="specialty-info p-4">
-                <p class="description mb-4">{{description}}</p>
-                <div class="stats d-flex justify-content-between mb-4">
-                  <div class="stat-item d-flex align-items-center">
-                    <div class="stat-icon me-2 bg-primary text-white rounded-circle p-2">
-                      <i class="fas fa-user-md"></i>
-                    </div>
-                    <div class="stat-text ml-2">
-                      <span class="fw-bold">{{doctor_count}}</span> Doctors
-                    </div>
+              {{#each ../days}}
+              <div class="calendar-day-cell" data-date="{{date}}" data-time="{{../time}}">
+                {{#each ../../schedules}}
+                {{#if (and (eq workDate ../date) (eq (substring startTime 0 5) ../../time))}}
+                <div class="schedule-item status-{{status}}">
+                  <div class="schedule-item-time">
+                    {{#ifCond (substring startTime 0 5) "07:00"}}
+                      Morning (7:00 - 11:30)
+                    {{else}}
+                      Afternoon (13:00 - 16:30)
+                    {{/ifCond}}
                   </div>
-                  <div class="stat-item d-flex align-items-center">
-                    <div class="stat-icon me-2 bg-info text-white rounded-circle p-2">
-                      <i class="fas fa-stethoscope"></i>
+                  <div class="schedule-item-details">
+                    <div class="schedule-item-staff">
+                      {{#if (eq staffType "doctor")}}
+                      Dr. {{doctorName}}
+                      {{else}}
+                      {{labTechnicianName}}
+                      {{/if}}
                     </div>
-                    <div class="stat-text ml-2">
-                      <span class="fw-bold">{{serviceCount}}</span> Services
-                    </div>
+                    <div class="schedule-item-specialty">{{specialtyName}}</div>
+                    <div class="schedule-item-location">Room: {{roomNumber}}</div>
+                  </div>
+                  <div class="schedule-item-actions">
+                    <a href="/patient/book-appointment/{{scheduleId}}" class="btn btn-sm btn-primary">
+                      <i class="fas fa-calendar-check me-1"></i>Book Appointment
+                    </a>
                   </div>
                 </div>
-                <div class="specialty-actions d-grid gap-2">
-                  <a href="/patient/specialty/{{id}}" class="btn btn-primary">
-                    <i class="fas fa-info-circle me-2"></i>View Details
-                  </a>
-                  <a href="/patient/doctors?specialty={{id}}" class="btn btn-outline-primary">
-                    <i class="fas fa-user-md me-2"></i>Find Doctors
-                  </a>
-                </div>
+                {{/if}}
+                {{/each}}
               </div>
+              {{/each}}
+            </div>
+            {{/each}}
+          </div>
+        </div>
+      </div>
+      
+      <!-- Schedule List for Mobile View -->
+      <div class="schedule-list d-md-none">
+        <h4 class="text-primary mb-3">Available Schedules</h4>
+        {{#each schedules}}
+        <div class="schedule-card card shadow-sm mb-3" data-aos="fade-up" data-aos-delay="{{multiply @index 100}}">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="badge bg-primary">{{formatDate workDate "MMM D, YYYY"}}</span>
+              <span class="badge bg-secondary">
+                {{#ifCond (substring startTime 0 5) "07:00"}}
+                  Morning
+                {{else}}
+                  Afternoon
+                {{/ifCond}}
+              </span>
+            </div>
+            <h5 class="card-title">
+              {{#if (eq staffType "doctor")}}
+                Dr. {{doctorName}}
+              {{else}}
+                {{labTechnicianName}}
+              {{/if}}
+            </h5>
+            <p class="card-text mb-1"><strong>Specialty:</strong> {{specialtyName}}</p>
+            <p class="card-text mb-1"><strong>Time:</strong> {{substring startTime 0 5}} - {{substring endTime 0 5}}</p>
+            <p class="card-text mb-3"><strong>Room:</strong> {{roomNumber}}</p>
+            <div class="d-grid">
+              <a href="/patient/book-appointment/{{scheduleId}}" class="btn btn-primary">
+                <i class="fas fa-calendar-check me-1"></i>Book Appointment
+              </a>
             </div>
           </div>
+        </div>
         {{/each}}
       </div>
     {{else}}
       <div class="empty-state text-center py-5" data-aos="fade-up">
-        <i class="fas fa-heartbeat empty-icon mb-4 display-1 text-muted"></i>
-        <h3 class="mb-3">No Specialties Found</h3>
-        <p class="text-muted">We couldn't find any medical specialties at the moment.</p>
+        <i class="fas fa-calendar-times empty-icon mb-4 display-1 text-muted"></i>
+        <h3 class="mb-3">No Schedules Found</h3>
+        <p class="text-muted">We couldn't find any doctor schedules for the selected criteria.</p>
+        <button id="reset-filters" class="btn btn-outline-primary mt-3">
+          <i class="fas fa-sync me-1"></i>Reset Filters
+        </button>
       </div>
     {{/if}}
   {{/if}}
@@ -81,7 +186,73 @@
       });
       
       // Highlight the current navigation item
-      document.querySelector('nav a[href="/patient/specialties"]').classList.add('active');
+      const navItem = document.querySelector('nav a[href="/patient/schedules"]');
+      if (navItem) navItem.classList.add('active');
+      
+      // Date navigation
+      const prevWeekBtn = document.getElementById('prev-week');
+      const nextWeekBtn = document.getElementById('next-week');
+      const dateRange = document.getElementById('date-range');
+      
+      if (prevWeekBtn && nextWeekBtn) {
+        prevWeekBtn.addEventListener('click', function() {
+          navigateWeek(-7);
+        });
+        
+        nextWeekBtn.addEventListener('click', function() {
+          navigateWeek(7);
+        });
+      }
+      
+      function navigateWeek(dayOffset) {
+        const currentDateStr = document.getElementById('date-filter').value;
+        const currentDate = new Date(currentDateStr);
+        currentDate.setDate(currentDate.getDate() + dayOffset);
+        
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const day = String(currentDate.getDate()).padStart(2, '0');
+        
+        const newDateStr = `${year}-${month}-${day}`;
+        document.getElementById('date-filter').value = newDateStr;
+        
+        // Submit form to reload with new date
+        applyFilters();
+      }
+      
+      // Filter functionality
+      const specialtyFilter = document.getElementById('specialty-filter');
+      const dateFilter = document.getElementById('date-filter');
+      const timeFilter = document.getElementById('time-filter');
+      const resetFiltersBtn = document.getElementById('reset-filters');
+      
+      if (specialtyFilter && dateFilter && timeFilter) {
+        specialtyFilter.addEventListener('change', applyFilters);
+        dateFilter.addEventListener('change', applyFilters);
+        timeFilter.addEventListener('change', applyFilters);
+      }
+      
+      if (resetFiltersBtn) {
+        resetFiltersBtn.addEventListener('click', function() {
+          specialtyFilter.value = '';
+          dateFilter.value = new Date().toISOString().split('T')[0];
+          timeFilter.value = '';
+          applyFilters();
+        });
+      }
+      
+      function applyFilters() {
+        const specialty = specialtyFilter.value;
+        const date = dateFilter.value;
+        const time = timeFilter.value;
+        
+        let url = '/patient/schedules?';
+        if (specialty) url += `specialty=${specialty}&`;
+        if (date) url += `date=${date}&`;
+        if (time) url += `time=${time}`;
+        
+        window.location.href = url;
+      }
     });
   </script>
 {{/section}} 

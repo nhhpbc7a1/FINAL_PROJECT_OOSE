@@ -1,6 +1,7 @@
 import express from 'express';
 import check from '../middlewares/auth.route.js'
 import userService from '../services/user.service.js';
+import accountService from '../services/account.service.js';
 import bcrypt from 'bcryptjs';
 
 const router = express.Router();
@@ -79,7 +80,8 @@ router.post('/login', async function (req, res) {
     req.session.authUser.roleName = user.roleId == 1 ? 'admin' : user.roleId == 2 ? 'doctor' : user.roleId == 3 ? 'patient' : 'labtech';
 
     if (user.roleId == 2) {
-        req.session.authUser.doctorId = await userService.getDoctorId(user.userId);
+        req.session.authUser.doctorId = await accountService.getDoctorId(user.userId);
+        req.session.authUser.specialtyName = await accountService.getDoctorSpecialtyName(user.userId);
     }
     let redirectUrl = '/'; // Default redirect URL
 

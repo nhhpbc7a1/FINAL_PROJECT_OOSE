@@ -184,15 +184,4 @@ export default {
             throw new Error('Unable to count active users');
         }
     },
-    async getDoctorId(userId) {
-        try {
-            const [result] = await db('Doctor')
-                .where('userId', userId)
-                .select('doctorId');
-            return result.doctorId;
-        } catch (error) {
-            console.error('Error getting doctor ID:', error);
-            throw new Error('Unable to get doctor ID');
-        }
-    }
 };
