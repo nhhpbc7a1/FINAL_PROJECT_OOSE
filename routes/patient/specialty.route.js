@@ -39,6 +39,8 @@ router.get('/:specialtyId', async function (req, res) {
       formattedEndDate
     );
 
+    console.log(schedules);
+
     res.render('vwPatient/specialty/specialty_detail', {
       specialty: specialtyDetails.specialty,
       doctors: specialtyDetails.doctors,

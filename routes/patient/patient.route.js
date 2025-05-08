@@ -1,5 +1,4 @@
 import express from 'express';
-import homepageService from '../../services/patient/homepage.service.js';
 const router = express.Router();
 
 router.use((req, res, next) => {
@@ -8,25 +7,7 @@ router.use((req, res, next) => {
 });
 
 router.get('/', async function (req, res) {
-    try {
-        // Get all required data
-        const services = await homepageService.getServices();
-        const specialties = await homepageService.getSpecialties();
-        const doctors = await homepageService.getDoctors();
-
-        res.render('homepage', {
-            services,
-            specialties,
-            doctors
-        });
-    } catch (error) {
-        console.error('Homepage error:', error);
-        res.render('homepage', {
-            services: [],
-            specialties: [],
-            doctors: []
-        });
-    }
+    res.redirect('/patient/profile');
 });
 
 import bookAppointmentRouter from './book_appointment.route.js'

@@ -183,5 +183,5 @@ export default {
             console.error('Error counting active users:', error);
             throw new Error('Unable to count active users');
         }
-    }
+    },
 };

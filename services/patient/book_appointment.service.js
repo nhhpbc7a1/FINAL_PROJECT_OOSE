@@ -160,7 +160,7 @@ const bookAppointmentService = {
                         email: appointmentData.email,
                         phoneNumber: appointmentData.phoneNumber,
                         address: appointmentData.address,
-                        roleId: 2,
+                        roleId: 3,
                     });
                 }
 

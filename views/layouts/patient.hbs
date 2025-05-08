@@ -17,7 +17,7 @@
 <body>
     <header>
        <div class="container_upHeader" style="background-color: black">H</div>
-       <div class="container_downHeader mt-3 container">
+       <div class="container_downHeader mt-3">
             <a class="logo d-flex" href="/">     
                     <img src="/public/images/EternalCare.png" alt="Logo">
                     {{!-- <div class="logo-text">EternalCare</div> --}}
@@ -28,17 +28,42 @@
                     <img class="icon_search_header" src="/public/images/icon/icon_search.png" alt="">
                 </button>
             </div>
-            <div class="actions">
-                <a href="/patient/profile"></a>
-                <button class="sign-in">
-                    <a href="/account/login" class="btn-a">  Sign in</a>
-                </button>
-                <button class="sign-up">
-                    <a href="/account/signup" class="btn-a" style="color:#0d47a1">Sign up</a>
-                </button>
-                <button class="book-appointment">
+            <div class="actions d-flex justify-content-space-between">
+                <button class="book-appointment mr-2">
                     <a href="/patient/book-appointment" class="btn-a">Book Appointment</a>
                 </button>
+                {{#if auth}}
+                <div class="have_border">
+                    <div class="dropdown mr-3">
+                    <button class="dropdown-toggle btn btn-secondary" type="button" data-toggle="dropdown"
+                        aria-expanded="false" style="background-color: transparent; color:black;border:none;">
+                        Hello, <b>{{authUser.email}}</b>
+                    </button>
+                    <div class="dropdown-menu">
+                        <button class="dropdown-item" type="button">
+                            <a class="d-flex" href="/{{authUser.roleName}}">
+                                <i class="bi bi-person mr-1"></i>
+                                <div style="text-transform: capitalize;">{{authUser.roleName}} - side</div>
+                            </a>
+                        </button>
+                        <button class="dropdown-item" type="button">
+                            <form id="frmLogout" action="/account/logout" method="post"></form>
+                            <a class="" href="javascript: $('#frmLogout').submit()">
+                                <i class="bi bi-box-arrow-right"></i>
+                                Sign out
+                            </a>
+                        </button>
+                    </div>
+                    </div>
+                </div>
+                {{else}}
+                    <button class="sign-in mr-2">
+                        <a href="/account/login" class="btn-a">  Sign in</a>
+                    </button>
+                    <button class="sign-up">
+                        <a href="/account/signup" class="btn-a" style="color:#0d47a1">Sign up</a>
+                    </button>
+                {{/if}}
             </div>
         </div>
         <nav style="background-color: white;" class="mt-2 container     ">
@@ -52,6 +77,9 @@
                     </li>
                     <li>
                         <a href="/patient/services">SERVICE </a>
+                    </li>
+                    <li>
+                        <a href="/patient/schedules">SCHEDULE </a>
                     </li>
                     <li>
                         <a href="#">CONTACT </a>
