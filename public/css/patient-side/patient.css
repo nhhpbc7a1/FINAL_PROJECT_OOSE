@@ -5,6 +5,8 @@
 }
 .container-fluid{
     background-color: #fbfbfb;
+    padding: 0px;
+    margin: 0;
 }
 .quote{
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -22,6 +24,7 @@ body {
 .container_downHeader {
     max-width: 1200px;
     margin: 0 auto;
+    margin-left: 30px;
     padding: 0 20px;
     display: flex;
     align-items: center;
@@ -36,7 +39,6 @@ header {
 
 header .logo img {
     height: 100px;
-    margin-left: -90px;
 }
 
 
@@ -153,15 +155,12 @@ nav .nav_container ul li a:hover {
 }
 
 /* Các kiểu dáng bổ sung nếu cần */
-
-
 footer {
     background-color: #87CEEB; /* Màu xanh da trời nhạt */
     color: #fff;
     font-family: sans-serif;
     
 }
-
 .footer-top {
     display: flex;
     padding: 30px 0px;
@@ -304,4 +303,7 @@ h5{
 .btn-a:hover {
     opacity: 0.8;
     text-decoration: none;
+}
+.footer-top.row{
+ margin: 0;
 }

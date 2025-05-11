@@ -45,7 +45,7 @@ router.get('/',async function (req, res){
 router.get('/dashboard', async function (req, res) {
   try {
     // In production, you would get the doctorId from the session
-    const doctorId = req.session.authUser?.doctorId || 2; // Fallback to ID 1 for testing
+    const doctorId = req.session.authUser?.doctorId || ""; // Fallback to ID 1 for testing
     
     // Fetch dashboard data and doctor profile
     const [dashboardData, doctorProfile] = await Promise.all([

@@ -3,6 +3,7 @@ body{
 }
 .homepage_container{
 background-color: #FBFBFB;
+padding: 0;
 }
 .background_image {
     background-image: url(/public/images/background/backgoundHospital.jpg);
@@ -61,7 +62,7 @@ background-color: #FBFBFB;
 .service-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    padding: 25px 15px 25px 15px;
+    padding: 25px 15px 38px 15px;
     padding-top: 25px;
     gap: 20px;
 }
