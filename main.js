@@ -7,7 +7,7 @@ import { engine } from 'express-handlebars';
 import hbs_sections from 'express-handlebars-sections';
 import moment from 'moment';
 import session from 'express-session';
-import { authAdmin, authDoctor, authLabtech, authPatient } from './middlewares/auth.route.js';
+import { authAdmin, authDoctor, authLabtech, redirectStaffFromPatientViews} from './middlewares/auth.route.js';
 
 import { formatDate, formatDay, times, arrayFind, removeFilterUrl, eq, lte, subtract, or } from './views/helpers/hbs_helpers.js';
 import homepageService from './services/patient/homepage.service.js';
@@ -84,17 +84,21 @@ app.engine('hbs', engine({
             if (!time) return '';
 
             try {
+                // Đảm bảo format là một chuỗi hoặc undefined/null
+                const safeFormat = (typeof format === 'string') ? format : 'HH:mm';
+                
                 // Kiểm tra xem time có phải là chuỗi hh:mm:ss không
                 if (typeof time === 'string' && /^\d{2}:\d{2}(:\d{2})?$/.test(time)) {
                     // Thêm ngày hiện tại để tạo thành datetime đầy đủ
                     const today = moment().format('YYYY-MM-DD');
-                    return moment(`${today} ${time}`).format(format || 'HH:mm');
+                    return moment(`${today} ${time}`).format(safeFormat);
                 }
                 
-                return moment(time).format(format || 'HH:mm');
+                // Trường hợp time là object hoặc dạng khác
+                return moment(time).format(safeFormat);
             } catch (error) {
                 console.error('Error formatting time:', error);
-                return 'Invalid time';
+                return time; // Trả về giá trị gốc nếu có lỗi
             }
         },
         formatCurrency: function(value) {
@@ -177,7 +181,22 @@ app.engine('hbs', engine({
         },
         now: function() {
             return new Date();
-        }
+        },
+        // Add helper to find schedule
+        findSchedule: function(schedules, date, timeSlot) {
+            if (!schedules || !schedules.length) return null;
+            
+            return schedules.find(schedule => 
+                schedule.workDate === date && 
+                schedule.startTime.substring(0, 5) === timeSlot
+            );
+        },
+        moment: function(date, format) {
+            // Helper to use moment.js operations in templates
+            if (!date) return moment();
+            if (!format) return moment(date);
+            return moment(date, format);
+        },
     },
 }));
 
@@ -209,6 +228,20 @@ app.use(async function (req, res, next) {
 });
 
 app.get('/', async function (req, res) {
+    // Redirect authenticated staff users to their respective dashboards
+    if (req.session.auth && req.session.authUser) {
+        // Check user role and redirect accordingly
+        const role = req.session.authUser.roleName.toLowerCase();
+        if (role === 'doctor') {
+            return res.redirect('/doctor');
+        } else if (role === 'admin') {
+            return res.redirect('/admin');
+        } else if (role === 'labtech') {
+            return res.redirect('/labtech');
+        }
+        // If it's a patient or other role, continue to homepage
+    }
+
     try {
         // Get all required data
         const services = await homepageService.getServices();
@@ -235,7 +268,7 @@ import accountRouter from './routes/account.route.js';
 app.use('/account', accountRouter);
 
 import patientRouter from './routes/patient/patient.route.js';
-app.use('/patient', patientRouter);
+app.use('/patient', redirectStaffFromPatientViews, patientRouter);
 
 import doctorRouter from './routes/doctor/doctor.route.js'
 app.use('/doctor', authDoctor, doctorRouter);

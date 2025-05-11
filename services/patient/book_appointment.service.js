@@ -642,6 +642,40 @@ const bookAppointmentService = {
             servicesPrice: servicesPrice,
             totalAmount: totalAmount
         };
+    },
+
+    // Implement getAvailableDatesForSpecialty method
+    async getAvailableDatesForSpecialty(specialtyId) {
+        try {
+            // Get all future schedules with available status for doctors in this specialty
+            const rawAvailableDates = await db('Schedule')
+                .select('Schedule.workDate')
+                .join('Doctor', 'Schedule.doctorId', 'Doctor.doctorId')
+                .where({
+                    'Doctor.specialtyId': specialtyId,
+                    'Schedule.status': 'available'
+                })
+                .where('Schedule.workDate', '>=', new Date().toISOString().split('T')[0])
+                .orderBy('Schedule.workDate', 'asc')
+                .groupBy('Schedule.workDate');
+
+            // Format dates to YYYY-MM-DD
+            const availableDates = rawAvailableDates.map(date => {
+                // If workDate is already a string in YYYY-MM-DD format, return it directly
+                if (typeof date.workDate === 'string' && date.workDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                    return date.workDate;
+                }
+                
+                // Otherwise convert Date object to YYYY-MM-DD
+                const dateObj = new Date(date.workDate);
+                return dateObj.toISOString().split('T')[0];
+            });
+
+            return availableDates;
+        } catch (error) {
+            console.error('Error fetching available dates:', error);
+            return [];
+        }
     }
 };
 

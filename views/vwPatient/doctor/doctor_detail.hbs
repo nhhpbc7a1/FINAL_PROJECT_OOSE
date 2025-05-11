@@ -1,5 +1,6 @@
 {{#section 'css'}}
-  <link rel="stylesheet" href="/css/patient-side/doctor-detail.css">
+  <link rel="stylesheet" href="/public/css/patient-side/doctor-detail.css">
+  <link rel="stylesheet" href="/public/css/patient-side/doctor-detail-schedule.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
 {{/section}}
 
@@ -104,62 +105,63 @@
         </div>
       </div>
       
-      <!-- Schedule Tab -->
-      <div class="tab-pane fade p-4" id="schedule" role="tabpanel" aria-labelledby="schedule-tab">
-        <div class="tab-section">
-          <h3 class="section-title"><i class="far fa-calendar-alt me-2"></i>Upcoming Schedule</h3>
-          
-          {{#if schedule.length}}
-            <div class="schedule-wrapper">
-              <div class="row g-4">
-                {{#each schedule}}
-                  <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{multiply @index 100}}">
-                    <div class="schedule-day card h-100">
-                      <div class="day-header card-header">
-                        <h4>{{dayName}}</h4>
-                        <span class="date badge bg-light text-dark">{{dayDate}}</span>
-                      </div>
-                      
-                      <div class="card-body">
-                        <div class="time-slots">
-                          {{#if timeSlots.length}}
-                            {{#each timeSlots}}
-                              <div class="time-slot status-{{status}}">
-                                <div class="time-info">
-                                  <span class="time"><i class="far fa-clock me-2"></i>{{formattedStartTime}} - {{formattedEndTime}}</span>
-                                  <span class="status">
-                                    {{#if (eq status 'available')}}
-                                      <i class="fas fa-check-circle text-success"></i> Available
-                                    {{else if (eq status 'booked')}}
-                                      <i class="fas fa-times-circle text-danger"></i> Booked
-                                    {{else}}
-                                      <i class="fas fa-exclamation-circle text-warning"></i> {{status}}
-                                    {{/if}}
-                                  </span>
+      <!-- Tab Schedule -->
+      <div class="tab-pane fade" id="schedule" role="tabpanel" aria-labelledby="schedule-tab">
+        <div class="schedule-wrapper">
+          <div class="section-title mb-4">
+            <h4>Lịch trực của bác sĩ</h4>
+          </div>
+
+          {{#if scheduleDays.length}}
+            <div class="schedule-calendar mb-4">
+              <table class="schedule-table">
+                <thead>
+                  <tr>
+                    <th class="time-header">Thời gian</th>
+                    {{#each scheduleDays}}
+                      <th class="day-header">
+                        <div class="day-name">{{this.dayOfWeek}}</div>
+                        <div class="day-date">{{this.displayDate}}</div>
+                      </th>
+                    {{/each}}
+                  </tr>
+                </thead>
+                <tbody>
+                  {{#each timeSlots}}
+                    <tr>
+                      <td class="time-slot">{{this}}</td>
+                      {{#each ../scheduleDays}}
+                        <td class="schedule-cell">
+                          {{#with (findSchedule ../../doctorSchedules this.date ../this) as |schedule|}}
+                            {{#if schedule}}
+                              <div class="schedule-item 
+                                {{#if (eq schedule.status 'available')}}schedule-available{{/if}}
+                                {{#if (eq schedule.status 'booked')}}schedule-booked{{/if}}
+                                {{#if (eq schedule.status 'unavailable')}}schedule-unavailable{{/if}}
+                              ">
+                                <div class="schedule-time">
+                                  {{substring schedule.startTime 0 5}} - {{substring schedule.endTime 0 5}}
                                 </div>
-                                
-                                {{#if (eq status 'available')}}
-                                  <a href="/patient/book-appointment?doctor={{../../../doctor.id}}&schedule={{id}}" class="btn btn-sm btn-outline-primary mt-2">
-                                    <i class="far fa-calendar-check me-1"></i> Book
-                                  </a>
+                                {{#if schedule.roomNumber}}
+                                  <div class="room-info">
+                                    <i class="fas fa-door-open"></i> Phòng: {{schedule.roomNumber}}
+                                  </div>
                                 {{/if}}
                               </div>
-                            {{/each}}
-                          {{else}}
-                            <div class="no-slots">No available time slots</div>
-                          {{/if}}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                {{/each}}
-              </div>
+                            {{else}}
+                              <div class="schedule-empty"></div>
+                            {{/if}}
+                          {{/with}}
+                        </td>
+                      {{/each}}
+                    </tr>
+                  {{/each}}
+                </tbody>
+              </table>
             </div>
           {{else}}
-            <div class="empty-state text-center py-5">
-              <i class="far fa-calendar empty-icon mb-4"></i>
-              <h3 class="mb-3">No Schedule Available</h3>
-              <p class="text-muted">No upcoming schedule available for this doctor.</p>
+            <div class="empty-schedule">
+              <p>Hiện tại bác sĩ chưa có lịch trực. Vui lòng quay lại sau.</p>
             </div>
           {{/if}}
         </div>

@@ -129,7 +129,7 @@ CREATE TABLE IF NOT EXISTS Schedule (
     workDate DATE NOT NULL,
     startTime TIME NOT NULL,
     endTime TIME NOT NULL,
-    status ENUM('available', 'booked', 'unavailable', 'completed') DEFAULT 'available', -- For booking status
+    status ENUM('available', 'fullfilled') DEFAULT 'available', -- For booking status
     createdDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY (doctorId, workDate, startTime), -- Prevent double booking doctor
     UNIQUE KEY (labTechnicianId, workDate, startTime), -- Prevent double booking technician

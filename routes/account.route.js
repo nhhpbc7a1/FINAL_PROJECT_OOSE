@@ -85,7 +85,7 @@ router.post('/login', async function (req, res) {
     }
     let redirectUrl = '/'; // Default redirect URL
 
-    switch (user.role_id) {
+    switch (user.roleId) {
         case 1:
             redirectUrl = '/admin'; // URL for admin
             break;

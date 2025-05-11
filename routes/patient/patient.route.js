@@ -32,4 +32,8 @@ router.use('/services', servicesListRouter);
 import doctorDetailRouter from './doctor_detail.route.js'
 router.use('/doctor', doctorDetailRouter);
 
+// Import schedules route
+import schedulesListRouter from './schedules_list.route.js'
+router.use('/schedules', schedulesListRouter);
+
 export default router;

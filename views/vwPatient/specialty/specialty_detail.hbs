@@ -110,75 +110,7 @@
     </div>
   </section>
   
-  <!-- Schedule Section -->
-  <section class="schedule-section">
-    <div class="section-header">
-      <h2>Doctor Schedules</h2>
-      <p>View doctor availability for the next 7 days</p>
-    </div>
-    
-    {{#if schedules.schedulesByDoctor.length}}
-      <div class="schedule-table-responsive">
-        <table class="table table-bordered schedule-table">
-          <thead>
-            <tr>
-              <th>Doctor</th>
-              {{#each schedules.dates}}
-              <th class="text-center">
-                {{formatDate this}}
-                <small class="d-block">{{formatDay this}}</small>
-              </th>
-              {{/each}}
-            </tr>
-          </thead>
-          <tbody>
-            {{#each schedules.schedulesByDoctor}}
-            <tr>
-              <td class="doctor-cell">
-                <div class="d-flex align-items-center">
-                  {{#if doctor.profileImage}}
-                  <img src="{{doctor.profileImage}}" alt="{{doctor.fullName}}" class="small-doctor-image">
-                  {{else}}
-                  <div class="small-default-doctor-image">
-                    <i class="fas fa-user-md"></i>
-                  </div>
-                  {{/if}}
-                  <span>{{doctor.fullName}}</span>
-                </div>
-              </td>
-              
-              {{#each ../schedules.dates}}
-              <td class="schedule-cell">
-                {{#with (lookup ../schedulesByDate this) as |schedulesForDate|}}
-                  {{#if schedulesForDate.length}}
-                    {{#each schedulesForDate}}
-                    <div class="time-slot time-slot-{{status}}">
-                      <span class="time">{{startTime}} - {{endTime}}</span>
-                      <span class="status">{{status}}</span>
-                      {{#if (eq status "available")}}
-                      <a href="/book-appointment/{{../../../doctor.doctorId}}?date={{workDate}}&scheduleId={{scheduleId}}" class="btn btn-sm btn-primary book-btn">Book</a>
-                      {{/if}}
-                    </div>
-                    {{/each}}
-                  {{else}}
-                    <div class="no-schedule">
-                      <span>No schedule</span>
-                    </div>
-                  {{/if}}
-                {{/with}}
-              </td>
-              {{/each}}
-            </tr>
-            {{/each}}
-          </tbody>
-        </table>
-      </div>
-    {{else}}
-      <div class="alert alert-info">
-        <i class="fas fa-info-circle"></i> No schedules available for doctors in this specialty.
-      </div>
-    {{/if}}
-  </section>
+  <!-- Removed Schedule Section -->
 </div>
 
 <script>
