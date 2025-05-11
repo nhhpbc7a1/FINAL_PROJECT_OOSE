@@ -13,7 +13,7 @@ router.get('/:specialtyId', async function (req, res) {
       return res.redirect('/'); // Redirect to homepage if invalid ID
     }
     
-    // Get specialty, doctors, services, and schedules
+    // Get specialty, doctors, services
     const specialtyDetails = await specialtyDetailService.getSpecialtyDetails(specialtyId);
     
     console.log(specialtyDetails);
@@ -22,32 +22,10 @@ router.get('/:specialtyId', async function (req, res) {
       return res.redirect('/'); // Redirect if specialty not found
     }
 
-    // Get current date for schedule
-    const today = new Date();
-    // Format date to YYYY-MM-DD
-    const formattedToday = today.toISOString().split('T')[0];
-    
-    // Create date range for schedule (next 7 days)
-    const endDate = new Date(today);
-    endDate.setDate(today.getDate() + 6);
-    const formattedEndDate = endDate.toISOString().split('T')[0];
-
-    // Get doctor schedules for the next 7 days
-    const schedules = await specialtyDetailService.getDoctorSchedules(
-      specialtyId,
-      formattedToday,
-      formattedEndDate
-    );
-
-    console.log(schedules);
-
     res.render('vwPatient/specialty/specialty_detail', {
       specialty: specialtyDetails.specialty,
       doctors: specialtyDetails.doctors,
-      services: specialtyDetails.services,
-      schedules: schedules,
-      startDate: formattedToday,
-      endDate: formattedEndDate
+      services: specialtyDetails.services
     });
 
   } catch (error) {

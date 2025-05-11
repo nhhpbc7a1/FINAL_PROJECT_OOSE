@@ -56,3 +56,18 @@ export  function authLabtech(req, res, next) {
     }
     next();
 }
+
+// Add middleware to redirect staff users from patient routes
+export function redirectStaffFromPatientViews(req, res, next){
+    if (req.session.auth && req.session.authUser) {
+        const role = req.session.authUser.roleName.toLowerCase();
+        if (role === 'doctor') {
+            return res.redirect('/doctor');
+        } else if (role === 'admin') {
+            return res.redirect('/admin');
+        } else if (role === 'labtech') {
+            return res.redirect('/labtech');
+        }
+    }
+    next();
+};

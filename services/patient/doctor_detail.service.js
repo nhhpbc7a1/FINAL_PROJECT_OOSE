@@ -66,54 +66,68 @@ const doctorDetailService = {
   /**
    * Get doctor's schedule for the next 7 days
    * @param {number} doctorId - The doctor's ID
-   * @returns {Promise<Array>} Doctor's schedule
+   * @returns {Promise<Object>} Doctor's schedule data in calendar format
    */
   async getDoctorSchedule(doctorId) {
     try {
-      const today = moment().startOf('day');
-      const nextWeek = moment().add(7, 'days').endOf('day');
+      // Lấy ngày đầu tuần và cuối tuần
+      const startOfWeek = moment().startOf('week').format('YYYY-MM-DD');
+      const endOfWeek = moment().endOf('week').format('YYYY-MM-DD');
       
+      // Lấy lịch trình của bác sĩ
       const schedules = await db('Schedule as s')
+        .join('Specialty as sp', 'sp.specialtyId', '=', function() {
+          this.select('specialtyId')
+            .from('Doctor')
+            .where('doctorId', doctorId)
+            .first();
+        })
+        .leftJoin('Room as r', 's.roomId', '=', 'r.roomId')
         .select(
-          's.scheduleId as id', 
-          's.workDate as date', 
-          's.startTime as start_time', 
-          's.endTime as end_time', 
-          's.status'
+          's.scheduleId',
+          's.doctorId',
+          's.workDate',
+          's.startTime',
+          's.endTime',
+          's.status',
+          'sp.specialtyId',
+          'sp.name as specialtyName',
+          'r.roomNumber'
         )
         .where('s.doctorId', doctorId)
-        .whereBetween('s.workDate', [today.format('YYYY-MM-DD'), nextWeek.format('YYYY-MM-DD')])
+        .whereBetween('s.workDate', [startOfWeek, endOfWeek])
         .orderBy(['s.workDate', 's.startTime']);
       
-      // Group schedules by date
-      const groupedSchedules = [];
-      const dateMap = new Map();
-      
-      schedules.forEach(schedule => {
-        const dateStr = moment(schedule.date).format('YYYY-MM-DD');
-        const dayName = moment(schedule.date).format('dddd');
-        const dayDate = moment(schedule.date).format('DD/MM/YYYY');
-        
-        // Format times
-        schedule.formattedStartTime = moment(schedule.start_time, 'HH:mm:ss').format('HH:mm');
-        schedule.formattedEndTime = moment(schedule.end_time, 'HH:mm:ss').format('HH:mm');
-        
-        if (!dateMap.has(dateStr)) {
-          const daySchedule = {
-            date: schedule.date,
-            dayName,
-            dayDate,
-            timeSlots: []
-          };
-          dateMap.set(dateStr, groupedSchedules.length);
-          groupedSchedules.push(daySchedule);
-        }
-        
-        const index = dateMap.get(dateStr);
-        groupedSchedules[index].timeSlots.push(schedule);
+      // Chuyển đổi định dạng workDate cho phù hợp với dạng lịch
+      const doctorSchedules = schedules.map(schedule => {
+        return {
+          ...schedule,
+          workDate: moment(schedule.workDate).format('YYYY-MM-DD')
+        };
       });
       
-      return groupedSchedules;
+      // Tạo mảng các ngày trong tuần
+      const scheduleDays = [];
+      for (let i = 0; i < 7; i++) {
+        const date = moment(startOfWeek).add(i, 'days');
+        scheduleDays.push({
+          date: date.format('YYYY-MM-DD'),
+          dayOfWeek: date.format('ddd'),
+          displayDate: date.format('DD/MM')
+        });
+      }
+      
+      // Tạo time slots
+      const timeSlots = [
+        '07:00',
+        '13:00'
+      ];
+      
+      return {
+        doctorSchedules,
+        scheduleDays,
+        timeSlots
+      };
     } catch (error) {
       console.error('Error fetching doctor schedule:', error);
       throw error;

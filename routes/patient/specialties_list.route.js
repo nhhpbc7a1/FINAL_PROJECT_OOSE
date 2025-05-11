@@ -8,6 +8,8 @@ router.get('/', async function (req, res) {
   try {
     // Get all specialties
     const specialties = await specialtyListService.getAllSpecialties();
+
+    console.log('Specialties:', specialties);
     
     res.render('vwPatient/list/specialties_list', {
       specialties,

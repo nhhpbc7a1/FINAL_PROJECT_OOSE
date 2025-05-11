@@ -28,8 +28,11 @@ router.get('/:doctorId', async function (req, res) {
     // Get doctor's specialties
     const specialties = await doctorDetailService.getDoctorSpecialties(doctorId);
     
-    // Get doctor's schedule for the next 7 days
-    const schedule = await doctorDetailService.getDoctorSchedule(doctorId);
+    // Get doctor's schedule in calendar format
+    const scheduleData = await doctorDetailService.getDoctorSchedule(doctorId);
+    
+    // Extract schedule components
+    const { doctorSchedules, scheduleDays, timeSlots } = scheduleData;
     
     // Get doctor's services
     const services = await doctorDetailService.getDoctorServices(doctorId);
@@ -41,10 +44,14 @@ router.get('/:doctorId', async function (req, res) {
       ? (reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length).toFixed(1) 
       : 0;
     
+    console.log(`[INFO] Doctor ${doctorId} - Schedule count: ${doctorSchedules.length}`);
+    
     res.render('vwPatient/doctor/doctor_detail', {
       doctor,
       specialties,
-      schedule,
+      doctorSchedules,
+      scheduleDays,
+      timeSlots,
       services,
       reviews,
       avgRating,
