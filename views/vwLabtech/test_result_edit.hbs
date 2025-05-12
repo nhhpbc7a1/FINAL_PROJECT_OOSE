@@ -1,0 +1,760 @@
+{{#section 'css'}}
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .page-title {
+        margin: 0;
+        font-size: 22px;
+        color: #333;
+    }
+    
+    .breadcrumb-container {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 15px 20px;
+        margin-bottom: 20px;
+    }
+    
+    .breadcrumb {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .breadcrumb-item {
+        font-size: 14px;
+        color: #666;
+    }
+    
+    .breadcrumb-item:not(:last-child)::after {
+        content: "›";
+        margin: 0 8px;
+        color: #999;
+    }
+    
+    .breadcrumb-item a {
+        color: #2196f3;
+        text-decoration: none;
+    }
+    
+    .breadcrumb-item a:hover {
+        text-decoration: underline;
+    }
+    
+    .breadcrumb-item.active {
+        color: #333;
+        font-weight: 500;
+    }
+    
+    .test-details {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .detail-row {
+        display: flex;
+        flex-wrap: wrap;
+        margin-bottom: 15px;
+    }
+    
+    .detail-group {
+        flex: 1;
+        min-width: 250px;
+        padding-right: 20px;
+        margin-bottom: 10px;
+    }
+    
+    .detail-label {
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 5px;
+    }
+    
+    .detail-value {
+        font-size: 15px;
+        font-weight: 500;
+        color: #333;
+    }
+    
+    .form-container {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .form-title {
+        font-size: 18px;
+        color: #333;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-label {
+        display: block;
+        font-size: 14px;
+        color: #333;
+        margin-bottom: 8px;
+        font-weight: 500;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        transition: border-color 0.3s;
+    }
+    
+    .form-control:focus {
+        border-color: #2196f3;
+        outline: none;
+    }
+    
+    .form-select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        background-color: white;
+    }
+    
+    .input-group {
+        display: flex;
+        align-items: center;
+    }
+    
+    .input-group .form-control {
+        flex: 1;
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+    
+    .input-group-append {
+        display: flex;
+        align-items: center;
+    }
+    
+    .input-group-text {
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        border-left: none;
+        border-top-right-radius: 4px;
+        border-bottom-right-radius: 4px;
+        background-color: #f8f9fa;
+        color: #666;
+        font-size: 14px;
+    }
+    
+    .form-text {
+        font-size: 12px;
+        color: #666;
+        margin-top: 5px;
+    }
+    
+    .form-row {
+        display: flex;
+        flex-wrap: wrap;
+        margin: -10px;
+    }
+    
+    .form-col {
+        flex: 1;
+        min-width: 250px;
+        padding: 10px;
+    }
+    
+    .file-upload {
+        display: flex;
+        flex-direction: column;
+        border: 2px dashed #ddd;
+        border-radius: 4px;
+        padding: 20px;
+        text-align: center;
+        transition: border-color 0.3s, background-color 0.3s;
+        position: relative;
+    }
+    
+    .file-upload:hover, .file-upload.highlight {
+        border-color: #2196f3;
+        background-color: rgba(33, 150, 243, 0.05);
+    }
+    
+    .file-upload-icon {
+        font-size: 30px;
+        color: #2196f3;
+        margin-bottom: 10px;
+    }
+    
+    .file-upload-text {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 10px;
+    }
+    
+    .btn-container {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .btn {
+        padding: 10px 16px;
+        border-radius: 4px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s;
+        border: none;
+    }
+    
+    .btn-primary {
+        background-color: #2196f3;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background-color: #1976d2;
+    }
+    
+    .btn-outline {
+        background-color: transparent;
+        border: 1px solid #ddd;
+        color: #333;
+    }
+    
+    .btn-outline:hover {
+        background-color: #f5f5f5;
+    }
+    
+    .normal-range-group {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    .normal-range-group .form-control {
+        width: 150px;
+    }
+    
+    .required-field::after {
+        content: '*';
+        color: #f44336;
+        margin-left: 4px;
+    }
+
+    .current-file {
+        margin-top: 10px;
+        padding: 15px;
+        background-color: #f5f5f5;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+
+    .current-file:hover {
+        background-color: #e9f5fe;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .current-file-icon {
+        font-size: 24px;
+        margin-right: 15px;
+    }
+
+    .current-file-name {
+        font-size: 14px;
+        font-weight: 500;
+        color: #333;
+        flex-grow: 1;
+    }
+
+    .current-file-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .current-file-view {
+        color: #2196f3;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 14px;
+        padding: 6px 12px;
+        border-radius: 4px;
+        background-color: rgba(33, 150, 243, 0.1);
+        transition: all 0.2s ease;
+    }
+
+    .current-file-view:hover {
+        background-color: rgba(33, 150, 243, 0.2);
+        text-decoration: none;
+    }
+    
+    .selected-file-preview {
+        margin-top: 15px;
+        padding: 12px;
+        background-color: #e8f4fd;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+    
+    .selected-file-icon {
+        font-size: 20px;
+        margin-right: 12px;
+        color: #2196f3;
+    }
+    
+    .selected-file-info {
+        flex-grow: 1;
+    }
+    
+    .selected-file-name {
+        font-weight: 500;
+        font-size: 14px;
+        color: #333;
+        margin-bottom: 3px;
+    }
+    
+    .selected-file-size {
+        font-size: 12px;
+        color: #666;
+    }
+    
+    .remove-file {
+        color: #f44336;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        padding: 5px 10px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+    
+    .remove-file:hover {
+        background-color: rgba(244, 67, 54, 0.1);
+    }
+    
+    .file-preview {
+        margin-top: 15px;
+        max-width: 100%;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+        max-height: 200px;
+        object-fit: contain;
+    }
+    
+    .image-preview-container {
+        margin-top: 15px;
+        text-align: center;
+    }
+    
+    #filePreviewContainer {
+        display: none;
+    }
+</style>
+{{/section}}
+
+<div class="page-header">
+    <h1 class="page-title">Edit Test Result</h1>
+</div>
+
+<div class="breadcrumb-container">
+    <ul class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/labtech/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="/labtech/test-results">Test Results</a></li>
+        <li class="breadcrumb-item"><a href="/labtech/test-results/{{testResult.resultId}}">Result Details</a></li>
+        <li class="breadcrumb-item active">Edit Result</li>
+    </ul>
+</div>
+
+<div class="test-details">
+    <div class="detail-row">
+        <div class="detail-group">
+            <div class="detail-label">Patient</div>
+            <div class="detail-value">{{testResult.patientName}}</div>
+        </div>
+        <div class="detail-group">
+            <div class="detail-label">Test ID</div>
+            <div class="detail-value">#{{testResult.resultId}}</div>
+        </div>
+        <div class="detail-group">
+            <div class="detail-label">Test Type</div>
+            <div class="detail-value">{{testResult.testName}}</div>
+        </div>
+        <div class="detail-group">
+            <div class="detail-label">Status</div>
+            <div class="detail-value">{{testResult.status}}</div>
+        </div>
+    </div>
+    <div class="detail-row">
+        <div class="detail-group">
+            <div class="detail-label">Created Date</div>
+            <div class="detail-value">{{formatDate testResult.performedDate}}</div>
+        </div>
+        <div class="detail-group">
+            <div class="detail-label">Test Description</div>
+            <div class="detail-value">{{testResult.testDescription}}</div>
+        </div>
+    </div>
+</div>
+
+<form id="test-result-form" action="/labtech/test-results/edit/{{testResult.resultId}}" method="POST" enctype="multipart/form-data">
+    <div class="form-container">
+        <h2 class="form-title">Test Result Information</h2>
+        
+        <div class="form-group">
+            <label for="resultType" class="form-label required-field">Result Type</label>
+            <select id="resultType" name="resultType" class="form-select" required {{#if testResult.resultType}}disabled{{/if}}>
+                <option value="">Select result type</option>
+                <option value="numeric" {{#if (eq testResult.resultType 'numeric')}}selected{{/if}}>Numeric Value</option>
+                <option value="text" {{#if (eq testResult.resultType 'text')}}selected{{/if}}>Text Description</option>
+                <option value="file" {{#if (eq testResult.resultType 'file')}}selected{{/if}}>File/Image Upload</option>
+            </select>
+            {{#if testResult.resultType}}
+            <input type="hidden" name="resultType" value="{{testResult.resultType}}">
+            {{/if}}
+        </div>
+        
+        <div class="form-group">
+            <label for="performedDate" class="form-label required-field">Date Performed</label>
+            <input type="date" id="performedDate" name="performedDate" class="form-control" required value="{{formatDate testResult.performedDate 'YYYY-MM-DD'}}">
+        </div>
+
+        <!-- Numeric result type fields -->
+        <div id="numericSection" class="test-type-numeric" {{#unless (eq testResult.resultType 'numeric')}}style="display: none;"{{/unless}}>
+            <div class="form-row">
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="resultNumeric" class="form-label required-field">Result Value</label>
+                        <div class="input-group">
+                            <input type="number" id="resultNumeric" name="resultNumeric" class="form-control" step="0.01" value="{{testResult.resultNumeric}}">
+                            <div class="input-group-append">
+                                <span class="input-group-text">
+                                    <input type="text" id="unit" name="unit" placeholder="Unit" style="border: none; background: transparent; width: 50px;" value="{{testResult.unit}}">
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="normalRange" class="form-label">Normal Range</label>
+                        <div class="normal-range-group">
+                            {{#if testResult.normalRange}}
+                            <input type="number" id="normalRangeMin" name="normalRangeMin" class="form-control" step="0.01" placeholder="Min" value="{{splitRange testResult.normalRange 0}}">
+                            <span>to</span>
+                            <input type="number" id="normalRangeMax" name="normalRangeMax" class="form-control" step="0.01" placeholder="Max" value="{{splitRange testResult.normalRange 1}}">
+                            {{else}}
+                            <input type="number" id="normalRangeMin" name="normalRangeMin" class="form-control" step="0.01" placeholder="Min">
+                            <span>to</span>
+                            <input type="number" id="normalRangeMax" name="normalRangeMax" class="form-control" step="0.01" placeholder="Max">
+                            {{/if}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Text result type fields -->
+        <div id="textSection" class="test-type-text" {{#unless (eq testResult.resultType 'text')}}style="display: none;"{{/unless}}>
+            <div class="form-group">
+                <label for="resultText" class="form-label required-field">Result Description</label>
+                <textarea id="resultText" name="resultText" class="form-control" rows="4">{{testResult.resultText}}</textarea>
+            </div>
+        </div>
+
+        <!-- File upload result type fields -->
+        <div id="fileSection" class="test-type-file" {{#unless (eq testResult.resultType 'file')}}style="display: none;"{{/unless}}>
+            <div class="form-group">
+                <label for="resultFile" class="form-label">Upload Result File</label>
+                
+                {{#if testResult.fileName}}
+                <div class="current-file">
+                    <i class="{{getFileIcon testResult.fileType}} current-file-icon"></i>
+                    <div class="current-file-name">{{testResult.fileName}}</div>
+                    <div class="current-file-actions">
+                        <a href="{{testResult.filePath}}" target="_blank" class="current-file-view">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                        <a href="{{testResult.filePath}}" download="{{testResult.fileName}}" class="current-file-view">
+                            <i class="fas fa-download"></i> Download
+                        </a>
+                    </div>
+                </div>
+                <div class="form-text mb-3">Upload a new file to replace the current one (optional)</div>
+                {{/if}}
+                
+                <div class="file-upload">
+                    <i class="fas fa-cloud-upload-alt file-upload-icon"></i>
+                    <div class="file-upload-text">Drag and drop your file here or click to browse</div>
+                    <input type="file" id="resultFile" name="resultFile" class="form-control" style="display: none;" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                    <button type="button" id="browseButton" class="btn btn-outline">Browse Files</button>
+                    <div class="form-text">Supported formats: PDF, JPG, PNG, DOCX (Max: 10MB)</div>
+                </div>
+                
+                <div id="filePreviewContainer" class="mt-3">
+                    <div class="selected-file-preview">
+                        <i id="selectedFileIcon" class="fas fa-file selected-file-icon"></i>
+                        <div class="selected-file-info">
+                            <div id="selectedFileName" class="selected-file-name"></div>
+                            <div id="selectedFileSize" class="selected-file-size"></div>
+                        </div>
+                        <button type="button" id="removeFile" class="remove-file">
+                            <i class="fas fa-times"></i> Remove
+                        </button>
+                    </div>
+                    <div id="imagePreviewContainer" class="image-preview-container">
+                        <!-- Image preview will be shown here if applicable -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="interpretation" class="form-label">Interpretation/Comments</label>
+            <textarea id="interpretation" name="interpretation" class="form-control" rows="3">{{testResult.interpretation}}</textarea>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <h2 class="form-title">Sample Information</h2>
+        
+        <div class="form-row">
+            <div class="form-col">
+                <div class="form-group">
+                    <label for="roomId" class="form-label">Lab Room</label>
+                    <select id="roomId" name="roomId" class="form-select">
+                        <option value="">Select lab room</option>
+                        {{#each rooms}}
+                        <option value="{{roomId}}" {{#if (eq ../testResult.roomId roomId)}}selected{{/if}}>{{roomNumber}} - {{roomType}}</option>
+                        {{/each}}
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="btn-container">
+        <a href="/labtech/test-results/{{testResult.resultId}}" class="btn btn-outline">Cancel</a>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+    </div>
+</form>
+
+{{#section 'js'}}
+<script>
+    $(document).ready(function() {
+        // Handle result type change
+        $('#resultType').change(function() {
+            const resultType = $(this).val();
+            
+            // Hide all sections first
+            $('.test-type-numeric, .test-type-text, .test-type-file').hide();
+            
+            // Show the selected section
+            switch(resultType) {
+                case 'numeric':
+                    $('.test-type-numeric').show();
+                    break;
+                case 'text':
+                    $('.test-type-text').show();
+                    break;
+                case 'file':
+                    $('.test-type-file').show();
+                    break;
+            }
+        });
+        
+        // Function to format file size in human-readable format
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        // Function to get file icon based on type
+        function getFileIcon(file) {
+            const fileType = file.type || '';
+            
+            if (fileType.includes('pdf')) {
+                return 'fas fa-file-pdf';
+            } else if (fileType.includes('image')) {
+                return 'fas fa-file-image';
+            } else if (fileType.includes('word') || fileType.includes('document')) {
+                return 'fas fa-file-word';
+            } else {
+                return 'fas fa-file';
+            }
+        }
+        
+        // Function to display file preview
+        function displayFilePreview(file) {
+            if (!file) {
+                $('#filePreviewContainer').hide();
+                return;
+            }
+            
+            const fileSize = formatFileSize(file.size);
+            const fileIcon = getFileIcon(file);
+            
+            $('#selectedFileIcon').attr('class', fileIcon + ' selected-file-icon');
+            $('#selectedFileName').text(file.name);
+            $('#selectedFileSize').text(fileSize);
+            $('#filePreviewContainer').show();
+            
+            // Clear any existing image preview
+            $('#imagePreviewContainer').empty();
+            
+            // If it's an image, show preview
+            if (file.type.includes('image')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = $('<img>').addClass('file-preview').attr('src', e.target.result);
+                    $('#imagePreviewContainer').append(img);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        // Handle file upload through button
+        $('#browseButton').click(function() {
+            $('#resultFile').click();
+        });
+        
+        // Handle file selection
+        $('#resultFile').change(function() {
+            const fileInput = this;
+            if (fileInput.files && fileInput.files[0]) {
+                const file = fileInput.files[0];
+                
+                // Check file size (max 10MB)
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('File size exceeds 10MB limit. Please select a smaller file.');
+                    fileInput.value = '';
+                    return;
+                }
+                
+                displayFilePreview(file);
+            } else {
+                $('#filePreviewContainer').hide();
+            }
+        });
+        
+        // Handle removing selected file
+        $('#removeFile').click(function() {
+            $('#resultFile').val('');
+            $('#filePreviewContainer').hide();
+        });
+        
+        // Handle drag and drop
+        const dropArea = $('.file-upload');
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.on(eventName, function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+        });
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.on(eventName, function() {
+                dropArea.addClass('highlight');
+            });
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.on(eventName, function() {
+                dropArea.removeClass('highlight');
+            });
+        });
+        
+        dropArea.on('drop', function(e) {
+            const files = e.originalEvent.dataTransfer.files;
+            if (files.length) {
+                const file = files[0];
+                
+                // Check file size (max 10MB)
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('File size exceeds 10MB limit. Please select a smaller file.');
+                    return;
+                }
+                
+                // Check file type
+                const acceptedTypes = [
+                    'application/pdf', 
+                    'image/jpeg', 
+                    'image/png', 
+                    'application/msword', 
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                ];
+                
+                if (!acceptedTypes.includes(file.type)) {
+                    alert('Invalid file type. Please upload PDF, JPG, PNG, or DOCX files.');
+                    return;
+                }
+                
+                $('#resultFile')[0].files = files;
+                displayFilePreview(file);
+            }
+        });
+        
+        // Form validation
+        $('#test-result-form').submit(function(e) {
+            // Validation logic based on the selected result type
+            const resultType = $('#resultType').val();
+            let isValid = true;
+            
+            if (resultType === 'numeric' && !$('#resultNumeric').val()) {
+                alert('Please enter a numeric result value');
+                isValid = false;
+            } else if (resultType === 'text' && !$('#resultText').val()) {
+                alert('Please enter result text');
+                isValid = false;
+            } else if (resultType === 'file' && !$('#resultFile').val() && !$('{{testResult.fileName}}').length) {
+                // Only validate file upload if there's no existing file
+                if (!$('#resultFile').val() && !$('{{testResult.fileName}}').length) {
+                    alert('Please upload a file');
+                    isValid = false;
+                }
+            }
+            
+            if (!$('#performedDate').val()) {
+                alert('Please select the date the test was performed');
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                e.preventDefault();
+            }
+        });
+    });
+</script>
+{{/section}} 
