@@ -1,0 +1,521 @@
+{{#section 'css'}}
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .page-title {
+        margin: 0;
+        font-size: 22px;
+        color: #333;
+    }
+    
+    .result-status {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+    
+    .status-completed {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+    }
+    
+    .status-in-progress {
+        background-color: #e3f2fd;
+        color: #1565c0;
+    }
+    
+    .breadcrumb-container {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 15px 20px;
+        margin-bottom: 20px;
+    }
+    
+    .breadcrumb {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .breadcrumb-item {
+        font-size: 14px;
+        color: #666;
+    }
+    
+    .breadcrumb-item:not(:last-child)::after {
+        content: "›";
+        margin: 0 8px;
+        color: #999;
+    }
+    
+    .breadcrumb-item a {
+        color: #2196f3;
+        text-decoration: none;
+    }
+    
+    .breadcrumb-item a:hover {
+        text-decoration: underline;
+    }
+    
+    .breadcrumb-item.active {
+        color: #333;
+        font-weight: 500;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .btn {
+        padding: 10px 16px;
+        border-radius: 4px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        text-decoration: none;
+    }
+    
+    .btn-outline {
+        background-color: transparent;
+        border: 1px solid #ddd;
+        color: #333;
+    }
+    
+    .btn-outline:hover {
+        background-color: #f5f5f5;
+    }
+    
+    .btn-purple {
+        background-color: #9c27b0;
+        color: white;
+    }
+    
+    .btn-purple:hover {
+        background-color: #7b1fa2;
+    }
+    
+    .btn-blue {
+        background-color: #2196f3;
+        color: white;
+    }
+    
+    .btn-blue:hover {
+        background-color: #1976d2;
+    }
+    
+    .detail-card {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    
+    .card-header {
+        padding: 20px;
+        background-color: #f5f5f5;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .card-title {
+        margin: 0;
+        font-size: 18px;
+        color: #333;
+    }
+    
+    .card-body {
+        padding: 20px;
+    }
+    
+    .detail-row {
+        display: flex;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+    
+    .detail-column {
+        flex: 1;
+        min-width: 250px;
+        margin-bottom: 15px;
+    }
+    
+    .detail-group {
+        margin-bottom: 15px;
+    }
+    
+    .detail-label {
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 5px;
+    }
+    
+    .detail-value {
+        font-size: 15px;
+        font-weight: 500;
+        color: #333;
+    }
+    
+    .detail-value.description {
+        font-weight: normal;
+        font-size: 14px;
+        color: #555;
+        white-space: pre-line;
+    }
+    
+    .result-panel {
+        margin-top: 30px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+    }
+    
+    .result-panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .result-panel-title {
+        font-size: 18px;
+        color: #333;
+        margin: 0;
+    }
+    
+    .result-value {
+        font-size: 24px;
+        font-weight: 500;
+        margin: 10px 0;
+        display: flex;
+        align-items: center;
+    }
+    
+    .result-normal {
+        color: #4caf50;
+    }
+    
+    .result-abnormal {
+        color: #f44336;
+    }
+    
+    .result-icon {
+        margin-right: 10px;
+        font-size: 20px;
+    }
+    
+    .result-range {
+        color: #757575;
+        font-size: 14px;
+        margin-left: 10px;
+    }
+    
+    .result-interpretation {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: #f9f9f9;
+        border-radius: 4px;
+        border-left: 4px solid #2196f3;
+    }
+    
+    .result-interpretation h4 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        color: #333;
+        font-size: 16px;
+    }
+    
+    .result-interpretation p {
+        margin: 0;
+        color: #555;
+        font-size: 14px;
+        line-height: 1.5;
+        white-space: pre-line;
+    }
+    
+    .result-file {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: #f9f9f9;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .result-file-info {
+        display: flex;
+        align-items: center;
+    }
+    
+    .result-file-icon {
+        font-size: 24px;
+        margin-right: 15px;
+        color: #ff9800;
+    }
+    
+    .result-file-details {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .result-file-name {
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 5px;
+    }
+    
+    .result-file-meta {
+        font-size: 12px;
+        color: #757575;
+    }
+    
+    .result-file-action {
+        padding: 8px 12px;
+        background-color: #2196f3;
+        color: white;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        text-decoration: none;
+    }
+    
+    .result-file-action:hover {
+        background-color: #1976d2;
+    }
+</style>
+{{/section}}
+
+<div class="page-header">
+    <h1 class="page-title">
+        Test Result: {{testResult.testName}}
+        <span class="result-status status-{{testResult.status}}">
+            {{#if (eq testResult.status 'in_progress')}}In Progress{{/if}}
+            {{#if (eq testResult.status 'completed')}}Completed{{/if}}
+        </span>
+    </h1>
+</div>
+
+<div class="breadcrumb-container">
+    <ul class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/labtech/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="/labtech/test-results">Test Results</a></li>
+        <li class="breadcrumb-item active">Result #{{testResult.resultId}}</li>
+    </ul>
+</div>
+
+<div class="action-buttons">
+    <a href="/labtech/test-results/print/{{testResult.resultId}}" class="btn btn-purple" target="_blank">
+        <i class="fas fa-print"></i> Print Result
+    </a>
+    
+    {{#if (eq testResult.status 'completed')}}
+    <a href="/labtech/test-results/edit/{{testResult.resultId}}" class="btn btn-blue">
+        <i class="fas fa-edit"></i> Edit Result
+    </a>
+    {{/if}}
+    
+    <a href="/labtech/test-results" class="btn btn-outline">
+        <i class="fas fa-arrow-left"></i> Back to Results
+    </a>
+</div>
+
+<div class="detail-card">
+    <div class="card-header">
+        <h2 class="card-title">Test Information</h2>
+    </div>
+    <div class="card-body">
+        <div class="detail-row">
+            <div class="detail-column">
+                <div class="detail-group">
+                    <div class="detail-label">Test Name</div>
+                    <div class="detail-value">{{testResult.testName}}</div>
+                </div>
+                <div class="detail-group">
+                    <div class="detail-label">Result ID</div>
+                    <div class="detail-value">#{{testResult.resultId}}</div>
+                </div>
+                <div class="detail-group">
+                    <div class="detail-label">Performed Date</div>
+                    <div class="detail-value">{{formatDate testResult.performedDate}}</div>
+                </div>
+                {{#if testResult.reportedDate}}
+                <div class="detail-group">
+                    <div class="detail-label">Reported Date</div>
+                    <div class="detail-value">{{formatDateTime testResult.reportedDate}}</div>
+                </div>
+                {{/if}}
+            </div>
+            
+            <div class="detail-column">
+                <div class="detail-group">
+                    <div class="detail-label">Status</div>
+                    <div class="detail-value">{{testResult.status}}</div>
+                </div>
+                {{#if testResult.roomNumber}}
+                <div class="detail-group">
+                    <div class="detail-label">Lab Room</div>
+                    <div class="detail-value">{{testResult.roomNumber}} ({{testResult.roomType}})</div>
+                </div>
+                {{/if}}
+                <div class="detail-group">
+                    <div class="detail-label">Referring Doctor</div>
+                    <div class="detail-value">{{#if testResult.doctorName}}Dr. {{testResult.doctorName}}{{else}}-{{/if}}</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="detail-group">
+            <div class="detail-label">Test Description</div>
+            <div class="detail-value description">{{testResult.testDescription}}</div>
+        </div>
+    </div>
+</div>
+
+<div class="detail-card">
+    <div class="card-header">
+        <h2 class="card-title">Patient Information</h2>
+    </div>
+    <div class="card-body">
+        <div class="detail-row">
+            <div class="detail-column">
+                <div class="detail-group">
+                    <div class="detail-label">Patient Name</div>
+                    <div class="detail-value">{{testResult.patientName}}</div>
+                </div>
+                <div class="detail-group">
+                    <div class="detail-label">Gender</div>
+                    <div class="detail-value">{{testResult.patientGender}}</div>
+                </div>
+                <div class="detail-group">
+                    <div class="detail-label">Date of Birth</div>
+                    <div class="detail-value">{{formatDate testResult.patientDob}}</div>
+                </div>
+            </div>
+            
+            <div class="detail-column">
+                <div class="detail-group">
+                    <div class="detail-label">Phone</div>
+                    <div class="detail-value">{{testResult.patientPhone}}</div>
+                </div>
+                <div class="detail-group">
+                    <div class="detail-label">Email</div>
+                    <div class="detail-value">{{testResult.patientEmail}}</div>
+                </div>
+                <div class="detail-group">
+                    <div class="detail-label">Appointment Date</div>
+                    <div class="detail-value">{{formatDate testResult.appointmentDate}}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="result-panel">
+    <div class="result-panel-header">
+        <h2 class="result-panel-title">Test Results</h2>
+    </div>
+    
+    {{#if (eq testResult.resultType 'numeric')}}
+    <div>
+        <div class="result-value {{#if testResult.isNormal}}result-normal{{else}}result-abnormal{{/if}}">
+            {{#if testResult.isNormal}}
+            <i class="fas fa-check-circle result-icon"></i>
+            {{else}}
+            <i class="fas fa-exclamation-circle result-icon"></i>
+            {{/if}}
+            
+            {{testResult.resultNumeric}} {{testResult.unit}}
+            <span class="result-range">(Normal Range: {{testResult.normalRange}} {{testResult.unit}})</span>
+        </div>
+        
+        {{#if testResult.interpretation}}
+        <div class="result-interpretation">
+            <h4>Interpretation</h4>
+            <p>{{testResult.interpretation}}</p>
+        </div>
+        {{/if}}
+    </div>
+    
+    {{else if (eq testResult.resultType 'text')}}
+    <div>
+        <div class="result-value {{#if testResult.isNormal}}result-normal{{else}}result-abnormal{{/if}}">
+            {{#if testResult.isNormal}}
+            <i class="fas fa-check-circle result-icon"></i>
+            {{else}}
+            <i class="fas fa-exclamation-circle result-icon"></i>
+            {{/if}}
+            
+            {{#if testResult.isNormal}}Normal{{else}}Abnormal{{/if}}
+        </div>
+        
+        <div class="result-interpretation">
+            <h4>Result</h4>
+            <p>{{testResult.resultText}}</p>
+        </div>
+        
+        {{#if testResult.interpretation}}
+        <div class="result-interpretation">
+            <h4>Interpretation</h4>
+            <p>{{testResult.interpretation}}</p>
+        </div>
+        {{/if}}
+    </div>
+    
+    {{else if (eq testResult.resultType 'file')}}
+    <div>
+        {{#if testResult.fileName}}
+        <div class="result-file">
+            <div class="result-file-info">
+                <i class="fas {{#if (eq testResult.fileType 'application/pdf')}}fa-file-pdf{{else}}fa-file-image{{/if}} result-file-icon"></i>
+                <div class="result-file-details">
+                    <span class="result-file-name">{{testResult.fileName}}</span>
+                    <span class="result-file-meta">
+                        {{#if (eq testResult.fileType 'application/pdf')}}PDF Document{{else}}Image File{{/if}}
+                    </span>
+                </div>
+            </div>
+            <a href="{{testResult.filePath}}" target="_blank" class="result-file-action">
+                <i class="fas fa-download"></i> Download
+            </a>
+        </div>
+        {{/if}}
+        
+        {{#if testResult.interpretation}}
+        <div class="result-interpretation">
+            <h4>Interpretation</h4>
+            <p>{{testResult.interpretation}}</p>
+        </div>
+        {{/if}}
+    </div>
+    {{else}}
+    <div>
+        <p>No result data available yet.</p>
+    </div>
+    {{/if}}
+</div>
+
+{{#section 'js'}}
+<script>
+    $(document).ready(function() {
+        // JavaScript functionality if needed
+    });
+</script>
+{{/section}} 

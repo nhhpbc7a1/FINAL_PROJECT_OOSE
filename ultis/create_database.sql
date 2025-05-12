@@ -225,7 +225,7 @@ CREATE TABLE IF NOT EXISTS TestRequest (
     appointmentId INT NOT NULL,
     serviceId INT NOT NULL,
     requestDate DATE NOT NULL,
-    status ENUM('pending', 'completed', 'cancelled') NOT NULL,
+    status ENUM('pending', 'in_progress', 'completed', 'cancelled') NOT NULL,
     notes TEXT,
     requestedByDoctorId INT NOT NULL,
     FOREIGN KEY (appointmentId) REFERENCES Appointment(appointmentId) ON DELETE CASCADE ON UPDATE CASCADE,
