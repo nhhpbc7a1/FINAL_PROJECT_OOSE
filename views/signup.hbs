@@ -14,59 +14,77 @@
         <h1>Account</h1>
     </div>
     <div class="signup-modal-container">
-        <div class="signup-modal">
-            <div class="modal-footer">
-                <p>Already have an account? <a href="/account/login">Sign in</a></p>
+        <div class="signup-modal container">
+            <div class="row">
+                <div class="col-6">
+                </div>
+                <div class="col-6">
+                    <div class="modal-footer">
+                        <p>Already have an account? <a href="/account/login">Sign in</a></p>
+                    </div>
+
+                </div>
             </div>
-            <form action="/account/signup" id="frmSignUp" method="POST" >
-                <div class="modal-body">
-                    <div class="input-group">
-                        <input type="text" name="name" id="txtName" placeholder="Your Name">
-                    </div>
-                    <div class="input-group">
-                        <input  type="text" name="phone" id="txtPhone" placeholder="Your Phone Number">
-                    </div>
-                    <div class="input-group">
-                        <div class="birthday-input">
-                            <input type="text" name="birthday" id="dtBirthday" placeholder="dd/mm/yy" >
-                            <img src="/public/images/icon/icons8-calendar-32.png" alt="" width="20px"  id="calendar-icon">
+            <div class="container">
+                <form action="/account/signup" id="frmSignUp" method="POST" >
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="input-group">
+                                <input type="text" name="name" id="txtName" placeholder="Your Name">
+                            </div>
+                            <div class="input-group">
+                                <input  type="text" name="phone" id="txtPhone" placeholder="Your Phone Number">
+                            </div>
+                            <div class="input-group">
+                                <div class="birthday-input">
+                                    <input type="text" name="birthday" id="dtBirthday" placeholder="dd/mm/yy" >
+                                    <img src="/public/images/icon/icons8-calendar-32.png" alt="" width="20px"  id="calendar-icon">
+                                </div>
+                            </div>
+                            <div class="input-group password-group">
+                                <div class="password-input">
+                                    <input type="password" id="txtPassword" name="password" placeholder="Enter new password">
+                                    <img src="/public/images/icon/icons8-eye-30.png" alt="" id="toggle-password">
+                                </div>
+                            </div>
+                            <p class="password-notion" id="passwordHint">
+                            Create a new password that is at least 6 characters long. A strong password is a combination of letters, numbers, and punctuation.
+                            </p>
+
+                        </div>
+                        <div class="col-6">
+                            <div class="input-group">
+                                <input type="text" name="email" id="txtEmail" placeholder="Your Email">
+                            </div>
+                            <div class="input-group">
+                                <input type="text" name="address" id="txtAddress" placeholder="Your Address">
+                            </div>
+                            <div class="input-group">
+                                <div class="select-wrapper">
+                                    <select id="gender" name="gender">
+                                        <option value="" disabled selected>Gender</option>
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                    <img src="/public/images/icon/icons8-arrow-down-24 (3).png" alt="">
+                                </div>
+                            </div>
+                            <div class="input-group password-group">
+                                <div class="password-input">
+                                    <input type="password" id="txtPasswordConfirm" name="re_type_password" placeholder="Re-type new password">
+                                    <img src="/public/images/icon/icons8-eye-30.png" alt="" id="toggle-repassword">
+                                </div>
+                            </div>
+                            <p  id="retypeHint" class="password-notion">Your retype password must be the same as the password you just created</p>
                         </div>
                     </div>
-                    <div class="input-group">
-                        <input type="text" name="email" id="txtEmail" placeholder="Your Email">
+                    <div class="button-group">
+                        <button class="back-button">Back</button>
+                        <button class="create-button" type="submit">Create</button>
                     </div>
-                    <div class="input-group">
-                        <div class="select-wrapper">
-                            <select id="gender" name="gender">
-                                <option value="" disabled selected>Gender</option>
-                                <option value="male">Male</option>
-                                <option value="female">Female</option>
-                                <option value="other">Other</option>
-                            </select>
-                            <img src="/public/images/icon/icons8-arrow-down-24 (3).png" alt="">
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <input type="text" name="address" id="txtAddress" placeholder="Your Address">
-                    </div>
-                    <div class="input-group password-group">
-                        <div class="password-input">
-                            <input type="password" id="txtPassword" name="password" placeholder="Enter new password">
-                            <img src="/public/images/icon/icons8-eye-30.png" alt="" id="toggle-password">
-                        </div>
-                    </div>
-                    <div class="input-group password-group">
-                        <div class="password-input">
-                            <input type="password" id="txtPasswordConfirm" name="re_type_password" placeholder="Re-type new password">
-                            <img src="/public/images/icon/icons8-eye-30.png" alt="" id="toggle-repassword">
-                        </div>
-                    </div>
-                </div>
-                <div class="button-group">
-                    <button class="back-button">Back</button>
-                    <button class="create-button" type="submit">Create</button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 </div>
@@ -77,40 +95,63 @@
 <!-- Đảm bảo jQuery được nhúng trước đoạn script -->
 
 <script>
-  function isValidEmail(email) {
-    const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    return regex.test(email);}
+    function isValidEmail(email) {
+        const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        return regex.test(email);
+    }
+    function isValidPasswordFormat(password) {
+        const regexPassword = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&.])[A-Za-z\d@$!%*#?&.]{6,}$/;
+        return regexPassword.test(password);
+    }
+    function isPasswordMatch(password, retypePassword) {
+    return password === retypePassword;
+    }
     const email = $('#txtEmail').val();
     const form = document.getElementById('frmSignUp');
-    $.getJSON('/account/is-available-email?email=' + email, function (data) {
-        if (!data) {
-            alert('Email has been used by someone else. Please try another valid email');
-        } 
-        else {    
-            form.addEventListener('submit', function (event) {
-                event.preventDefault();
-                const name = $('#txtName').val();
-                const phone = $('#txtPhone').val();
-                const birthday = $('#dtBirthday').val();
-                const gender = $('#gender').val();
-                const email = $('#txtEmail').val();
-                const address = $('#txtAddress').val();
-                const password = $('#txtPassword').val();          
-                const passwordConfirm = $('#txtPasswordConfirm').val(); 
-                console.log(email);
-
-                if (password !== passwordConfirm) {
-                    alert('Password and password confirmation do not match.');
-                    return;
-                }
-
-                if (!isValidEmail(email)) {
-                    alert('Invalid email. Please try again!');
-                    return;
-                }
-                form.submit();
-            });   
+       
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        const name = $('#txtName').val();
+        const phone = $('#txtPhone').val();
+        const birthday = $('#dtBirthday').val();
+        const gender = $('#gender').val();
+        const email = $('#txtEmail').val();
+        const address = $('#txtAddress').val();
+        const password = $('#txtPassword').val();          
+        const passwordConfirm = $('#txtPasswordConfirm').val(); 
+        
+        if (password !== passwordConfirm) {
+            alert('Password and password confirmation do not match.');
+            return;
         }
+        if (!name || !email || !phone || !birthday || !gender || !address || !password || !passwordConfirm)
+        {
+            alert('Please fill in all required fields.');
+            return;
+        }
+        if (!isValidEmail(email)) {
+            alert('Invalid email.Try again!');
+            return;
+        }
+        if(!isValidPasswordFormat(password))
+        {
+            alert('Password must be at least 6 characters and include letters, numbers, and special characters.');
+            return;
+        }
+        if (!isPasswordMatch) {
+            alert('Retyped password does not match.');
+            return;
+        }
+
+        $.getJSON('/account/is-available-email?email=' + $('#txtEmail').val(), function (data) {
+            if (!data) {
+                alert('Email has been used by someone else. Please try another valid email');
+                return;
+            } 
+            else{ 
+                form.submit();
+            }   
+        });
     });
 </script>
 <script>
@@ -142,7 +183,6 @@
         icon.src = isHidden 
         ? '/public/images/icon/icon_hide.png'   // icon mắt có gạch
         : '/public/images/icon/icons8-eye-30.png'; // icon mắt thường
-        alert('Hello');
     });
     document.getElementById('toggle-repassword').addEventListener('click', function () {
         const passwordInput = document.getElementById('txtPasswordConfirm');
@@ -160,6 +200,72 @@
         });
 
 </script>
+<script>
+    const passwordInput = document.getElementById('txtPassword');
+    const passwordHint = document.getElementById('passwordHint');
 
+    function isValidPasswordFormat(password) {
+        // Validates if password is at least 6 characters long and contains letters, numbers, or special characters
+        return /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&.])[A-Za-z\d@$!%*#?&.]{6,}$/.test(password);
+    }
+
+    passwordInput.addEventListener('input', function () {
+        const password = passwordInput.value;
+        
+        if (password === '') {
+            passwordHint.style.display = 'none';  // Hide the hint if input is empty
+        } else {
+            passwordHint.style.display = 'block'; // Show the hint if there is input
+            if (isValidPasswordFormat(password)) {
+                passwordHint.classList.add('valid');
+                passwordHint.classList.remove('invalid');
+            } else {
+                passwordHint.classList.add('invalid');
+                passwordHint.classList.remove('valid');
+            }
+        }
+    });
+</script>
+<script>
+    const newPasswordInput = document.getElementById('txtPassword');
+    const retypePasswordInput = document.getElementById('txtPasswordConfirm');
+    const retypeHint = document.getElementById('retypeHint');
+
+    function isValidPasswordFormat(password) {
+        return /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&.])[A-Za-z\d@$!%*#?&.]{6,}$/.test(password);
+    }
+
+    // Định dạng mật khẩu: ít nhất 6 ký tự, có chữ và số hoặc ký tự đặc biệt
+
+    function checkRetypePassword() {
+        const newPassword = newPasswordInput.value;
+        const retypePassword = retypePasswordInput.value;
+
+        if (retypePassword === '') {
+        retypeHint.style.display = 'none'; // Ẩn thẻ p khi input rỗng
+        retypeHint.classList.remove('valid', 'invalid');
+        return;
+        }
+
+        retypeHint.style.display = 'block'; // Hiện thẻ p khi có nhập
+
+        if (retypePassword !== newPassword) {
+            retypeHint.textContent = 'Passwords do not match';
+            retypeHint.classList.remove('valid');
+            retypeHint.classList.add('invalid');
+        } else if (!isValidPasswordFormat(retypePassword)) {
+            retypeHint.textContent = 'Password format is invalid (min 6 chars, include letters and numbers/symbols)';
+            retypeHint.classList.remove('valid');
+            retypeHint.classList.add('invalid');
+        } else {
+            retypeHint.textContent = 'Password looks good!';
+            retypeHint.classList.remove('invalid');
+            retypeHint.classList.add('valid');
+        }
+    }
+
+    retypePasswordInput.addEventListener('input', checkRetypePassword);
+    newPasswordInput.addEventListener('input', checkRetypePassword);
+</script>
 
 {{/section}}

@@ -124,84 +124,29 @@ router.get('/changePass', async function (req, res) {
 });
 router.post('/changePass', async (req, res) => {
     const userId = req.session.authUser.userId;
-    const currentPassword = req.body.password;
     const newPassword = req.body.new_password;
-    const retypePassword = req.body.re_type_password;
 
     try {
-        // Lấy user từ service
-        const user = await userService.findById(userId);
-        if (!user) {
-            return res.render('vwPatient/individualPage/changePass', {
-                error: 'User not found'
-            });
-        }
-
-        // So sánh mật khẩu cũ
-        const isMatch = await bcrypt.compare(currentPassword, user.password);
-        if (!isMatch) {
-            return res.render('vwPatient/individualPage/changePass', {
-                error: 'Mật khẩu hiện tại không đúng'
-            });
-        }
-
-        // Kiểm tra mật khẩu mới
-        if (newPassword !== retypePassword) {
-            return res.render('vwPatient/individualPage/changePass', {
-                error: 'Mật khẩu mới không khớp'
-            });
-        }
-
         // Mã hóa và cập nhật
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         const success = await userService.update(userId, { password: hashedPassword });
 
         if (success) {
             return res.render('vwPatient/individualPage/changePass', {
-                success: 'Đổi mật khẩu thành công'
+                success: 'Changed password successfully'
             });
         } else {
             return res.render('vwPatient/individualPage/changePass', {
-                error: 'Không thể cập nhật mật khẩu'
+                error: 'Cannot updated password'
             });
         }
-
     } catch (err) {
         console.error('Change password error:', err);
         return res.render('vwPatient/individualPage/changePass', {
-            error: 'Có lỗi xảy ra, vui lòng thử lại'
+            error: 'Error. Please try again'
         });
     }
 });
-// router.post('/changePass', async (req, res) => {
-//     const userId = req.session.authUser.userId;
-//     const { currentPassword, newPassword, retypePassword } = req.body;
-
-//     try {
-//         // Lấy thông tin người dùng từ DB
-//         const user = await userService.findById(userId);
-
-//         // So sánh mật khẩu hiện tại
-//         const isMatch = await bcrypt.compare(currentPassword, user.password);
-//         if (!isMatch) {
-//             return res.render('vwPatient/individualPage/changePass', { error: 'Current password is incorrect' });
-//         }
-
-//         // Kiểm tra mật khẩu mới và xác nhận
-//         if (newPassword !== retypePassword) {
-//             return res.render('vwPatient/individualPage/changePass', { error: 'New passwords do not match' });
-//         }
-
-//         // Hash mật khẩu mới và cập nhật
-//         const hashedPassword = await bcrypt.hash(newPassword, 10);
-//         await userService.update(userId, { password: hashedPassword });
-
-//         res.render('vwPatient/individualPage/changePass', { success: 'Password updated successfully' });
-//     } catch (err) {
-//         console.error(err);
-//         res.render('vwPatient/individualPage/changePass', { error: 'Something went wrong. Try again later.' });
-//     }
-// });
 router.get('/appointmentList', async function (req, res) {
     res.render('vwPatient/individualPage/appointmentList');
 });
