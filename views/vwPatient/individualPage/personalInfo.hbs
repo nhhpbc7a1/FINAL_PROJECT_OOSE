@@ -5,47 +5,74 @@
     {{!-- swiperjs --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <link rel="stylesheet" href="/public/css/personalInfo.css">
 {{/section}}
 
-{{#section 'js'}}
-{{/section}}
-
-<div class="form-grid">
-    <div class="form-group">
-        <label for="full-name">Full Name</label>
-        <input type="text" id="full-name" value="Le Thi Thu Huong">
-    </div>
-    <div class="form-group">
-        <label for="phone-number">Phone number</label>
-        <input type="text" id="phone-number" value="Le Thi Thu Huong">
-    </div>
-    <div class="form-group">
-        <label for="birthday">Birthday</label>
-        <div class="birthday-input">
-            <input type="text" id="birthday" value="10/11/2004">
-            <img src="/public/images/icon/icons8-calendar-32.png" alt="" width="20px">
+<div class="container">
+    <form action="/patient/profile/personalInfo" method="post" id="frmPatient">
+        <div class="row">
+            <div class="col-6">
+                <div class="form-group">
+                    <label for="full-name">Full Name</label>
+                    <input type="text" id="txtName"  name="fullname" value="{{user.fullName}}">
+                </div>
+                <div class="form-group">
+                    <label for="phone-number">Phone number</label>
+                    <input type="text" id="txtPhone" name="phone" value="{{user.phoneNumber}}">
+                </div>
+                <div class="form-group">
+                    <label for="birthday">Birthday</label>
+                    <div class="birthday-input">
+                        <input type="text" id="dtBirthday" name="birthday" value="{{formatDate user.dob}}">
+                        <img src="/public/images/icon/icons8-calendar-32.png" alt="" width="20px" id="calendar-icon">
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="txtEmail" name="email" value="{{user.email}}" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="gender">Gender</label>
+                    <select id="gender" name="gender">
+                        <option value="" disabled {{#unless user.gender}}selected{{/unless}}>Gender</option>
+                        <option value="male" {{#if (eq user.gender 'male')}}selected{{/if}}>Male</option>
+                        <option value="female" {{#if (eq user.gender 'female')}}selected{{/if}}>Female</option>
+                        <option value="other" {{#if (eq user.gender 'other')}}selected{{/if}}>Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="address">Address</label>
+                    <input type="text" id="txtAddress" name="address" value="{{user.address}}">
+                </div>
+            </div>
         </div>
-    </div>
-    <div class="form-group">
-        <label for="email">Email</label>
-        <input type="email" id="email" value="Le Thi Thu Huong">
-    </div>
-    <div class="form-group">
-        <label for="gender">Gender</label>
-        <select id="gender">
-            <option value="" disabled selected>Gender</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-            <option value="other">Other</option>
-        </select>
-    </div>
-    <div class="form-group">
-        <label for="address">Address</label>
-        <input type="text" id="address" value="Le Thi Thu Huong">
-    </div>
+        <div class="update-button-container">
+            <button class="back-button">Back</button>
+            <button class="update-button" type="submit">Update</button>
+        </div>
+    </form>
 </div>
-<div class="update-button-container">
-    <button class="back-button">Back</button>
-    <button class="update-button">Update</button>
-</div>
+{{#section 'js'}}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<script>
+    $(function () {
+    // Kích hoạt datepicker
+    $("#dtBirthday").datepicker({
+      dateFormat: "dd/mm/yy",
+      changeMonth: true,
+      changeYear: true,
+      yearRange: "1900:2025",
+    });
+
+    // Khi nhấn icon -> mở datepicker
+    $("#calendar-icon").click(function () {
+      $("#dtBirthday").datepicker("show");
+    });
+  });
+</script>
+
+{{/section}}

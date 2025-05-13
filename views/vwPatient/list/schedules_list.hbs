@@ -1,0 +1,298 @@
+{{#section 'css'}}
+  <link rel="stylesheet" href="/public/css/patient-side/schedules-list.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+{{/section}}
+
+<div class="container schedules-page py-5">
+  <div class="page-header text-center mb-5">
+    <h1 class="display-4 fw-bold text-primary">{{title}}</h1>
+    <div class="separator"></div>
+    <p class="lead mt-3 text-secondary">{{description}}</p>
+  </div>
+  
+  {{#if error}}
+    <div class="alert alert-danger shadow-sm">
+      <i class="fas fa-exclamation-circle me-2"></i> {{error}}
+    </div>
+  {{else}}
+    <!-- Schedule Filters -->
+    <div class="schedule-filters row mb-4">
+      <div class="col-md-12">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-8">
+                <div class="filter-item mb-3">
+                  <label for="specialty-filter" class="form-label fw-bold">Specialty</label>
+                  <select id="specialty-filter" class="form-select">
+                    <option value="">All specialties</option>
+                    {{#each specialties}}
+                    <option value="{{specialtyId}}" {{#if (eq ../specialtyId specialtyId)}}selected{{/if}}>{{name}}</option>
+                    {{/each}}
+                  </select>
+                </div>
+              </div>
+              
+              <div class="col-md-4 d-flex align-items-end">
+                <button id="apply-filters" class="btn btn-primary mb-3 w-100">
+                  <i class="fas fa-filter me-1"></i> Apply Filters
+                </button>
+              </div>
+            </div>
+            
+            {{#if specialtyId}}
+            <div class="active-filters mt-2">
+              <span class="badge btn btn-outline-secondary">
+                <i class="fas fa-filter me-1"></i> Specialty: {{selectedSpecialtyName}}
+                <button type="button" class="btn-close btn-close-white ms-2 " aria-label="Clear filter" id="clear-specialty">
+                  <i class="bi bi-x"></i>
+                </button>
+              </span>
+            </div>
+            {{/if}}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Week Navigation -->
+    <div class="week-navigation card shadow-sm mb-4">
+      <div class="card-body d-flex justify-content-between align-items-center">
+        <a href="/patient/schedules?specialty={{specialtyId}}&date={{prevWeek}}" class="btn btn-outline-primary">
+          <i class="fas fa-chevron-left me-1"></i> Previous Week
+        </a>
+        
+        <div class="mb-0 text-center">
+          <span class="text-primary">Week: </span>
+          <span id="week-range">{{formatDate startDate "DD/MM/YYYY"}} - {{formatDate endDate "DD/MM/YYYY"}}</span>
+        </div>
+        
+        <a href="/patient/schedules?specialty={{specialtyId}}&date={{nextWeek}}" class="btn btn-outline-primary">
+          Next Week <i class="fas fa-chevron-right ms-1"></i>
+        </a>
+      </div>
+    </div>
+
+    {{#if schedules.length}}
+      <!-- Schedule Calendar -->
+      <div class="schedule-calendar card shadow-sm mb-5">
+        <div class="card-header bg-primary text-white py-3">
+          <h5 class="mb-0 text-center">Schedule {{#if selectedSpecialtyName}}for {{selectedSpecialtyName}} specialty{{/if}}</h5>
+        </div>
+        
+        <!-- Debug info (only shows when debugging) -->
+        <div id="debug-info" style="display: none; padding: 10px; background-color: #f8f9fa; border-bottom: 1px solid #dee2e6;">
+          <h6>Debug Information:</h6>
+          <div>Schedule count: <span id="schedule-count">{{schedules.length}}</span></div>
+          <div>Dates:</div>
+          <ul>
+            {{#each days}}
+            <li>{{date}}</li>
+            {{/each}}
+          </ul>
+          <button id="toggle-debug" class="btn btn-sm btn-secondary">Toggle verbose debug</button>
+          <div id="verbose-debug" style="display: none; margin-top: 10px;"></div>
+        </div>
+        
+        <div class="card-body p-0">
+          <!-- Calendar Header -->
+          <div class="calendar-header">
+            <div class="calendar-time-header">Time</div>
+            {{#each days}}
+            <div class="calendar-day-header {{#if (eq date (formatDate (now) 'YYYY-MM-DD'))}}today{{/if}}">
+              <div class="calendar-day-name">{{dayName}}</div>
+              <div class="calendar-day-date">{{dayMonth}}</div>
+            </div>
+            {{/each}}
+          </div>
+          
+          <!-- Calendar Body -->
+          <div class="calendar-body">
+            {{#each timeSlots}}
+            <div class="calendar-row">
+              <div class="calendar-time-cell">
+                <div class="time-slot-label">{{label}}</div>
+                <div class="time-slot-description">{{description}}</div>
+              </div>
+              {{#each ../days}}
+              <div class="calendar-day-cell" data-date="{{date}}" data-time="{{../time}}">
+                {{#each ../../schedules}}
+                {{#if (and (eq workDate ../date) (eq (substring startTime 0 5) ../../time))}}
+                <div class="schedule-item status-{{status}}">
+                  <div class="schedule-item-time">
+                    {{#ifCond (substring startTime 0 5) "07:00"}}
+                      Morning (7:00 - 11:30)
+                    {{else}}
+                      Afternoon (13:00 - 16:30)
+                    {{/ifCond}}
+                  </div>
+                  <div class="schedule-item-details">
+                    <div class="schedule-item-staff">
+                      {{#if (eq staffType "doctor")}}
+                      Dr. {{doctorName}}
+                      {{else}}
+                      {{labTechnicianName}}
+                      {{/if}}
+                    </div>
+                    <div class="schedule-item-specialty">{{specialtyName}}</div>
+                    <div class="schedule-item-location">Room: {{roomNumber}}</div>
+                  </div>
+                </div>
+                {{/if}}
+                {{/each}}
+              </div>
+              {{/each}}
+            </div>
+            {{/each}}
+          </div>
+        </div>
+      </div>
+      
+      <!-- Schedule List for Mobile View -->
+      <div class="schedule-list d-md-none">
+        <h4 class="text-primary mb-3">Available Schedules</h4>
+        {{#each schedules}}
+        <div class="schedule-card card shadow-sm mb-3" data-aos="fade-up" data-aos-delay="{{multiply @index 100}}">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="badge bg-primary">{{formatDate workDate "DD/MM/YYYY"}}</span>
+              <span class="badge bg-secondary">
+                {{#ifCond (substring startTime 0 5) "07:00"}}
+                  Morning
+                {{else}}
+                  Afternoon
+                {{/ifCond}}
+              </span>
+            </div>
+            <h5 class="card-title">
+              {{#if (eq staffType "doctor")}}
+                Dr. {{doctorName}}
+              {{else}}
+                {{labTechnicianName}}
+              {{/if}}
+            </h5>
+            <p class="card-text mb-1"><strong>Specialty:</strong> {{specialtyName}}</p>
+            <p class="card-text mb-1"><strong>Time:</strong> {{substring startTime 0 5}} - {{substring endTime 0 5}}</p>
+            <p class="card-text mb-3"><strong>Room:</strong> {{roomNumber}}</p>
+            <div class="d-grid">
+              <a href="/patient/book-appointment/{{scheduleId}}" class="btn btn-primary">
+                <i class="fas fa-calendar-check me-1"></i>Book Appointment
+              </a>
+            </div>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+    {{else}}
+      <div class="empty-state text-center py-5" data-aos="fade-up">
+        <i class="fas fa-calendar-times empty-icon mb-4 display-1 text-muted"></i>
+        <h3 class="mb-3">No Schedules Found</h3>
+        <p class="text-muted">No schedules match your selected filters.</p>
+        <button id="reset-filters" class="btn btn-outline-primary mt-3">
+          <i class="fas fa-sync me-1"></i>Reset Filters
+        </button>
+      </div>
+    {{/if}}
+  {{/if}}
+</div>
+
+{{#section 'js'}}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize AOS animations
+      AOS.init({
+        duration: 800,
+        easing: 'ease-in-out',
+        once: true
+      });
+      
+      // Highlight the current navigation item
+      const navItem = document.querySelector('nav a[href="/patient/schedules"]');
+      if (navItem) navItem.classList.add('active');
+      
+      // Debug functionality (Ctrl+Shift+D to toggle)
+      document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+          const debugInfo = document.getElementById('debug-info');
+          if (debugInfo) {
+            debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
+          }
+          e.preventDefault();
+        }
+      });
+      
+      // Toggle verbose debug
+      const toggleDebugBtn = document.getElementById('toggle-debug');
+      if (toggleDebugBtn) {
+        toggleDebugBtn.addEventListener('click', function() {
+          const verboseDebug = document.getElementById('verbose-debug');
+          if (verboseDebug) {
+            if (verboseDebug.style.display === 'none') {
+              // Create a simplified version of schedules data
+              const scheduleData = {
+                days: Array.from(document.querySelectorAll('.calendar-day-header')).map(day => ({
+                  date: day.querySelector('.calendar-day-date').textContent
+                })),
+                timeSlots: Array.from(document.querySelectorAll('.time-slot-label')).map(slot => ({
+                  time: slot.textContent
+                })),
+                scheduleItems: Array.from(document.querySelectorAll('.schedule-item')).length
+              };
+              
+              verboseDebug.innerHTML = `<pre>${JSON.stringify(scheduleData, null, 2)}</pre>`;
+              verboseDebug.style.display = 'block';
+              toggleDebugBtn.textContent = 'Hide verbose debug';
+            } else {
+              verboseDebug.style.display = 'none';
+              toggleDebugBtn.textContent = 'Toggle verbose debug';
+            }
+          }
+        });
+      }
+      
+      // Filter functionality
+      const specialtyFilter = document.getElementById('specialty-filter');
+      const applyFiltersBtn = document.getElementById('apply-filters');
+      const resetFiltersBtn = document.getElementById('reset-filters');
+      const clearSpecialtyBtn = document.getElementById('clear-specialty');
+      
+      // Apply filters
+      if (applyFiltersBtn) {
+        applyFiltersBtn.addEventListener('click', function() {
+          applyFilters();
+        });
+      }
+      
+      // Reset all filters
+      if (resetFiltersBtn) {
+        resetFiltersBtn.addEventListener('click', function() {
+          specialtyFilter.value = '';
+          applyFilters();
+        });
+      }
+      
+      // Clear individual filters
+      if (clearSpecialtyBtn) {
+        clearSpecialtyBtn.addEventListener('click', function() {
+          specialtyFilter.value = '';
+          applyFilters();
+        });
+      }
+      
+      function applyFilters() {
+        const specialty = specialtyFilter.value;
+        
+        let url = '/patient/schedules?';
+        if (specialty) url += `specialty=${specialty}&`;
+        
+        // Remove trailing & if present
+        if (url.endsWith('&')) {
+          url = url.slice(0, -1);
+        }
+        
+        window.location.href = url;
+      }
+    });
+  </script>
+{{/section}} 

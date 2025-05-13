@@ -1,4 +1,5 @@
 import express from 'express';
+import { authPatient } from '../../middlewares/auth.route.js';
 const router = express.Router();
 
 router.use((req, res, next) => {
@@ -14,7 +15,7 @@ import bookAppointmentRouter from './book_appointment.route.js'
 router.use('/book-appointment', bookAppointmentRouter);
 
 import profileRouter  from './profile.route.js'
-router.use('/profile', profileRouter);
+router.use('/profile', authPatient, profileRouter);
 
 import specialtyRouter from './specialty.route.js'
 router.use('/specialty', specialtyRouter);
@@ -31,5 +32,9 @@ router.use('/services', servicesListRouter);
 
 import doctorDetailRouter from './doctor_detail.route.js'
 router.use('/doctor', doctorDetailRouter);
+
+// Import schedules route
+import schedulesListRouter from './schedules_list.route.js'
+router.use('/schedules', schedulesListRouter);
 
 export default router;

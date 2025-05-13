@@ -1,10 +1,68 @@
 {{#section 'css'}}
     <link rel="stylesheet" href="/public/css/patient-side/bookAppointment.css">
+    <style>
+        /* Custom styles for datepicker */
+        .ui-datepicker-calendar .ui-state-disabled {
+            background-color: #f8d7da !important;
+            color: #721c24 !important;
+            opacity: 0.8 !important;
+        }
+        
+        /* Date with available schedules */
+        .available-date a {
+            background-color: #d4edda !important;
+            color: #155724 !important;
+        }
+        
+        /* Today's date */
+        .ui-datepicker-today a {
+            border: 1px solid #007bff !important;
+        }
+        
+        /* Date picker legend */
+        .date-picker-legend {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+        }
+        
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            margin-right: 5px;
+            border-radius: 3px;
+        }
+        
+        .legend-available {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .legend-unavailable {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .legend-today {
+            background-color: #fff;
+            border: 1px solid #007bff;
+        }
+    </style>
 {{/section}}
 
 {{#section 'js'}}
 <script>
     $(document).ready(function() {
+        let availableDates = [];
+        
         // Initialize datepickers
         $("#birthday").datepicker({
             dateFormat: 'dd/mm/yy',
@@ -13,13 +71,64 @@
             yearRange: "-100:+0"
         });
         
+        // Helper function to check if a date is available
+        function isDateAvailable(date) {
+            // Format date to YYYY-MM-DD
+            const year = date.getFullYear();
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const day = date.getDate().toString().padStart(2, '0');
+            const formattedDate = `${year}-${month}-${day}`;
+            
+            return availableDates.includes(formattedDate);
+        }
+        
+        // Setup date picker with custom render
         $("#appointment-date").datepicker({
             dateFormat: 'dd/mm/yy',
             minDate: 0, // Disallow past dates
-            maxDate: "+3M" // Allow booking up to 3 months in advance
+            maxDate: "+3M", // Allow booking up to 3 months in advance
+            beforeShowDay: function(date) {
+                // Initialize with all dates disabled until we get available dates
+                const isAvailable = isDateAvailable(date);
+                
+                // If date is available, return selectable and add a custom class
+                if (isAvailable) {
+                    return [true, 'available-date', 'Schedules available'];
+                }
+                
+                // Otherwise, make the date non-selectable
+                return [false, '', 'No available schedules'];
+            }
         });
 
-        // Handle specialty change to load services via AJAX
+        // Function to fetch available dates based on specialty
+        function fetchAvailableDates(specialtyId) {
+            if (!specialtyId) return;
+            
+            $.ajax({
+                url: `/patient/book-appointment/available-dates?specialtyId=${specialtyId}`,
+                type: 'GET',
+                success: function(response) {
+                    if (response.success && response.availableDates) {
+                        // Update available dates
+                        availableDates = response.availableDates;
+                        
+                        // Refresh the datepicker to apply new available dates
+                        $("#appointment-date").datepicker("refresh");
+                        
+                        // Show the date picker legend
+                        $(".date-picker-legend").show();
+                    }
+                },
+                error: function(error) {
+                    console.error('Failed to fetch available dates:', error);
+                    availableDates = [];
+                    $("#appointment-date").datepicker("refresh");
+                }
+            });
+        }
+
+        // Handle specialty change to load services and available dates
         $("#specialty").change(function() {
             const specialtyId = $(this).val();
             if (specialtyId) {
@@ -46,9 +155,15 @@
                         $("#service-container").hide();
                     }
                 });
+                
+                // Fetch available dates for this specialty
+                fetchAvailableDates(specialtyId);
             } else {
-                // If no specialty selected, hide service dropdown
+                // If no specialty selected, hide service dropdown and reset datepicker
                 $("#service-container").hide();
+                availableDates = [];
+                $("#appointment-date").datepicker("refresh");
+                $(".date-picker-legend").hide();
             }
         });
 
@@ -111,6 +226,7 @@
 
         // Initially hide service container until a specialty is selected
         $("#service-container").hide();
+        $(".date-picker-legend").hide();
     });
 </script>
 {{/section}}
@@ -170,13 +286,6 @@
             
             <div class="booking-info">
                 <div class="input-group">
-                    <div class="appoinment-date-input">
-                        <input type="text" id="appointment-date" placeholder="Appointment Date">
-                        <img src="/public/images/icon/icons8-calendar-32.png" alt="" width="20px">
-                    </div>
-                </div>
-                
-                <div class="input-group">
                     <div class="select-wrapper-service">
                         <select id="specialty">
                             <option value="" disabled selected>Select Specialty</option>
@@ -185,6 +294,27 @@
                             {{/each}}
                         </select>
                         <img src="/public/images/icon/icons8-arrow-down-24 (3).png" alt="">
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <div class="appoinment-date-input">
+                        <input type="text" id="appointment-date" placeholder="Appointment Date">
+                        <img src="/public/images/icon/icons8-calendar-32.png" alt="" width="20px">
+                    </div>
+                    <div class="date-picker-legend ml-2">
+                        <div class="legend-item">
+                            <div class="legend-color legend-available"></div>
+                            <span>Available</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color legend-unavailable"></div>
+                            <span>No Available Schedule</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color legend-today"></div>
+                            <span>Today</span>
+                        </div>
                     </div>
                 </div>
                 

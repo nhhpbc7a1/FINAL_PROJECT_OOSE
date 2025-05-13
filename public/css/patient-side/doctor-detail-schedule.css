@@ -1,0 +1,340 @@
+/* Schedule Page Styles */
+.schedules-page .separator {
+    height: 4px;
+    width: 60px;
+    background: var(--bs-primary);
+    margin: 0 auto;
+  }
+  
+  /* Schedule Calendar Styles */
+  .schedule-filters {
+    margin-bottom: 2rem;
+  }
+  
+  .schedule-calendar {
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+    background-color: #fff;
+  }
+  
+  .schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  
+  .schedule-table th, 
+  .schedule-table td {
+    border: 1px solid #e0e0e0;
+    text-align: center;
+    padding: 0;
+  }
+  
+  .time-header {
+    width: 100px;
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #495057;
+    padding: 15px 10px;
+    border-bottom: 2px solid #0d6efd;
+  }
+  
+  .day-header {
+    padding: 10px;
+    background-color: #0d6efd;
+    color: white;
+    border-bottom: 2px solid #0d6efd;
+  }
+  
+  .day-name {
+    font-weight: 600;
+    margin-bottom: 5px;
+  }
+  
+  .day-date {
+    font-size: 0.85rem;
+    opacity: 0.8;
+  }
+  
+  .time-slot {
+    background-color: #f8f9fa;
+    padding: 15px 10px;
+    font-weight: 500;
+    color: #495057;
+    width: 100px;
+  }
+  
+  .schedule-cell {
+    height: 120px;
+    background-color: white;
+    position: relative;
+    vertical-align: top;
+  }
+  
+  .schedule-item {
+    padding: 10px;
+    border-radius: 6px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.2s ease;
+  }
+  
+  .schedule-available {
+    background-color: rgba(25, 135, 84, 0.1);
+    border-left: 4px solid #198754;
+  }
+  
+  .schedule-booked {
+    background-color: rgba(255, 193, 7, 0.1);
+    border-left: 4px solid #ffc107;
+  }
+  
+  .schedule-unavailable {
+    background-color: rgba(220, 53, 69, 0.1);
+    border-left: 4px solid #dc3545;
+  }
+  
+  .schedule-time {
+    font-weight: 500;
+    margin-bottom: 10px;
+  }
+  
+  .schedule-status {
+    text-align: center;
+    margin-top: auto;
+  }
+  
+  .status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  
+  .status-badge.available {
+    background-color: #d1e7dd;
+    color: #146c43;
+  }
+  
+  .status-badge.booked {
+    background-color: #fff3cd;
+    color: #997404;
+  }
+  
+  .status-badge.unavailable {
+    background-color: #f8d7da;
+    color: #b02a37;
+  }
+  
+  .book-btn {
+    background-color: #0d6efd;
+    color: white;
+    border: none;
+    padding: 5px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-block;
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+  
+  .book-btn:hover {
+    background-color: #0b5ed7;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .schedule-empty {
+    height: 100%;
+    background-color: #ffffff;
+  }
+  
+  .empty-schedule {
+    padding: 30px;
+    text-align: center;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin: 20px 0;
+  }
+  
+  .empty-schedule p {
+    color: #6c757d;
+    font-size: 1rem;
+    margin: 0;
+  }
+  
+  /* Responsive styles */
+  @media (max-width: 768px) {
+    .time-header, .time-slot {
+      width: 80px;
+    }
+    
+    .schedule-table {
+      font-size: 0.9rem;
+    }
+    
+    .status-badge {
+      font-size: 0.75rem;
+      padding: 3px 6px;
+    }
+    
+    .book-btn {
+      font-size: 0.8rem;
+      padding: 4px 10px;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .schedule-table {
+      font-size: 0.8rem;
+    }
+    
+    .time-header, .time-slot {
+      width: 60px;
+      padding: 10px 5px;
+    }
+    
+    .day-header {
+      padding: 8px 3px;
+    }
+    
+    .schedule-cell {
+      height: 100px;
+    }
+    
+    .schedule-item {
+      padding: 5px;
+    }
+    
+    .schedule-time {
+      font-size: 0.75rem;
+      margin-bottom: 5px;
+    }
+  }
+  
+  /* Hover effect */
+  .schedule-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    z-index: 1;
+  }
+  
+  /* Tab styles for doctor detail page */
+  .schedule-wrapper {
+    padding: 1.5rem;
+  }
+  
+  .section-title {
+    margin-bottom: 1.5rem;
+    color: #0d6efd;
+    font-weight: 600;
+  }
+  
+  .schedule-wrapper .schedule-calendar {
+    margin-top: 1.5rem;
+  }
+  
+  /* Fix for doctor detail page */
+  #schedule {
+    background-color: white;
+  }
+  
+  /* Add doctor's info to schedule items */
+  .doctor-info {
+    font-size: 0.85rem;
+    margin-bottom: 5px;
+    color: #495057;
+  }
+  
+  .room-info {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-bottom: 5px;
+  }
+  
+  /* Mobile Schedule List */
+  .schedule-list {
+    display: none;
+  }
+  
+  @media (max-width: 767.98px) {
+    .schedule-calendar {
+      display: none;
+    }
+    
+    .schedule-list {
+      display: block;
+    }
+    
+    .schedule-card {
+      transition: transform 0.3s ease;
+    }
+    
+    .schedule-card:hover {
+      transform: translateY(-5px);
+    }
+  }
+  
+  /* Week Navigation */
+  .week-navigation {
+    margin-bottom: 1.5rem;
+  }
+  
+  .date-display {
+    font-weight: bold;
+    min-width: 200px;
+    text-align: center;
+  }
+  
+  /* Badge styles */
+  .badge {
+    font-weight: normal;
+    padding: 0.5em 0.8em;
+  }
+  
+  .badge .btn-close {
+    font-size: 0.6em;
+    margin-top: -0.1em;
+  }
+  
+  /* Empty state */
+  .empty-state {
+    padding: 3rem 0;
+  }
+  
+  .empty-icon {
+    font-size: 5rem;
+    color: #dee2e6;
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 575.98px) {
+    .calendar-time-header, .calendar-time-cell {
+      width: 80px;
+    }
+    
+    .calendar-day-header, .calendar-day-cell {
+      padding: 5px;
+    }
+    
+    .time-slot-description {
+      display: none;
+    }
+    
+    .schedule-item {
+      padding: 8px;
+    }
+    
+    .schedule-item-actions .btn {
+      padding: 0.2rem 0.4rem;
+      font-size: 0.75rem;
+    }
+  } 

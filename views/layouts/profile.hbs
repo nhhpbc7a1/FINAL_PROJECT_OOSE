@@ -20,27 +20,31 @@
             <aside class="sidebar">
                 <div class="sidebar-item-container"> 
                     <button class="sidebar-item ">
+                        <a href="/patient/profile">
                         <img src="/public/images/icon/icons8-user-32 (1).png" alt="">
-                        <a href="/patient/profile">Profile</a>
+                        Profile</a>
                     </button>
                     <button class="sidebar-item">
+                        <a href="/patient/profile/changePass">
                         <img src="/public/images/icon/icons8-password-32 (1).png" alt="">
-                        <a href="/patient/profile/changePass">Password</a>
+                        Password</a>
                     </button>
                     <button class="sidebar-item">
+                        <a href="/patient/profile/appointmentList">
                         <img src="/public/images/icon/icons8-exam-32.png" alt="">
-                        <a href="/patient/profile/appointmentList">Appointment</a>
-                    </button>
-                    <button class="sidebar-item">
-                        <i class="bi bi-house mr-3" style="font-size: 24px;"></i>
-                        <a href="/">Homepage</a>
+                        Appointment</a>
                     </button>
                     <button class="sidebar-item logout">
-                        <img src="/public/images/icon/icons8-logout-32.png" alt="">
                         <form id="frmLogout" action="/account/logout" method="post"></form>
                         <a href="javascript: $('#frmLogout').submit()">
+                            <img src="/public/images/icon/icons8-logout-32.png" alt="">
                             Log out
                         </a>
+                    </button>
+                    <button class="sidebar-item">
+                        <a href="/">
+                        <i class="bi bi-house mr-3" style="font-size: 24px;"></i>
+                        Homepage</a>
                     </button>
                 </div>
             </aside>
@@ -50,10 +54,10 @@
                         <img src="placeholder-avatar.png" alt=" ">
                     </div>
                     <div class="user-details mt-2">
-                        <h5 class="username">Lavender Blue 
+                        <h5 class="username">{{authUser.fullName}}
                             <img src="/public/images/icon/icons8-edit-32.png" alt="">
                         </h5>
-                        <p class="email">lthuong10112003@gmail.com</p>
+                        <p class="email">{{authUser.email}}</p>
                     </div>
                 </div>
                 <main class="main-content">

@@ -199,6 +199,34 @@ router.post('/input-form', async function (req, res) {
     }
 });
 
+// API to get available dates
+router.get('/available-dates', async function (req, res) {
+    try {
+        const specialtyId = req.query.specialtyId;
+        
+        if (!specialtyId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Specialty ID is required'
+            });
+        }
+        
+        // Get dates with available schedules for the specialty
+        const availableDates = await bookAppointmentService.getAvailableDatesForSpecialty(specialtyId);
+        
+        return res.json({
+            success: true,
+            availableDates: availableDates
+        });
+    } catch (error) {
+        console.error('Error fetching available dates:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to fetch available dates'
+        });
+    }
+});
+
 // Step 2: Show email verification form
 router.get('/verify-email', async function (req, res) {
     // Set current step for UI highlighting
