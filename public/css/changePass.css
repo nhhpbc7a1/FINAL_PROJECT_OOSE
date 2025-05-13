@@ -56,6 +56,13 @@
     margin-top: 20px;
     /* Space for the eye icon */
 }
+.password-notion.invalid {
+  color: red;
+}
+.password-notion.valid {
+  color: green;
+}
+
 .input-group img{
     position: absolute;
     margin-right: 20px;

@@ -120,9 +120,8 @@ router.post('/signup', async function (req, res) {
         const { name, email, phone, birthday, gender, address, password } = req.body;
         // 3. Mã hóa mật khẩu
         const hashedPassword = bcrypt.hashSync(password, 8);
-        const ymd_dob = moment(birthday,'DD/MM/YYYY').format('YYYY-MM-DD');
-
-        // 4. Tạo đối tượng user
+        const ymd_dob = moment(birthday, 'DD/MM/YYYY').format('YYYY-MM-DD');
+                // 4. Tạo đối tượng user
         const user = {
             fullName: name,
             email,
@@ -133,7 +132,6 @@ router.post('/signup', async function (req, res) {
             password: hashedPassword,
             roleId: 3,
         };
-        console.log(user)
         // 5. Lưu vào CSDL
         const new_user = await userService.add(user);
         
