@@ -12,28 +12,60 @@
 {{/section}}
 
 <div class="form-group">
-    <div class="input-group password-group">
-        <div class="password-input">
-            <input type="password" id="current-password" placeholder="Enter current password">
-            <img src="/public/images/icon/icons8-eye-30.png" alt="">
+    {{#if error}}
+        <div class="alert alert-danger">{{error}}</div>
+    {{/if}}
+
+    {{#if success}}
+        <div class="alert alert-success">{{success}}</div>
+    {{/if}}
+    <form action="/patient/profile/changePass" method="post" id="frmChangePass">
+        <div class="input-group password-group">
+            <div class="password-input">
+                <input type="password" id="txtPassword" name="password" placeholder="Enter current password">
+                <img src="/public/images/icon/icons8-eye-30.png" alt="" class="toggle-password" data-target="txtPassword">
+            </div>
         </div>
-    </div>
-    <div class="input-group password-group">
-        <div class="password-input">
-            <input type="password" id="new-password" placeholder="Enter new password">
-            <img src="/public/images/icon/icons8-eye-30.png" alt="">
+        <div class="input-group password-group">
+            <div class="password-input">
+                <input type="password" id="txtNewPassword" name="new_password" placeholder="Enter new password">
+                <img src="/public/images/icon/icons8-eye-30.png" alt="" class="toggle-password" data-target="txtNewPassword">
+            </div>
         </div>
-    </div>
-    <p class="password-notion">Create a new password that is at least 6 characters long. A strong password is a combination of letters, numbers, and punctuation.</p>
-    <div class="input-group password-group">
-        <div class="password-input">
-            <input type="password" id="re-type-password" placeholder="Re-type new password">
-            <img src="/public/images/icon/icons8-eye-30.png" alt="">
+        <p class="password-notion">Create a new password that is at least 6 characters long. A strong password is a combination of letters, numbers, and punctuation.</p>
+        <div class="input-group password-group">
+            <div class="password-input">
+                <input type="password" id="txtRetypePassword" name="re_type_password" placeholder="Re-type new password">
+                <img src="/public/images/icon/icons8-eye-30.png" alt="" class="toggle-password" data-target="txtRetypePassword">
+            </div>
         </div>
-    </div>
-    <p  class="password-notion">Your retype password must be the same as the password you just created</p>
+        <p  class="password-notion">Your retype password must be the same as the password you just created</p>
+        <div class="update-button-container">
+            <button class="back-button">Back</button>
+            <button class="update-button" type="submit">Update</button>
+        </div>
+
+    </form>
 </div>
-<div class="update-button-container">
-    <button class="back-button">Back</button>
-    <button class="update-button">Update</button>
-</div>
+
+{{#section 'js'}}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+<script>
+    document.querySelectorAll('.toggle-password').forEach(icon => {
+    icon.addEventListener('click', function () {
+        const targetId = this.dataset.target;
+        const input = document.getElementById(targetId);
+
+        const isHidden = input.type === 'password';
+        input.type = isHidden ? 'text' : 'password';
+
+        this.src = isHidden 
+            ? '/public/images/icon/icon_hide.png' 
+            : '/public/images/icon/icons8-eye-30.png';
+    });
+});
+</script>
+
+{{/section}}

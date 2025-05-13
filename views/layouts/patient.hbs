@@ -11,8 +11,8 @@
     {{!-- swiperjs --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <link rel="stylesheet" href="/public/css/patient-side/patient.css">
     {{{_sections.css}}}
+    <link rel="stylesheet" href="/public/css/patient-side/patient.css">
 </head>
 <body>
     <header>
@@ -88,18 +88,17 @@
             </div>
         </nav>
     </header>
-    
-    <main class="container">
+    <main class="container-fluid">
         {{{body}}}
     </main>
      <footer>
-        <div class="footer-top">
-            <div class="footer-logo">
-                <a class="logo d-flex" href="/">     
+        <div class="footer-top row">
+            <div class="footer-logo col-3">
+                <a class="logo" href="/">     
                     <img src="/public/images/Logo (2).png" alt="Logo">
                 </a>
             </div>
-            <div class="footer-policy">
+            <div class="footer-policy col-3">
                 <h5>Policy</h5>
                 <ul>
                     <li><a href="#"><img src="/public/images/icon/icon_policy.png" alt="File Icon"> Humanity</a></li>
@@ -107,13 +106,13 @@
                     <li><a href="#"><img src="/public/images/icon/icon_policy.png" alt="File Icon"> Tax</a></li>
                 </ul>
             </div>
-            <div class="footer-contact">
+            <div class="footer-contact col-3">
                 <h5>Contact</h5>
                 <p><img src="/public/images/icon/icon_address.png" alt="Location Icon"> 5/3 113 Phuoc Long</p>
                 <p><img src="/public/images/icon/icon_phone.png" alt="Phone Icon"> 0392164763</p>
                 <p><img src="/public/images/icon/icon_email.png" alt="Email Icon"> eternalHospital@gmail.com</p>
             </div>
-            <div class="footer-working-hours">
+            <div class="footer-working-hours col-3">
                 <h5>Working hours</h5>
                 <div class="hours-box">
                     <p>From Mon - Sat</p>
