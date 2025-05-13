@@ -95,7 +95,7 @@
         background-color: #e0e0e0;
     }
     
-    .requests-container {
+    .results-container {
         background-color: #fff;
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -103,13 +103,13 @@
         overflow: hidden;
     }
     
-    .requests-table {
+    .results-table {
         width: 100%;
         border-collapse: separate;
         border-spacing: 0;
     }
     
-    .requests-table th {
+    .results-table th {
         background-color: #f8f9fa;
         padding: 12px 15px;
         text-align: left;
@@ -118,46 +118,34 @@
         border-bottom: 1px solid #e0e0e0;
     }
     
-    .requests-table td {
+    .results-table td {
         padding: 12px 15px;
         border-bottom: 1px solid #e0e0e0;
         font-size: 14px;
     }
     
-    .requests-table tr:hover td {
+    .results-table tr:hover td {
         background-color: #f5f5f5;
     }
     
-    .requests-table tr:last-child td {
+    .results-table tr:last-child td {
         border-bottom: none;
     }
     
-    .status-badge {
-        display: inline-block;
-        padding: 5px 10px;
-        border-radius: 4px;
-        font-size: 12px;
+    .result-value {
         font-weight: 500;
     }
     
-    .status-pending {
-        background-color: rgba(255, 152, 0, 0.1);
-        color: #ff9800;
-    }
-    
-    .status-completed {
-        background-color: rgba(76, 175, 80, 0.1);
+    .result-normal {
         color: #4caf50;
     }
     
-    .status-in_progress {
-        background-color: rgba(33, 150, 243, 0.1);
-        color: #2196f3;
+    .result-abnormal {
+        color: #f44336;
     }
     
-    .status-cancelled {
-        background-color: rgba(244, 67, 54, 0.1);
-        color: #f44336;
+    .result-pending {
+        color: #ff9800;
     }
     
     .btn-action {
@@ -176,20 +164,28 @@
         background-color: #1976d2;
     }
     
-    .btn-start {
-        background-color: #4caf50;
-    }
-    
-    .btn-start:hover {
-        background-color: #388e3c;
-    }
-    
     .btn-view {
         background-color: #2196f3;
     }
     
     .btn-view:hover {
         background-color: #1976d2;
+    }
+    
+    .btn-print {
+        background-color: #9c27b0;
+    }
+    
+    .btn-print:hover {
+        background-color: #7b1fa2;
+    }
+    
+    .btn-edit {
+        background-color: #ff9800;
+    }
+    
+    .btn-edit:hover {
+        background-color: #f57c00;
     }
     
     .pagination-container {
@@ -246,15 +242,60 @@
         margin-bottom: 15px;
         color: #ddd;
     }
+    
+    .result-info {
+        display: flex;
+        align-items: center;
+    }
+    
+    .result-info i {
+        margin-right: 5px;
+    }
+    
+    .result-date {
+        color: #757575;
+        font-size: 12px;
+        display: block;
+        margin-top: 3px;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    
+    .status-pending {
+        background-color: rgba(255, 152, 0, 0.1);
+        color: #ff9800;
+    }
+    
+    .status-completed {
+        background-color: rgba(76, 175, 80, 0.1);
+        color: #4caf50;
+    }
+    
+    .status-in_progress {
+        background-color: rgba(33, 150, 243, 0.1);
+        color: #2196f3;
+    }
+    
+    .status-cancelled {
+        background-color: rgba(244, 67, 54, 0.1);
+        color: #f44336;
+    }
+
 </style>
 {{/section}}
 
 <div class="page-header">
-    <h1 class="page-title">Test Requests</h1>
+    <h1 class="page-title">Test Results</h1>
 </div>
 
 <div class="filter-container">
-    <form id="filter-form" action="/labtech/test-requests" method="GET">
+    <form id="filter-form" action="/labtech/test-results" method="GET">
         <div class="filter-row">
             <div class="filter-group">
                 <label class="filter-label">Search</label>
@@ -266,19 +307,17 @@
                 <select name="testType" class="filter-select">
                     <option value="">All Test Types</option>
                     {{#each testTypes}}
-                    <option value="{{this.serviceId}}" {{#if (eq ../filters.testType this.serviceId)}}selected{{/if}}>{{this.name}}</option>
+                    <option value="{{this.serviceId}}" {{#if (eq ../filters.testType this.typeId)}}selected{{/if}}>{{this.name}}</option>
                     {{/each}}
                 </select>
             </div>
             
             <div class="filter-group">
-                <label class="filter-label">Status</label>
-                <select name="status" class="filter-select">
-                    <option value="">All Statuses</option>
-                    <option value="pending" {{#if (eq filters.status 'pending')}}selected{{/if}}>Pending</option>
-                    <option value="in_progress" {{#if (eq filters.status 'in_progress')}}selected{{/if}}>In Progress</option>
-                    <option value="completed" {{#if (eq filters.status 'completed')}}selected{{/if}}>Completed</option>
-                    <option value="cancelled" {{#if (eq filters.status 'cancelled')}}selected{{/if}}>Cancelled</option>
+                <label class="filter-label">Result Type</label>
+                <select name="resultType" class="filter-select">
+                    <option value="">All Result Types</option>
+                    <option value="normal" {{#if (eq filters.resultType 'normal')}}selected{{/if}}>Normal</option>
+                    <option value="abnormal" {{#if (eq filters.resultType 'abnormal')}}selected{{/if}}>Abnormal</option>
                 </select>
             </div>
             
@@ -296,48 +335,84 @@
                 <i class="fas fa-filter"></i> Filter
             </button>
             
-            <a href="/labtech/test-requests" class="btn-reset">
+            <a href="/labtech/test-results" class="btn-reset">
                 <i class="fas fa-times"></i> Reset
             </a>
         </div>
     </form>
 </div>
 
-<div class="requests-container">
-    {{#if testRequests.length}}
-    <table class="requests-table">
+<div class="results-container">
+    {{#if testResults.length}}
+    <table class="results-table">
         <thead>
             <tr>
-                <th>Request ID</th>
+                <th>Result ID</th>
                 <th>Patient</th>
                 <th>Test Type</th>
-                <th>Doctor</th>
-                <th>Request Date</th>
+                <th>Result</th>
+                <th>Performed Date</th>
                 <th>Status</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
-            {{#each testRequests}}
+            {{#each testResults}}
             <tr>
-                <td>#{{requestId}}</td>
-                <td>{{patientName}}</td>
+                <td>#{{resultId}}</td>
+                <td>{{fullName}} <small>(#{{patientId}})</small></td>
                 <td>{{testName}}</td>
-                <td>Dr. {{doctorName}}</td>
-                <td>{{formatDate requestDate}}</td>
                 <td>
-                    <span class="status-badge status-{{statusClass}}">{{status}}</span>
+                    {{#if (eq resultType 'numeric')}}
+                    <div class="result-info">
+                        <span class="result-value {{#if isAbnormal}}result-abnormal{{else}}result-normal{{/if}}">
+                            {{resultNumeric}} {{unit}}
+                        </span>
+                        {{#if normalRange}}
+                        <span class="result-range">(Normal: {{normalRange}} {{unit}})</span>
+                        {{/if}}
+                    </div>
+                    {{else if (eq resultType 'text')}}
+                    <div class="result-info">
+                        <span class="result-value">
+                            {{resultText}}
+                        </span>
+                    </div>
+                    {{else if (eq resultType 'file')}}
+                    <div class="result-info">
+                        <i class="fas fa-file"></i>
+                        <span>{{fileName}}</span>
+                    </div>
+                    {{else}}
+                    <div class="result-info">
+                        <span class="result-pending">Pending</span>
+                    </div>
+                    {{/if}}
+                    {{#if reportedDate}}
+                    <span class="result-date">Reported: {{formatDate reportedDate}}</span>
+                    {{/if}}
+                </td>
+                <td>{{formatDate performedDate}}</td>
+                <td>
+                    <span class="status-badge status-{{status}}">{{status}}</span>
                 </td>
                 <td>
-                    {{#if (eq status 'pending')}}
-                    <a href="/labtech/test-requests/start/{{requestId}}" class="btn-action btn-start">
-                        <i class="fas fa-play"></i> Start Test
-                    </a>
-                    {{/if}}
-                                        
-                    <a href="/labtech/test-requests/{{requestId}}" class="btn-action btn-view">
+                    <a href="/labtech/test-results/{{resultId}}" class="btn-action btn-view">
                         <i class="fas fa-eye"></i> View
                     </a>
+                    {{#if (eq status 'pending')}}
+                    <a href="/labtech/test-results/edit/{{resultId}}" class="btn-action btn-edit">
+                        <i class="fas fa-edit"></i> Enter Results
+                    </a>
+                    {{else if (eq status 'in_progress')}}
+                    <a href="/labtech/test-results/edit/{{resultId}}" class="btn-action btn-edit">
+                        <i class="fas fa-edit"></i> Continue
+                    </a>
+                    {{else if (eq status 'completed')}}
+                    <a href="/labtech/test-results/print/{{resultId}}" class="btn-action btn-print" target="_blank">
+                        <i class="fas fa-print"></i> Print
+                    </a>
+                    {{/if}}
                 </td>
             </tr>
             {{/each}}
@@ -345,8 +420,8 @@
     </table>
     {{else}}
     <div class="empty-state">
-        <i class="fas fa-flask"></i>
-        <p>No test requests found matching your criteria</p>
+        <i class="fas fa-file-medical-alt"></i>
+        <p>No test results found matching your criteria</p>
     </div>
     {{/if}}
 </div>
@@ -356,7 +431,7 @@
     <ul class="pagination">
         {{#if pagination.hasPrevPage}}
         <li>
-            <a href="/labtech/test-requests?page={{pagination.prevPage}}{{#each filters as |value key|}}&{{key}}={{value}}{{/each}}">
+            <a href="/labtech/test-results?page={{pagination.prevPage}}{{#each filters as |value key|}}&{{key}}={{value}}{{/each}}">
                 <i class="fas fa-chevron-left"></i>
             </a>
         </li>
@@ -368,13 +443,13 @@
         
         {{#each pagination.pages}}
         <li {{#if (eq this ../pagination.currentPage)}}class="active"{{/if}}>
-            <a href="/labtech/test-requests?page={{this}}{{#each ../filters as |value key|}}&{{key}}={{value}}{{/each}}">{{this}}</a>
+            <a href="/labtech/test-results?page={{this}}{{#each ../filters as |value key|}}&{{key}}={{value}}{{/each}}">{{this}}</a>
         </li>
         {{/each}}
         
         {{#if pagination.hasNextPage}}
         <li>
-            <a href="/labtech/test-requests?page={{pagination.nextPage}}{{#each filters as |value key|}}&{{key}}={{value}}{{/each}}">
+            <a href="/labtech/test-results?page={{pagination.nextPage}}{{#each filters as |value key|}}&{{key}}={{value}}{{/each}}">
                 <i class="fas fa-chevron-right"></i>
             </a>
         </li>
@@ -390,7 +465,28 @@
 {{#section 'js'}}
 <script>
     $(document).ready(function() {
-        // Add any JavaScript functionality needed for the test requests page
+        // Check if lab technician has active schedule
+        function checkActiveSchedule() {
+            fetch('/labtech/active-schedule-status')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.hasActiveSchedule) {
+                        // Disable edit buttons if no active schedule
+                        $('.btn-edit').addClass('disabled');
+                        $('.btn-edit').attr('title', 'You must be on duty to edit test results');
+                        $('.btn-edit').click(function(e) {
+                            e.preventDefault();
+                            alert('You cannot edit test results when you are not on duty. Please try again during your scheduled shift.');
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking active schedule:', error);
+                });
+        }
+        
+        // Call the function when page loads
+        checkActiveSchedule();
     });
 </script>
 {{/section}} 
