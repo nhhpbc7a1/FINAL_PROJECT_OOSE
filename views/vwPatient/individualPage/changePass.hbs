@@ -2,38 +2,145 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
         integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    {{!-- swiperjs --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <link rel="stylesheet" href="/public/css/changePass.css">
 {{/section}}
 
-{{#section 'js'}}
-{{/section}}
+{{#section 'js'}}{{/section}}
 
 <div class="form-group">
-    <div class="input-group password-group">
-        <div class="password-input">
-            <input type="password" id="current-password" placeholder="Enter current password">
-            <img src="/public/images/icon/icons8-eye-30.png" alt="">
+    {{#if error}}
+        <div class="alert alert-danger">{{error}}</div>
+    {{/if}}
+
+    {{#if success}}
+        <div class="alert alert-success">{{success}}</div>
+    {{/if}}
+
+    <form action="/patient/profile/changePass" method="post" id="frmChangePass">
+        <div class="input-group password-group">
+            <div class="password-input">
+                <input type="password" id="txtPassword" name="password" placeholder="Enter current password">
+                <img src="/public/images/icon/icons8-eye-30.png" alt="" class="toggle-password" data-target="txtPassword">
+            </div>
         </div>
-    </div>
-    <div class="input-group password-group">
-        <div class="password-input">
-            <input type="password" id="new-password" placeholder="Enter new password">
-            <img src="/public/images/icon/icons8-eye-30.png" alt="">
+
+        <div class="input-group password-group">
+            <div class="password-input">
+                <input type="password" id="txtNewPassword" name="new_password" placeholder="Enter new password">
+                <img src="/public/images/icon/icons8-eye-30.png" alt="" class="toggle-password" data-target="txtNewPassword">
+            </div>
         </div>
-    </div>
-    <p class="password-notion">Create a new password that is at least 6 characters long. A strong password is a combination of letters, numbers, and punctuation.</p>
-    <div class="input-group password-group">
-        <div class="password-input">
-            <input type="password" id="re-type-password" placeholder="Re-type new password">
-            <img src="/public/images/icon/icons8-eye-30.png" alt="">
+        <p id="passwordHint" class="password-notion">Create a new password that is at least 6 characters long. A strong password is a combination of letters, numbers, and punctuation.</p>
+
+        <div class="input-group password-group">
+            <div class="password-input">
+                <input type="password" id="txtRetypePassword" name="re_type_password" placeholder="Re-type new password">
+                <img src="/public/images/icon/icons8-eye-30.png" alt="" class="toggle-password" data-target="txtRetypePassword">
+            </div>
         </div>
-    </div>
-    <p  class="password-notion">Your retype password must be the same as the password you just created</p>
+        <p id="retypeHint" class="password-notion">Your retype password must be the same as the password you just created</p>
+
+        <div class="update-button-container">
+            <button type="button" class="back-button" onclick="window.history.back();">Back</button>
+            <button class="update-button" type="submit">Update</button>
+        </div>
+    </form>
 </div>
-<div class="update-button-container">
-    <button class="back-button">Back</button>
-    <button class="update-button">Update</button>
-</div>
+
+{{#section 'js'}}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    // Toggle password visibility
+    document.querySelectorAll('.toggle-password').forEach(icon => {
+        icon.addEventListener('click', function () {
+            const targetId = this.dataset.target;
+            const input = document.getElementById(targetId);
+            const isHidden = input.type === 'password';
+            input.type = isHidden ? 'text' : 'password';
+            this.src = isHidden 
+                ? '/public/images/icon/icon_hide.png' 
+                : '/public/images/icon/icons8-eye-30.png';
+        });
+    });
+
+    // Validate password format
+    const newPasswordInput = document.getElementById('txtNewPassword');
+    const retypePasswordInput = document.getElementById('txtRetypePassword');
+    const passwordHint = document.getElementById('passwordHint');
+    const retypeHint = document.getElementById('retypeHint');
+
+    function isValidPasswordFormat(password) {
+        const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&.])[A-Za-z\d@$!%*#?&.]{6,}$/;
+        return regex.test(password);
+    }
+
+    function checkPasswordFormat() {
+        const password = newPasswordInput.value;
+        if (isValidPasswordFormat(password)) {
+            passwordHint.classList.add('valid');
+            passwordHint.classList.remove('invalid');
+        } else {
+            passwordHint.classList.add('invalid');
+            passwordHint.classList.remove('valid');
+        }
+    }
+
+    function checkRetypePassword() {
+        const newPassword = newPasswordInput.value;
+        const retypePassword = retypePasswordInput.value;
+
+        if (retypePassword === '') {
+            retypeHint.classList.remove('valid', 'invalid');
+            return;
+        }
+
+        if (retypePassword !== newPassword) {
+            retypeHint.textContent = 'Passwords do not match';
+            retypeHint.classList.remove('valid');
+            retypeHint.classList.add('invalid');
+        } else if (!isValidPasswordFormat(retypePassword)) {
+            retypeHint.textContent = 'Password format is invalid (min 6 chars, include letters and numbers/symbols)';
+            retypeHint.classList.remove('valid');
+            retypeHint.classList.add('invalid');
+        } else {
+            retypeHint.textContent = 'Password looks good!';
+            retypeHint.classList.remove('invalid');
+            retypeHint.classList.add('valid');
+        }
+    }
+
+    newPasswordInput.addEventListener('input', () => {
+        checkPasswordFormat();
+        checkRetypePassword();
+    });
+
+    retypePasswordInput.addEventListener('input', checkRetypePassword);
+
+    // Client-side validation before form submit
+    document.getElementById('frmChangePass').addEventListener('submit', function (e) {
+        const currentPassword = document.getElementById('txtPassword').value.trim();
+        const newPassword = newPasswordInput.value.trim();
+        const retypePassword = retypePasswordInput.value.trim();
+
+        if (!currentPassword || !newPassword || !retypePassword) {
+            alert('Please fill in all required fields.');
+            e.preventDefault();
+            return;
+        }
+
+        if (!isValidPasswordFormat(newPassword)) {
+            alert('New password format is invalid. It must be at least 6 characters and include letters, numbers and symbols.');
+            e.preventDefault();
+            return;
+        }
+
+        if (newPassword !== retypePassword) {
+            alert('Passwords do not match.');
+            e.preventDefault();
+            return;
+        }
+    });
+</script>
+{{/section}}

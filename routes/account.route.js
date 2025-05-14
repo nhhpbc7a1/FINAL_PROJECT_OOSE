@@ -3,6 +3,9 @@ import check from '../middlewares/auth.route.js'
 import userService from '../services/user.service.js';
 import accountService from '../services/account.service.js';
 import bcrypt from 'bcryptjs';
+import axios from 'axios'
+import moment from 'moment';
+
 
 const router = express.Router();
 
@@ -93,7 +96,7 @@ router.post('/login', async function (req, res) {
             redirectUrl = '/doctor'; // URL for doctor
             break;
         case 3:
-            redirectUrl = '/patient'; // URL for patient
+            redirectUrl = '/'; // URL for patient
             break;
         case 4:
             redirectUrl = '/labtech'; // URL for lab technician
@@ -111,6 +114,42 @@ router.post('/logout', check, function (req, res) {
     console.log('logged out');
 });
 
+router.post('/signup', async function (req, res) {
+
+    try {
+        const { name, email, phone, birthday, gender, address, password } = req.body;
+        // 3. Mã hóa mật khẩu
+        const hashedPassword = bcrypt.hashSync(password, 8);
+        const ymd_dob = moment(birthday, 'DD/MM/YYYY').format('YYYY-MM-DD');
+                // 4. Tạo đối tượng user
+        const user = {
+            fullName: name,
+            email,
+            phoneNumber: phone,
+            dob: ymd_dob,
+            gender,
+            address,
+            password: hashedPassword,
+            roleId: 3,
+        };
+        // 5. Lưu vào CSDL
+        const new_user = await userService.add(user);
+        
+        // 6. Tạo session
+        req.session.auth = true;
+        req.session.authUser = new_user;
+        req.session.authUser.roleName = "patient";
+
+
+        // 7. Chuyển hướng về trang chủ
+        return res.redirect('/');
+    }catch (error) {
+        console.error('Fail to sign up:', error);
+        return res.render('signup', {
+            error: 'An error occurred while signing up. Please try again later.'
+        });
+    }
+});
 
 router.get('/signup', async function (req, res) {
     res.render('signup');

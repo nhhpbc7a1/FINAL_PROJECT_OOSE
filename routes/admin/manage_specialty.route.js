@@ -233,6 +233,7 @@ router.post('/update/:specialtyId', async function (req, res, next) {
   req.session.returnTo = `/admin/manage_specialty/edit/${specialtyId}`;
   let iconPath = null;
   let oldIconPath = null;
+  console.log('Request body:', req.body);
 
   if (isNaN(specialtyId)) {
       req.session.flashMessage = { type: 'danger', message: 'Invalid Specialty ID.' };
@@ -241,6 +242,9 @@ router.post('/update/:specialtyId', async function (req, res, next) {
 
   try {
     const { name, description, headDoctorId /*, hospitalId */ } = req.body;
+
+
+    
 
     // --- Validation ---
     if (!name || name.trim() === '') {
@@ -288,13 +292,30 @@ router.post('/update/:specialtyId', async function (req, res, next) {
       iconPath = `/public/images/specialties/${filename}`;
 
       // Delete old icon if it exists and is not the default icon
-      if (oldIconPath && oldIconPath !== '/public/images/specialties/default-specialty.jpg') {
-        try {
-          const fullOldPath = path.join(__dirname, '../../', oldIconPath);
-          await fs.unlink(fullOldPath);
-          console.log('Deleted old specialty icon:', oldIconPath);
-        } catch (unlinkError) {
-          console.error('Error deleting old specialty icon:', unlinkError);
+      if (oldIconPath) {
+        // Normalize the path for comparison - handle both absolute and relative paths
+        const normalizedPath = oldIconPath.startsWith('/') ? oldIconPath : `/${oldIconPath}`;
+        
+        // Check against all possible variations of the default path
+        const defaultPaths = [
+          '/public/images/specialties/default-specialty.jpg',
+          'public/images/specialties/default-specialty.jpg',
+          '/public/images/specialties/default-specialty.png',
+          'public/images/specialties/default-specialty.png'
+        ];
+        
+        // Only delete if not a default image
+        if (!defaultPaths.includes(normalizedPath)) {
+          try {
+            const fullOldPath = path.join(__dirname, '../../', oldIconPath);
+            await fs.access(fullOldPath); // Check if file exists before attempting to delete
+            await fs.unlink(fullOldPath);
+            console.log('Deleted old specialty icon:', oldIconPath);
+          } catch (unlinkError) {
+            console.error('Error deleting old specialty icon:', unlinkError);
+          }
+        } else {
+          console.log('Skipping deletion of default icon:', oldIconPath);
         }
       }
     } else {

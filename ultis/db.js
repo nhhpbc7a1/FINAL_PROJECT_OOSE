@@ -6,7 +6,8 @@ const db = knex({
         host: process.env.DB_HOST || 'localhost',
         user: process.env.DB_USER || 'root',
         password: process.env.DB_PASSWORD || '',
-        database: process.env.DB_NAME || 'FINAL_PROJECT_OOSE'
+        database: process.env.DB_NAME || 'FINAL_PROJECT_OOSE',
+        port: process.env.DB_PORT || 3306
     },
     pool: { min: 0, max: 10 }
 });

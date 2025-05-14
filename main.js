@@ -7,6 +7,8 @@ import { engine } from 'express-handlebars';
 import hbs_sections from 'express-handlebars-sections';
 import moment from 'moment';
 import session from 'express-session';
+import hbs from 'express-handlebars';
+import handlebars from 'handlebars';
 import { authAdmin, authDoctor, authLabtech, redirectStaffFromPatientViews} from './middlewares/auth.route.js';
 
 import { formatDate, formatDay, times, arrayFind, removeFilterUrl, eq, lte, subtract, or } from './views/helpers/hbs_helpers.js';
@@ -16,14 +18,21 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 
+// Body parsers
 app.use(express.urlencoded({
     extended: true,
 }));
+app.use(express.json()); // Add JSON body parser for API requests
 
+// File upload middleware
+app.use(expressFileUpload({
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max file size
+    useTempFiles: true,
+    tempFileDir: '/tmp/',
+    debug: true // Enable debugging for troubleshooting
+}));
 
 // Add JSON body parser middleware for AJAX requests
-app.use(express.json());
-
 app.engine('hbs', engine({
     extname: '.hbs',
     defaultLayout: 'patient',

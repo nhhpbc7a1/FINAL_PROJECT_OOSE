@@ -1,0 +1,354 @@
+{{#section 'css'}}
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .page-title {
+        margin: 0;
+        font-size: 22px;
+        color: #333;
+    }
+    
+    .breadcrumb-container {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 15px 20px;
+        margin-bottom: 20px;
+    }
+    
+    .breadcrumb {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .breadcrumb-item {
+        font-size: 14px;
+        color: #666;
+    }
+    
+    .breadcrumb-item:not(:last-child)::after {
+        content: "›";
+        margin: 0 8px;
+        color: #999;
+    }
+    
+    .breadcrumb-item a {
+        color: #2196f3;
+        text-decoration: none;
+    }
+    
+    .breadcrumb-item a:hover {
+        text-decoration: underline;
+    }
+    
+    .breadcrumb-item.active {
+        color: #333;
+        font-weight: 500;
+    }
+    
+    .detail-card {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .detail-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .detail-card-title {
+        font-size: 18px;
+        color: #333;
+        margin: 0;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    
+    .status-pending {
+        background-color: rgba(255, 152, 0, 0.1);
+        color: #ff9800;
+    }
+    
+    .status-completed {
+        background-color: rgba(76, 175, 80, 0.1);
+        color: #4caf50;
+    }
+    
+    .status-in-progress {
+        background-color: rgba(33, 150, 243, 0.1);
+        color: #2196f3;
+    }
+    
+    .status-cancelled {
+        background-color: rgba(244, 67, 54, 0.1);
+        color: #f44336;
+    }
+    
+    .detail-row {
+        display: flex;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+    
+    .detail-column {
+        flex: 1;
+        min-width: 250px;
+        margin-bottom: 15px;
+    }
+    
+    .detail-group {
+        margin-bottom: 15px;
+    }
+    
+    .detail-label {
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 5px;
+    }
+    
+    .detail-value {
+        font-size: 15px;
+        font-weight: 500;
+        color: #333;
+    }
+    
+    .detail-value.description {
+        font-weight: normal;
+        font-size: 14px;
+        color: #555;
+        white-space: pre-line;
+    }
+    
+    .action-buttons {
+        margin-top: 20px;
+        display: flex;
+        gap: 10px;
+    }
+    
+    .btn {
+        padding: 10px 16px;
+        border-radius: 4px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .btn-primary {
+        background-color: #2196f3;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background-color: #1976d2;
+    }
+    
+    .btn-success {
+        background-color: #4caf50;
+        color: white;
+    }
+    
+    .btn-success:hover {
+        background-color: #388e3c;
+    }
+    
+    .btn-outline {
+        background-color: transparent;
+        border: 1px solid #ddd;
+        color: #333;
+    }
+    
+    .btn-outline:hover {
+        background-color: #f5f5f5;
+    }
+    
+    .test-result-section {
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 20px;
+    }
+    
+    .test-result-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    
+    .test-result-title {
+        font-size: 16px;
+        color: #333;
+        margin: 0;
+    }
+</style>
+{{/section}}
+
+<div class="page-header">
+    <h1 class="page-title">Test Request Details</h1>
+</div>
+
+<div class="breadcrumb-container">
+    <ul class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/labtech/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="/labtech/test-requests">Test Requests</a></li>
+        <li class="breadcrumb-item active">Request #{{testRequest.requestId}}</li>
+    </ul>
+</div>
+
+<div class="detail-card">
+    <div class="detail-card-header">
+        <h2 class="detail-card-title">{{testRequest.testName}} Test Request</h2>
+        <span class="status-badge status-{{testRequest.status}}">
+            {{#if (eq testRequest.status 'pending')}}Pending{{/if}}
+            {{#if (eq testRequest.status 'in_progress')}}In Progress{{/if}}
+            {{#if (eq testRequest.status 'completed')}}Completed{{/if}}
+            {{#if (eq testRequest.status 'cancelled')}}Cancelled{{/if}}
+        </span>
+    </div>
+    
+    <div class="detail-row">
+        <div class="detail-column">
+            <div class="detail-group">
+                <div class="detail-label">Request ID</div>
+                <div class="detail-value">#{{testRequest.requestId}}</div>
+            </div>
+            <div class="detail-group">
+                <div class="detail-label">Test Type</div>
+                <div class="detail-value">{{testRequest.testName}}</div>
+            </div>
+            <div class="detail-group">
+                <div class="detail-label">Request Date</div>
+                <div class="detail-value">{{formatDate testRequest.requestDate}}</div>
+            </div>
+            <div class="detail-group">
+                <div class="detail-label">Department</div>
+                <div class="detail-value">{{testRequest.specialtyName}}</div>
+            </div>
+        </div>
+        
+        <div class="detail-column">
+            <div class="detail-group">
+                <div class="detail-label">Requested By</div>
+                <div class="detail-value">Dr. {{testRequest.doctorName}}</div>
+            </div>
+            <div class="detail-group">
+                <div class="detail-label">Patient</div>
+                <div class="detail-value">{{testRequest.patientName}}</div>
+            </div>
+            <div class="detail-group">
+                <div class="detail-label">Patient Contact</div>
+                <div class="detail-value">{{testRequest.patientPhone}}</div>
+            </div>
+            <div class="detail-group">
+                <div class="detail-label">Patient Email</div>
+                <div class="detail-value">{{testRequest.patientEmail}}</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="detail-group">
+        <div class="detail-label">Test Description</div>
+        <div class="detail-value description">{{testRequest.testDescription}}</div>
+    </div>
+    
+    <div class="detail-group">
+        <div class="detail-label">Request Notes</div>
+        <div class="detail-value description">{{testRequest.notes}}</div>
+    </div>
+    
+    {{#if testResult}}
+        <div class="test-result-section">
+            <div class="test-result-header">
+                <h3 class="test-result-title">Test Result Status</h3>
+            </div>
+            
+            <div class="detail-row">
+                <div class="detail-column">
+                    <div class="detail-group">
+                        <div class="detail-label">Result ID</div>
+                        <div class="detail-value">#{{testResult.resultId}}</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Status</div>
+                        <div class="detail-value">
+                            <span class="status-badge status-{{testResult.status}}">
+                                {{#if (eq testResult.status 'pending')}}Pending{{/if}}
+                                {{#if (eq testResult.status 'in_progress')}}In Progress{{/if}}
+                                {{#if (eq testResult.status 'completed')}}Completed{{/if}}
+                                {{#if (eq testResult.status 'cancelled')}}Cancelled{{/if}}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-column">
+                    <div class="detail-group">
+                        <div class="detail-label">Performed Date</div>
+                        <div class="detail-value">{{formatDate testResult.performedDate}}</div>
+                    </div>
+                    {{#if (eq testResult.status 'completed')}}
+                    <div class="detail-group">
+                        <div class="detail-label">Reported Date</div>
+                        <div class="detail-value">{{formatDate testResult.reportedDate}}</div>
+                    </div>
+                    {{/if}}
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                {{#if (eq testResult.status 'in_progress')}}
+                    <a href="/labtech/test-requests/result/{{testRequest.requestId}}" class="btn btn-primary">
+                        <i class="fas fa-file-medical-alt"></i> Enter Results
+                    </a>
+                {{else if (eq testResult.status 'completed')}}
+                    <a href="/labtech/test-results/{{testResult.resultId}}" class="btn btn-primary">
+                        <i class="fas fa-eye"></i> View Results
+                    </a>
+                    <a href="/labtech/test-results/print/{{testResult.resultId}}" class="btn btn-outline" target="_blank">
+                        <i class="fas fa-print"></i> Print Results
+                    </a>
+                {{/if}}
+            </div>
+        </div>
+    {{else}}
+        <div class="action-buttons">
+            {{#if (eq testRequest.status 'pending')}}
+                <a href="/labtech/test-requests/start/{{testRequest.requestId}}" class="btn btn-success">
+                    <i class="fas fa-play"></i> Start Processing
+                </a>
+            {{/if}}
+        </div>
+    {{/if}}
+</div>
+
+{{#section 'js'}}
+<script>
+    $(document).ready(function() {
+        // JavaScript functionality if needed
+    });
+</script>
+{{/section}} 

@@ -5,6 +5,8 @@
 }
 .container-fluid{
     background-color: #fbfbfb;
+    padding: 0px;
+    margin: 0;
 }
 .quote{
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -30,13 +32,12 @@ body {
 
 header {
     background-color: #fff;
-    padding: 20px 0;
+    padding-bottom: 20px;
     border-bottom: 1px solid #eee;
 }
 
 header .logo img {
     height: 100px;
-    margin-left: -90px;
 }
 
 
@@ -159,38 +160,30 @@ footer {
     font-family: sans-serif;
     
 }
-
 .footer-top {
     display: flex;
-    justify-content: space-around;
-    align-items: flex-start;
     padding: 30px 0px;
-    max-width: 1200px;
     margin: 0 auto;
 }
-
+.footer-logo{
+    display: flex;
+    justify-content: center;
+}
 .footer-logo img {
     height: 150px;
-    margin-right: 40px;
+    /* margin-right: 40px; */
 }
-
-.footer-policy h5,
-.footer-contact h5,
-.footer-working-hours h5
- {
-    text-align: center;
-  }
 
 .footer-policy ul {
     list-style: none;
     padding: 0;
+
 }
 .footer-contact, .footer-policy, .footer-working-hours{
     border-left: 1px solid white;
     height: 170px;
+    text-align: center;
         /* margin: auto; */
-}
-.footer-working-hours{
 }
 .footer-policy ul li a {
     color: #fff;
@@ -216,14 +209,16 @@ footer {
     width: 20px;
     margin-right: 30px;
 }
-
 .footer-working-hours .hours-box 
 {
-    margin-left: 20px;
+    margin-left: 25px;
+    padding:15px 0px;
     border: 1px solid #fff;
-    padding: 10px;
     border-radius: 5px;
     text-align: center;
+    width: 250px;
+
+    
 }
 .footer-policy ul li{
     padding-bottom: 10px;
@@ -234,13 +229,6 @@ footer {
     margin-left: 30px;
 
 }
-.footer-working-hours .hours-box{
-    padding:15px 25px;
-    margin-left: 30px;
-
-
-}
-
 .footer-bottom {
     background-color: #000080; /* Màu xanh dương đậm */
     color: #fff;
@@ -290,7 +278,8 @@ footer {
 }
 h5{
     padding-bottom: 15px;
-    padding-left: 100px;
+    text-align: center;
+    /* padding-left: 100px; */
 }
 .logo-text {
     font-size: 24px;
@@ -313,4 +302,7 @@ h5{
 .btn-a:hover {
     opacity: 0.8;
     text-decoration: none;
+}
+.footer-top.row{
+ margin: 0;
 }

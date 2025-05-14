@@ -348,16 +348,33 @@ router.post('/update/:doctorId', async function (req, res) {
         profileImagePath = `/public/uploads/profile_images/${filename}`; // New path
 
         // Delete old image *after* successfully uploading new one (optional)
-        if (oldImagePath && oldImagePath !== profileImagePath) {
+        if (oldImagePath) {
+          // Normalize the path for comparison - handle both absolute and relative paths
+          const normalizedPath = oldImagePath.startsWith('/') ? oldImagePath : `/${oldImagePath}`;
+          
+          // Check against all possible variations of the default path
+          const defaultPaths = [
+            '/public/images/default-avatar.png',
+            'public/images/default-avatar.png',
+            '/public/images/default-avatar.jpg',
+            'public/images/default-avatar.jpg'
+          ];
+          
+          // Only delete if not a default image and different from new image
+          if (!defaultPaths.includes(normalizedPath) && oldImagePath !== profileImagePath) {
             try {
-                 const fullOldPath = path.join(__dirname, '../../', oldImagePath); // Adjust base path
-                 await fs.unlink(fullOldPath);
-                 console.log('Deleted old profile image:', oldImagePath);
-             } catch (unlinkError) {
-                  // Log error but don't stop the update process if deletion fails
-                  console.error('Error deleting old profile image:', unlinkError);
-             }
-         }
+              const fullOldPath = path.join(__dirname, '../../', oldImagePath); // Adjust base path
+              await fs.access(fullOldPath); // Check if file exists before attempting to delete
+              await fs.unlink(fullOldPath);
+              console.log('Deleted old profile image:', oldImagePath);
+            } catch (unlinkError) {
+              // Log error but don't stop the update process if deletion fails
+              console.error('Error deleting old profile image:', unlinkError);
+            }
+          } else {
+            console.log('Skipping deletion of default or reused profile image:', oldImagePath);
+          }
+        }
     } else {
         // No new file uploaded, keep the old path
         profileImagePath = oldImagePath;
