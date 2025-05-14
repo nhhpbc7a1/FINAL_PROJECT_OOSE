@@ -18,10 +18,19 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 
+// Body parsers
 app.use(express.urlencoded({
     extended: true,
 }));
+app.use(express.json()); // Add JSON body parser for API requests
 
+// File upload middleware
+app.use(expressFileUpload({
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max file size
+    useTempFiles: true,
+    tempFileDir: '/tmp/',
+    debug: true // Enable debugging for troubleshooting
+}));
 
 // Add JSON body parser middleware for AJAX requests
 app.engine('hbs', engine({

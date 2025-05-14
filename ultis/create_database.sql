@@ -134,7 +134,6 @@ CREATE TABLE IF NOT EXISTS Schedule (
     UNIQUE KEY (doctorId, workDate, startTime), -- Prevent double booking doctor
     UNIQUE KEY (labTechnicianId, workDate, startTime), -- Prevent double booking technician
     UNIQUE KEY (roomId, workDate, startTime), -- Prevent double booking room
-    CHECK ((doctorId IS NOT NULL AND labTechnicianId IS NULL) OR (doctorId IS NULL AND labTechnicianId IS NOT NULL)), -- Must be either doctor or technician
     FOREIGN KEY (doctorId) REFERENCES Doctor(doctorId) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (labTechnicianId) REFERENCES LabTechnician(technicianId) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (roomId) REFERENCES Room(roomId) ON DELETE SET NULL ON UPDATE CASCADE
