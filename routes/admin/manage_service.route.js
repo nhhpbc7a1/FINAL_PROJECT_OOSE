@@ -143,8 +143,18 @@ router.post('/add', async function (req, res) {
       const filename = `service-${safeName}_${timestamp}${fileExtension}`;
       const uploadPath = path.join(UPLOAD_DIR, filename);
 
-      await image.mv(uploadPath);
-      imagePath = `/public/images/services/${filename}`;
+      // Log the upload path for debugging
+      console.log('Uploading file to:', uploadPath);
+      
+      try {
+        await image.mv(uploadPath);
+        console.log('File uploaded successfully');
+        imagePath = `/public/images/services/${filename}`;
+        console.log('Image path for database:', imagePath);
+      } catch (uploadError) {
+        console.error('Error uploading file:', uploadError);
+        throw new Error('Failed to upload the image. Please try again.');
+      }
     }
 
     // --- Prepare Data ---
@@ -160,8 +170,11 @@ router.post('/add', async function (req, res) {
         image: imagePath || '/public/images/services/default-service.jpg'
     };
 
+    console.log('Saving service data:', serviceData);
+
     // --- Database Operation ---
-    await serviceService.add(serviceData);
+    const result = await serviceService.add(serviceData);
+    console.log('Database insert result:', result);
 
     // --- Success Response ---
     req.session.flashMessage = { type: 'success', message: 'Service added successfully!' };
@@ -268,7 +281,10 @@ router.post('/update/:serviceId', async function (req, res) {
     if (!currentService) {
         throw new Error('Service not found for update.');
     }
+    
+    console.log('Current service data:', currentService);
     oldImagePath = currentService.image;
+    console.log('Old image path:', oldImagePath);
 
     // --- File Upload Handling (if new file provided) ---
     if (req.files && req.files.image) {
@@ -292,8 +308,17 @@ router.post('/update/:serviceId', async function (req, res) {
       const filename = `service-${safeName}_${timestamp}${fileExtension}`;
       const uploadPath = path.join(UPLOAD_DIR, filename);
 
-      await image.mv(uploadPath);
-      imagePath = `/public/images/services/${filename}`;
+      console.log('Uploading file to:', uploadPath);
+      
+      try {
+        await image.mv(uploadPath);
+        console.log('File uploaded successfully');
+        imagePath = `/public/images/services/${filename}`;
+        console.log('New image path for database:', imagePath);
+      } catch (uploadError) {
+        console.error('Error uploading file:', uploadError);
+        throw new Error('Failed to upload the image. Please try again.');
+      }
 
       // Delete old image if it exists and is not the default image
       if (oldImagePath) {
@@ -324,6 +349,7 @@ router.post('/update/:serviceId', async function (req, res) {
       }
     } else {
       // No new file uploaded, keep the old path
+      console.log('No new image uploaded, keeping old path');
       imagePath = oldImagePath;
     }
 
@@ -340,8 +366,11 @@ router.post('/update/:serviceId', async function (req, res) {
         image: imagePath
     };
 
+    console.log('Updating service with data:', serviceData);
+
     // --- Database Operation ---
-    await serviceService.update(serviceId, serviceData);
+    const result = await serviceService.update(serviceId, serviceData);
+    console.log('Database update result:', result);
 
     // --- Success Response ---
     req.session.flashMessage = { type: 'success', message: 'Service updated successfully!' };
