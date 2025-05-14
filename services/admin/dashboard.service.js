@@ -97,7 +97,7 @@ export default {
             const appointments = await db('Appointment')
                 .where('appointmentDate', '>=', startDate.toISOString().split('T')[0])
                 .select(
-                    db.raw('DATE_FORMAT(appointmentDate, "%Y-%m") as month'),
+                    db.raw("DATE_FORMAT(appointmentDate, '%Y-%m') as month"),
                     db.raw('COUNT(CASE WHEN status = "completed" THEN 1 END) as completed'),
                     db.raw('COUNT(CASE WHEN status = "cancelled" THEN 1 END) as cancelled')
                 )
