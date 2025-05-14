@@ -167,29 +167,38 @@ export default {
 
     async getActiveDoctors() {
         try {
-            const doctors = await db('Doctor')
-                .join('User', 'Doctor.userId', '=', 'User.userId')
-                .join('Specialty', 'Doctor.specialtyId', '=', 'Specialty.specialtyId')
-                .leftJoin('Appointment', function() {
-                    this.on('Doctor.doctorId', '=', 'Appointment.doctorId')
-                        .andOn('Appointment.appointmentDate', '>=', db.raw("DATE_FORMAT(NOW(), '%Y-%m-01')"))
-                        .andOn('Appointment.status', '=', db.raw('"completed"'));
-                })
-                .select(
-                    'Doctor.doctorId',
-                    'User.fullName',
-                    'Specialty.name as specialtyName',
-                    db.raw('COUNT(DISTINCT Appointment.appointmentId) as appointmentCount'),
-                )
-                .where('User.accountStatus', '=', 'active')
-                .groupBy('Doctor.doctorId', 'User.fullName', 'Specialty.name')
-                .orderBy('appointmentCount', 'desc')
-                .limit(5);
-
+            // Use raw SQL query to avoid quoting issues
+            const result = await db.raw(`
+                SELECT 
+                    Doctor.doctorId,
+                    User.fullName,
+                    Specialty.name as specialtyName,
+                    COUNT(DISTINCT Appointment.appointmentId) as appointmentCount
+                FROM 
+                    Doctor
+                INNER JOIN 
+                    User ON Doctor.userId = User.userId
+                INNER JOIN 
+                    Specialty ON Doctor.specialtyId = Specialty.specialtyId
+                LEFT JOIN 
+                    Appointment ON Doctor.doctorId = Appointment.doctorId
+                    AND Appointment.appointmentDate >= DATE_FORMAT(NOW(), '%Y-%m-01')
+                    AND Appointment.status = 'completed'
+                WHERE 
+                    User.accountStatus = 'active'
+                GROUP BY 
+                    Doctor.doctorId, User.fullName, Specialty.name
+                ORDER BY 
+                    appointmentCount DESC
+                LIMIT 5
+            `);
+            
+            const doctors = result[0];
             console.log('Active Doctors Data:', doctors);
             return doctors;
         } catch (error) {
             console.error('Error fetching active doctors:', error);
+            console.error('Error details:', error.stack);
             throw new Error('Unable to load active doctors data');
         }
     },
