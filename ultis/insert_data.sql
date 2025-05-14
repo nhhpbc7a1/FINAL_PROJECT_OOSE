@@ -1,4 +1,15 @@
 use FINAL_PROJECT_OOSE;
+
+-- Set foreign key checks to 0 to allow modifying tables with constraints
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- Modify Appointment table to make scheduleId accept NULL values
+-- This will help us insert data without requiring scheduleId references
+ALTER TABLE Appointment MODIFY scheduleId INT NULL;
+
+-- Set foreign key checks back to 1
+SET FOREIGN_KEY_CHECKS = 1;
+
 -- -- Insert sample data
 
 -- Insert default roles
@@ -189,220 +200,104 @@ INSERT INTO Administrator (userId, position) VALUES
 (1, 'System Administrator'),
 (2, 'Hospital Manager');
 
--- Insert sample data into Specialty table (10 specialties)
+-- Insert sample data into Specialty table (5 specialties)
 -- Hospital ID 1 is the Main Hospital
 INSERT INTO Specialty (name, description, hospitalId) VALUES
 ('Cardiology', 'Deals with disorders of the heart and cardiovascular system', 1), -- Specialty ID 1
 ('Dermatology', 'Focused on diagnosing and treating skin disorders', 1), -- Specialty ID 2
 ('Neurology', 'Deals with disorders of the nervous system', 1), -- Specialty ID 3
 ('Orthopedics', 'Focused on conditions involving the musculoskeletal system', 1), -- Specialty ID 4
-('Pediatrics', 'Medical care of infants, children, and adolescents', 1), -- Specialty ID 5
-('Gastroenterology', 'Specializes in digestive system disorders', 1), -- Specialty ID 6
-('Ophthalmology', 'Deals with eye disorders and vision care', 1), -- Specialty ID 7
-('Pulmonology', 'Focuses on respiratory system diseases', 1), -- Specialty ID 8
-('Endocrinology', 'Specializes in hormone-related disorders', 1), -- Specialty ID 9
-('Oncology', 'Focused on the diagnosis and treatment of cancer', 1); -- Specialty ID 10
+('Pediatrics', 'Medical care of infants, children, and adolescents', 1); -- Specialty ID 5
 
--- Insert sample data into Room table (20 rooms)
--- Specialty IDs 1-10 are available
+-- Insert sample data into Room table (25 rooms - 5 per specialty)
+-- Specialty IDs 1-5 are available
 INSERT INTO Room (roomNumber, specialtyId, capacity, roomType, status, description) VALUES
 -- Cardiology Rooms (Specialty ID 1)
 ('C101', 1, 2, 'examination', 'available', 'Cardiology examination room'), -- Room ID 1
 ('C102', 1, 2, 'examination', 'available', 'Cardiology examination room'), -- Room ID 2
 ('C103', 1, 4, 'operation', 'available', 'Cardiology operation room'), -- Room ID 3
+('C104', 1, 2, 'laboratory', 'available', 'Cardiology lab room'), -- Room ID 4
+('C105', 1, 3, 'examination', 'available', 'Cardiology consultation room'), -- Room ID 5
 
 -- Dermatology Rooms (Specialty ID 2)
-('D201', 2, 2, 'examination', 'available', 'Dermatology examination room'), -- Room ID 4
-('D202', 2, 2, 'examination', 'available', 'Dermatology procedural room'), -- Room ID 5
+('D201', 2, 2, 'examination', 'available', 'Dermatology examination room'), -- Room ID 6
+('D202', 2, 2, 'examination', 'available', 'Dermatology procedural room'), -- Room ID 7
+('D203', 2, 3, 'operation', 'available', 'Dermatology surgical room'), -- Room ID 8
+('D204', 2, 2, 'laboratory', 'available', 'Dermatology lab room'), -- Room ID 9
+('D205', 2, 2, 'examination', 'available', 'Dermatology consultation room'), -- Room ID 10
 
 -- Neurology Rooms (Specialty ID 3)
-('N301', 3, 2, 'examination', 'available', 'Neurology examination room'), -- Room ID 6
-('N302', 3, 2, 'examination', 'available', 'Neurological testing room'), -- Room ID 7
-('N303', 3, 1, 'laboratory', 'available', 'Neurology lab room'), -- Room ID 8
+('N301', 3, 2, 'examination', 'available', 'Neurology examination room'), -- Room ID 11
+('N302', 3, 2, 'examination', 'available', 'Neurological testing room'), -- Room ID 12
+('N303', 3, 1, 'laboratory', 'available', 'Neurology lab room'), -- Room ID 13
+('N304', 3, 3, 'operation', 'available', 'Neurology procedure room'), -- Room ID 14
+('N305', 3, 2, 'examination', 'available', 'Neurology consultation room'), -- Room ID 15
 
 -- Orthopedics Rooms (Specialty ID 4)
-('O401', 4, 2, 'examination', 'available', 'Orthopedics examination room'), -- Room ID 9
-('O402', 4, 3, 'operation', 'available', 'Orthopedic procedure room'), -- Room ID 10
+('O401', 4, 2, 'examination', 'available', 'Orthopedics examination room'), -- Room ID 16
+('O402', 4, 3, 'operation', 'available', 'Orthopedic procedure room'), -- Room ID 17
+('O403', 4, 2, 'examination', 'available', 'Orthopedics consultation room'), -- Room ID 18
+('O404', 4, 2, 'laboratory', 'available', 'Orthopedics lab room'), -- Room ID 19
+('O405', 4, 4, 'operation', 'available', 'Orthopedic surgery room'), -- Room ID 20
 
 -- Pediatrics Rooms (Specialty ID 5)
-('P501', 5, 2, 'examination', 'available', 'Pediatrics examination room'), -- Room ID 11
-('P502', 5, 3, 'examination', 'available', 'Pediatric treatment room'), -- Room ID 12
+('P501', 5, 2, 'examination', 'available', 'Pediatrics examination room'), -- Room ID 21
+('P502', 5, 3, 'examination', 'available', 'Pediatric treatment room'), -- Room ID 22
+('P503', 5, 2, 'laboratory', 'available', 'Pediatrics lab room'), -- Room ID 23
+('P504', 5, 2, 'examination', 'available', 'Pediatrics consultation room'), -- Room ID 24
+('P505', 5, 3, 'operation', 'available', 'Pediatric procedure room'); -- Room ID 25
 
--- Gastroenterology Rooms (Specialty ID 6)
-('G601', 6, 2, 'examination', 'available', 'Gastroenterology consultation room'), -- Room ID 13
-('G602', 6, 3, 'examination', 'available', 'Endoscopy room'), -- Room ID 14
-
--- Ophthalmology Rooms (Specialty ID 7)
-('E701', 7, 2, 'examination', 'available', 'Eye examination room'), -- Room ID 15
-('E702', 7, 2, 'examination', 'available', 'Vision testing room'), -- Room ID 16
-
--- Pulmonology Rooms (Specialty ID 8)
-('U801', 8, 2, 'examination', 'available', 'Pulmonology consultation room'), -- Room ID 17
-('U802', 8, 3, 'laboratory', 'available', 'Respiratory testing lab'), -- Room ID 18
-
--- Endocrinology Rooms (Specialty ID 9)
-('EN901', 9, 2, 'examination', 'available', 'Endocrinology consultation room'), -- Room ID 19
-
--- Oncology Rooms (Specialty ID 10)
-('ON1001', 10, 2, 'examination', 'available', 'Oncology consultation room'); -- Room ID 20
-
--- Insert sample data into Doctor table (22 doctors)
--- User IDs 3 through 24 are doctor users
--- Specialty IDs 1-10 are available
+-- Insert sample data into Doctor table (15 doctors - 3 per specialty)
+-- User IDs 3 through 17 are doctor users
+-- Specialty IDs 1-5 are available
 INSERT INTO Doctor (userId, specialtyId, licenseNumber, experience, education, bio) VALUES
 -- Cardiology Doctors (Specialty ID 1)
 (3, 1, 'DOC-CARD-123456', 10, 'MD from Harvard Medical School', 'Experienced cardiologist with focus on heart disease prevention.'), -- Doctor ID 1 (userId 3)
-(6, 1, 'DOC-CARD-123459', 8, 'MD from Stanford Medical School', 'Specializes in interventional cardiology and heart rhythm disorders.'), -- Doctor ID 2 (userId 6)
+(4, 1, 'DOC-CARD-123457', 8, 'MD from Stanford Medical School', 'Specializes in interventional cardiology and heart rhythm disorders.'), -- Doctor ID 2 (userId 4)
+(5, 1, 'DOC-CARD-123458', 12, 'MD from Johns Hopkins University', 'Expert in cardiac imaging and preventive cardiology.'), -- Doctor ID 3 (userId 5)
 
 -- Dermatology Doctors (Specialty ID 2)
-(4, 2, 'DOC-DERM-123457', 8, 'MD from Stanford Medical School', 'Specialist in skin cancer and aesthetic dermatology.'), -- Doctor ID 3 (userId 4)
-(7, 2, 'DOC-DERM-123460', 12, 'MD from Johns Hopkins University', 'Expert in pediatric dermatology and skin allergies.'), -- Doctor ID 4 (userId 7)
+(6, 2, 'DOC-DERM-123459', 8, 'MD from Stanford Medical School', 'Specialist in skin cancer and aesthetic dermatology.'), -- Doctor ID 4 (userId 6)
+(7, 2, 'DOC-DERM-123460', 12, 'MD from Johns Hopkins University', 'Expert in pediatric dermatology and skin allergies.'), -- Doctor ID 5 (userId 7)
+(8, 2, 'DOC-DERM-123461', 9, 'MD from Yale University', 'Specializes in dermatological surgery and cosmetic procedures.'), -- Doctor ID 6 (userId 8)
 
 -- Neurology Doctors (Specialty ID 3)
-(5, 3, 'DOC-NEUR-123458', 12, 'MD from Johns Hopkins University', 'Neurologist with expertise in stroke treatment and prevention.'), -- Doctor ID 5 (userId 5)
-(8, 3, 'DOC-NEUR-123461', 9, 'MD from Yale University', 'Specializes in neurodegenerative disorders and headaches.'), -- Doctor ID 6 (userId 8)
+(9, 3, 'DOC-NEUR-123462', 15, 'MD from Yale University', 'Neurologist with expertise in stroke treatment and prevention.'), -- Doctor ID 7 (userId 9)
+(10, 3, 'DOC-NEUR-123463', 11, 'MD from Columbia University', 'Specializes in neurodegenerative disorders and headaches.'), -- Doctor ID 8 (userId 10)
+(11, 3, 'DOC-NEUR-123464', 7, 'MD from Columbia University', 'Expert in neurological disorders and epilepsy management.'), -- Doctor ID 9 (userId 11)
 
 -- Orthopedics Doctors (Specialty ID 4)
-(9, 4, 'DOC-ORTH-123462', 15, 'MD from Yale University', 'Orthopedic surgeon specializing in sports injuries.'), -- Doctor ID 7 (userId 9)
-(10, 4, 'DOC-ORTH-123463', 11, 'MD from Columbia University', 'Expert in joint replacement and trauma surgery.'), -- Doctor ID 8 (userId 10)
+(12, 4, 'DOC-ORTH-123465', 14, 'MD from University of Pennsylvania', 'Orthopedic surgeon specializing in sports injuries.'), -- Doctor ID 10 (userId 12)
+(13, 4, 'DOC-ORTH-123466', 9, 'MD from Duke University', 'Expert in joint replacement and trauma surgery.'), -- Doctor ID 11 (userId 13)
+(14, 4, 'DOC-ORTH-123467', 13, 'MD from UCLA', 'Specializes in spinal surgery and rehabilitation.'), -- Doctor ID 12 (userId 14)
 
 -- Pediatrics Doctors (Specialty ID 5)
-(11, 5, 'DOC-PED-123464', 7, 'MD from Columbia University', 'Pediatrician with focus on early childhood development.'), -- Doctor ID 9 (userId 11)
-(12, 5, 'DOC-PED-123465', 14, 'MD from University of Pennsylvania', 'Specializes in pediatric pulmonology and allergies.'), -- Doctor ID 10 (userId 12)
-
--- Gastroenterology Doctors (Specialty ID 6)
-(13, 6, 'DOC-GAST-123466', 9, 'MD from Duke University', 'Gastroenterologist with expertise in IBD and GERD.'), -- Doctor ID 11 (userId 13)
-(14, 6, 'DOC-GAST-123467', 13, 'MD from UCLA', 'Specializes in advanced endoscopic procedures.'), -- Doctor ID 12 (userId 14)
-
--- Ophthalmology Doctors (Specialty ID 7)
-(15, 7, 'DOC-OPHT-123468', 16, 'MD from Washington University', 'Ophthalmologist with focus on cataract and LASIK surgery.'), -- Doctor ID 13 (userId 15)
-(16, 7, 'DOC-OPHT-123469', 8, 'MD from University of Michigan', 'Specializes in retinal disorders and diabetic eye disease.'), -- Doctor ID 14 (userId 16)
-
--- Pulmonology Doctors (Specialty ID 8)
-(17, 8, 'DOC-PULM-123470', 11, 'MD from NYU', 'Pulmonologist with expertise in COPD and asthma management.'), -- Doctor ID 15 (userId 17)
-(18, 8, 'DOC-PULM-123471', 7, 'MD from Emory University', 'Specializes in sleep disorders and respiratory infections.'), -- Doctor ID 16 (userId 18)
-
--- Endocrinology Doctors (Specialty ID 9)
-(19, 9, 'DOC-ENDO-123472', 10, 'MD from University of Chicago', 'Endocrinologist focusing on diabetes and thyroid disorders.'), -- Doctor ID 17 (userId 19)
-(20, 9, 'DOC-ENDO-123473', 14, 'MD from UCSF', 'Expert in metabolic disorders and hormone replacement therapy.'), -- Doctor ID 18 (userId 20)
-
--- Oncology Doctors (Specialty ID 10)
-(21, 10, 'DOC-ONC-123474', 18, 'MD from Mayo Clinic', 'Oncologist specializing in breast and lung cancers.'), -- Doctor ID 19 (userId 21)
-(22, 10, 'DOC-ONC-123475', 12, 'MD from Memorial Sloan Kettering', 'Expert in targeted therapies and immunotherapy.'); -- Doctor ID 20 (userId 22)
+(15, 5, 'DOC-PED-123468', 16, 'MD from Washington University', 'Pediatrician with focus on early childhood development.'), -- Doctor ID 13 (userId 15)
+(16, 5, 'DOC-PED-123469', 8, 'MD from University of Michigan', 'Specializes in pediatric pulmonology and allergies.'), -- Doctor ID 14 (userId 16)
+(17, 5, 'DOC-PED-123470', 11, 'MD from NYU', 'Expert in pediatric infectious diseases and immunology.'); -- Doctor ID 15 (userId 17)
 
 
 -- Update Specialty headDoctorId (assign head doctor for each specialty)
--- Doctor IDs 1-20 are available (Note: User IDs 3-22 are the doctors)
+-- Doctor IDs 1-15 are available (Note: User IDs 3-17 are the doctors)
 UPDATE Specialty SET headDoctorId = 1 WHERE specialtyId = 1; -- Cardiology (Doctor ID 1, User ID 3)
-UPDATE Specialty SET headDoctorId = 3 WHERE specialtyId = 2; -- Dermatology (Doctor ID 3, User ID 4)
-UPDATE Specialty SET headDoctorId = 5 WHERE specialtyId = 3; -- Neurology (Doctor ID 5, User ID 5)
-UPDATE Specialty SET headDoctorId = 7 WHERE specialtyId = 4; -- Orthopedics (Doctor ID 7, User ID 9)
-UPDATE Specialty SET headDoctorId = 9 WHERE specialtyId = 5; -- Pediatrics (Doctor ID 9, User ID 11)
-UPDATE Specialty SET headDoctorId = 11 WHERE specialtyId = 6; -- Gastroenterology (Doctor ID 11, User ID 13)
-UPDATE Specialty SET headDoctorId = 13 WHERE specialtyId = 7; -- Ophthalmology (Doctor ID 13, User ID 15)
-UPDATE Specialty SET headDoctorId = 15 WHERE specialtyId = 8; -- Pulmonology (Doctor ID 15, User ID 17)
-UPDATE Specialty SET headDoctorId = 17 WHERE specialtyId = 9; -- Endocrinology (Doctor ID 17, User ID 19)
-UPDATE Specialty SET headDoctorId = 19 WHERE specialtyId = 10; -- Oncology (Doctor ID 19, User ID 21)
+UPDATE Specialty SET headDoctorId = 4 WHERE specialtyId = 2; -- Dermatology (Doctor ID 4, User ID 6)
+UPDATE Specialty SET headDoctorId = 7 WHERE specialtyId = 3; -- Neurology (Doctor ID 7, User ID 9)
+UPDATE Specialty SET headDoctorId = 10 WHERE specialtyId = 4; -- Orthopedics (Doctor ID 10, User ID 12)
+UPDATE Specialty SET headDoctorId = 13 WHERE specialtyId = 5; -- Pediatrics (Doctor ID 13, User ID 15)
 
 
--- Insert sample data into LabTechnician table (10 lab technicians)
--- User IDs 75 through 84 are lab technician users (Aligned with the new User insert order)
--- Specialty IDs 1-10 are available (linking technicians to relevant specialties)
+-- Insert sample data into LabTechnician table (5 lab technicians - 1 per specialty)
+-- User IDs 75 through 79 are lab technician users
+-- Specialty IDs 1-5 are available (linking technicians to relevant specialties)
 INSERT INTO LabTechnician (userId, specialization, specialtyId) VALUES
-(75, 'Blood Analysis', 1), -- Technician ID 1 (User 75)
-(76, 'Genetic Testing', 2), -- Technician ID 2 (User 76)
-(77, 'Neurological Testing', 3), -- Technician ID 3 (User 77)
-(78, 'X-ray and Imaging', 4), -- Technician ID 4 (User 78)
-(79, 'Pediatric Lab Testing', 5), -- Technician ID 5 (User 79)
-(80, 'Endoscopy Assistance', 6), -- Technician ID 6 (User 80)
-(81, 'Vision Testing', 7), -- Technician ID 7 (User 81)
-(82, 'Respiratory Analysis', 8), -- Technician ID 8 (User 82)
-(83, 'Hormone Testing', 9), -- Technician ID 9 (User 83)
-(84, 'Oncology Specimen Analysis', 10); -- Technician ID 10 (User 84)
-
-
--- Insert sample data into Schedule table for doctors and lab technicians
--- Doctor IDs 1-20, Lab Technician IDs 1-10, Room IDs 1-20 are available
-INSERT INTO Schedule (doctorId, labTechnicianId, roomId, workDate, startTime, endTime, status) VALUES
--- Doctor Schedules
--- Cardiology Doctors (Specialty ID 1)
-(1, NULL, 1, CURDATE(), '07:00:00', '11:30:00', 'available'), -- Schedule ID 1 (Doctor 1, Room 1)
-(1, NULL, 1, CURDATE() + INTERVAL 1 DAY, '07:00:00', '11:30:00', 'available'), -- Schedule ID 2 (Doctor 1, Room 1)
-(1, NULL, 1, CURDATE() + INTERVAL 2 DAY, '13:00:00', '16:30:00', 'available'), -- Schedule ID 3 (Doctor 1, Room 1)
-(2, NULL, 2, CURDATE(), '13:00:00', '16:30:00', 'available'), -- Schedule ID 4 (Doctor 2, Room 2)
-(2, NULL, 2, CURDATE() + INTERVAL 1 DAY, '07:00:00', '11:30:00', 'available'), -- Schedule ID 5 (Doctor 2, Room 2)
-
--- Dermatology Doctors (Specialty ID 2)
-(3, NULL, 4, CURDATE(), '07:00:00', '11:30:00', 'available'), -- Schedule ID 6 (Doctor 3, Room 4)
-(3, NULL, 4, CURDATE() + INTERVAL 1 DAY, '13:00:00', '16:30:00', 'available'), -- Schedule ID 7 (Doctor 3, Room 4)
-(4, NULL, 5, CURDATE() + INTERVAL 2 DAY, '07:00:00', '11:30:00', 'available'), -- Schedule ID 8 (Doctor 4, Room 5)
-
--- Neurology Doctors (Specialty ID 3)
-(5, NULL, 6, CURDATE(), '07:00:00', '11:30:00', 'available'), -- Schedule ID 9 (Doctor 5, Room 6)
-(5, NULL, 6, CURDATE() + INTERVAL 1 DAY, '13:00:00', '16:30:00', 'available'), -- Schedule ID 10 (Doctor 5, Room 6)
-(6, NULL, 7, CURDATE() + INTERVAL 2 DAY, '07:00:00', '11:30:00', 'available'), -- Schedule ID 11 (Doctor 6, Room 7)
-
--- Orthopedics Doctors (Specialty ID 4)
-(7, NULL, 9, CURDATE(), '13:00:00', '16:30:00', 'available'), -- Schedule ID 12 (Doctor 7, Room 9)
-(7, NULL, 9, CURDATE() + INTERVAL 1 DAY, '07:00:00', '11:30:00', 'available'), -- Schedule ID 13 (Doctor 7, Room 9)
-(8, NULL, 10, CURDATE() + INTERVAL 2 DAY, '13:00:00', '16:30:00', 'available'), -- Schedule ID 14 (Doctor 8, Room 10)
-
--- Pediatrics Doctors (Specialty ID 5)
-(9, NULL, 11, CURDATE(), '07:00:00', '11:30:00', 'available'), -- Schedule ID 15 (Doctor 9, Room 11)
-(9, NULL, 11, CURDATE() + INTERVAL 1 DAY, '13:00:00', '16:30:00', 'available'), -- Schedule ID 16 (Doctor 9, Room 11)
-(10, NULL, 12, CURDATE() + INTERVAL 2 DAY, '07:00:00', '11:30:00', 'available'), -- Schedule ID 17 (Doctor 10, Room 12)
-
--- Gastroenterology Doctors (Specialty ID 6)
-(11, NULL, 13, CURDATE(), '13:00:00', '16:30:00', 'available'), -- Schedule ID 18 (Doctor 11, Room 13)
-(11, NULL, 13, CURDATE() + INTERVAL 1 DAY, '07:00:00', '11:30:00', 'available'), -- Schedule ID 19 (Doctor 11, Room 13)
-(12, NULL, 14, CURDATE() + INTERVAL 2 DAY, '13:00:00', '16:30:00', 'available'), -- Schedule ID 20 (Doctor 12, Room 14)
-
--- Ophthalmology Doctors (Specialty ID 7)
-(13, NULL, 15, CURDATE(), '07:00:00', '11:30:00', 'available'), -- Schedule ID 21 (Doctor 13, Room 15)
-(14, NULL, 16, CURDATE() + INTERVAL 1 DAY, '13:00:00', '16:30:00', 'available'), -- Schedule ID 22 (Doctor 14, Room 16)
-
--- Pulmonology Doctors (Specialty ID 8)
-(15, NULL, 17, CURDATE(), '13:00:00', '16:30:00', 'available'), -- Schedule ID 23 (Doctor 15, Room 17)
-(16, NULL, 18, CURDATE() + INTERVAL 1 DAY, '07:00:00', '11:30:00', 'available'), -- Schedule ID 24 (Doctor 16, Room 18)
-
--- Endocrinology Doctors (Specialty ID 9)
-(17, NULL, 19, CURDATE(), '07:00:00', '11:30:00', 'available'), -- Schedule ID 25 (Doctor 17, Room 19)
-(18, NULL, 19, CURDATE() + INTERVAL 1 DAY, '13:00:00', '16:30:00', 'available'), -- Schedule ID 26 (Doctor 18, Room 19)
-
--- Oncology Doctors (Specialty ID 10)
-(19, NULL, 20, CURDATE(), '13:00:00', '16:30:00', 'available'), -- Schedule ID 27 (Doctor 19, Room 20)
-(20, NULL, 20, CURDATE() + INTERVAL 1 DAY, '07:00:00', '11:30:00', 'available'), -- Schedule ID 28 (Doctor 20, Room 20)
-
--- Lab Technician Schedules
--- Cardiology Lab Technician (Specialty ID 1)
-(NULL, 1, 3, CURDATE(), '07:00:00', '11:30:00', 'available'), -- Schedule ID 29 (Tech 1, Room 3)
-(NULL, 1, 3, CURDATE() + INTERVAL 1 DAY, '13:00:00', '16:30:00', 'available'), -- Schedule ID 30 (Tech 1, Room 3)
-
--- Dermatology Lab Technician (Specialty ID 2)
--- FIX: Changed Room ID from 5 to 4 to avoid conflict with Doctor 4 on CURDATE() + INTERVAL 2 DAY, 07:00:00
-(NULL, 2, 4, CURDATE() + INTERVAL 2 DAY, '07:00:00', '11:30:00', 'available'), -- Schedule ID 31 (Tech 2, Room 4)
-(NULL, 2, 5, CURDATE(), '13:00:00', '16:30:00', 'available'), -- Schedule ID 32 (Tech 2, Room 5)
-
-
--- Neurology Lab Technician (Specialty ID 3)
-(NULL, 3, 8, CURDATE(), '07:00:00', '11:30:00', 'available'), -- Schedule ID 33 (Tech 3, Room 8)
-(NULL, 3, 8, CURDATE() + INTERVAL 1 DAY, '13:00:00', '16:30:00', 'available'), -- Schedule ID 34 (Tech 3, Room 8)
-
--- Orthopedics Lab Technician (Specialty ID 4)
-(NULL, 4, 10, CURDATE(), '13:00:00', '16:30:00', 'available'), -- Schedule ID 35 (Tech 4, Room 10)
-(NULL, 4, 10, CURDATE() + INTERVAL 2 DAY, '07:00:00', '11:30:00', 'available'), -- Schedule ID 36 (Tech 4, Room 10)
-
--- Pulmonology Lab Technician (Specialty ID 8)
-(NULL, 8, 18, CURDATE(), '07:00:00', '11:30:00', 'available'), -- Schedule ID 37 (Tech 8, Room 18)
-(NULL, 8, 18, CURDATE() + INTERVAL 1 DAY, '13:00:00', '16:30:00', 'available'), -- Schedule ID 38 (Tech 8, Room 18)
-
--- Oncology Lab Technician (Specialty ID 10)
-(NULL, 10, 20, CURDATE(), '07:00:00', '11:30:00', 'available'), -- Schedule ID 39 (Tech 10, Room 20)
-(NULL, 10, 20, CURDATE() + INTERVAL 2 DAY, '13:00:00', '16:30:00', 'available'); -- Schedule ID 40 (Tech 10, Room 20)
-
+(75, 'Blood Analysis', 1), -- Technician ID 1 (User 75) - Cardiology
+(76, 'Genetic Testing', 2), -- Technician ID 2 (User 76) - Dermatology
+(77, 'Neurological Testing', 3), -- Technician ID 3 (User 77) - Neurology
+(78, 'X-ray and Imaging', 4), -- Technician ID 4 (User 78) - Orthopedics
+(79, 'Pediatric Lab Testing', 5); -- Technician ID 5 (User 79) - Pediatrics
 
 -- Insert sample data into Service table
--- Specialty IDs 1-10 are available
+-- Specialty IDs 1-5 are available
 INSERT INTO Service (name, description, price, duration, type, category, specialtyId, status) VALUES
 -- Cardiology Services (Specialty ID 1)
 ('Basic Heart Checkup', 'Basic heart examination including ECG', 500000, 30, 'service', 'Examination', 1, 'active'), -- Service ID 1
@@ -428,23 +323,7 @@ INSERT INTO Service (name, description, price, duration, type, category, special
 -- Pediatrics Services (Specialty ID 5)
 ('Child Health Checkup', 'General health checkup for children', 400000, 30, 'service', 'Examination', 5, 'active'), -- Service ID 14
 ('Growth and Development Assessment', 'Assessment of child growth and development', 500000, 40, 'service', 'Assessment', 5, 'active'), -- Service ID 15
-('Vaccination', 'Standard childhood vaccination', 300000, 15, 'service', 'Preventive', 5, 'active'), -- Service ID 16
-
--- Gastroenterology Services (Specialty ID 6)
-('Gastroenterology Consultation', 'General consultation for digestive issues', 550000, 30, 'service', 'Consultation', 6, 'active'), -- Service ID 17
-('Endoscopy Procedure', 'Upper endoscopy', 1200000, 60, 'procedure', 'Diagnostic', 6, 'active'), -- Service ID 18
-
--- Ophthalmology Services (Specialty ID 7)
-('Eye Exam', 'Comprehensive eye examination', 450000, 30, 'service', 'Examination', 7, 'active'), -- Service ID 19
-
--- Pulmonology Services (Specialty ID 8)
-('Pulmonology Consultation', 'General consultation for respiratory issues', 500000, 30, 'service', 'Consultation', 8, 'active'), -- Service ID 20
-
--- Endocrinology Services (Specialty ID 9)
-('Endocrinology Consultation', 'General consultation for hormone/metabolic issues', 550000, 30, 'service', 'Consultation', 9, 'active'), -- Service ID 21
-
--- Oncology Services (Specialty ID 10)
-('Oncology Consultation', 'General consultation for cancer-related issues', 600000, 45, 'service', 'Consultation', 10, 'active'); -- Service ID 22
+('Vaccination', 'Standard childhood vaccination', 300000, 15, 'service', 'Preventive', 5, 'active'); -- Service ID 16
 
 
 -- Insert sample data into File table
@@ -460,12 +339,10 @@ INSERT INTO EmailVerification (email, verificationCode, expiresAt, verified) VAL
 ('newpatient@example.com', '345678', DATE_ADD(NOW(), INTERVAL 1 DAY), false);
 
 -- Insert sample data into Appointment table
--- Patient IDs 1-50, Doctor IDs 1-20, Schedule IDs 1-40, Specialty IDs 1-10, Room IDs 1-20 are available
--- Mapped original data's patientId/doctorId to the actual AUTO_INCREMENT IDs from previous inserts.
+-- Patient IDs 1-50, Doctor IDs 1-15, Specialty IDs 1-5 are available
 INSERT INTO Appointment (
     patientId,
     doctorId,
-    scheduleId,
     specialtyId,
     appointmentDate,
     appointmentTime,
@@ -479,103 +356,116 @@ INSERT INTO Appointment (
 )
 VALUES
 -- Cardiology Appointments (Specialty ID 1)
-(1, 1, 1, 1, CURDATE() - INTERVAL 7 DAY, '07:30:00', 'Chest pain and shortness of breath', 'completed', TRUE, 'completed', 'examined', 1, '07:30:00'),
-(6, 1, 2, 1, CURDATE(), '07:30:00', 'Irregular heartbeat', 'pending', FALSE, 'pending', 'waiting', 2, '07:45:00'),
-(11, 2, 4, 1, CURDATE() - INTERVAL 5 DAY, '13:30:00', 'High blood pressure follow-up', 'completed', TRUE, 'completed', 'examined', 3, '13:30:00'),
-(16, 2, 5, 1, CURDATE(), '07:30:00', 'Heart palpitations', 'pending', FALSE, 'pending', 'waiting', 4, '07:45:00'),
+(1, 1, 1, CURDATE() - INTERVAL 7 DAY, '07:30:00', 'Chest pain and shortness of breath', 'completed', TRUE, 'completed', 'examined', 1, '07:30:00'),
+(6, 1, 1, CURDATE(), '07:30:00', 'Irregular heartbeat', 'pending', FALSE, 'pending', 'waiting', 2, '07:45:00'),
+(11, 2, 1, CURDATE() - INTERVAL 5 DAY, '13:30:00', 'High blood pressure follow-up', 'completed', TRUE, 'completed', 'examined', 3, '13:30:00'),
+(16, 2, 1, CURDATE(), '07:30:00', 'Heart palpitations', 'pending', FALSE, 'pending', 'waiting', 4, '07:45:00'),
+(21, 3, 1, CURDATE() + INTERVAL 2 DAY, '07:30:00', 'Chest discomfort after exercise', 'pending', FALSE, 'pending', 'waiting', 1, '07:30:00'),
 
 -- Dermatology Appointments (Specialty ID 2)
-(2, 3, 6, 2, CURDATE() - INTERVAL 10 DAY, '07:30:00', 'Persistent rash on arms', 'completed', TRUE, 'completed', 'examined', 1, '07:30:00'),
-(7, 3, 7, 2, CURDATE(), '13:30:00', 'Acne treatment follow-up', 'pending', FALSE, 'pending', 'waiting', 2, '13:45:00'),
-(12, 4, 8, 2, CURDATE() + INTERVAL 1 DAY, '07:30:00', 'Suspicious mole on back', 'pending', FALSE, 'pending', 'waiting', 3, '07:45:00'),
+(2, 4, 2, CURDATE() - INTERVAL 10 DAY, '07:30:00', 'Persistent rash on arms', 'completed', TRUE, 'completed', 'examined', 1, '07:30:00'),
+(7, 4, 2, CURDATE(), '13:30:00', 'Acne treatment follow-up', 'pending', FALSE, 'pending', 'waiting', 2, '13:45:00'),
+(12, 5, 2, CURDATE(), '13:30:00', 'Skin allergy evaluation', 'pending', FALSE, 'pending', 'waiting', 3, '13:45:00'),
+(17, 5, 2, CURDATE() + INTERVAL 2 DAY, '07:30:00', 'Suspicious mole on back', 'pending', FALSE, 'pending', 'waiting', 1, '07:30:00'),
+(22, 6, 2, CURDATE() + INTERVAL 1 DAY, '07:30:00', 'Eczema treatment consultation', 'pending', FALSE, 'pending', 'waiting', 1, '07:30:00'),
 
 -- Neurology Appointments (Specialty ID 3)
-(3, 5, 9, 3, CURDATE() - INTERVAL 14 DAY, '07:30:00', 'Frequent migraines', 'completed', TRUE, 'completed', 'examined', 1, '07:30:00'),
-(8, 5, 10, 3, CURDATE(), '13:30:00', 'Persistent dizziness', 'pending', FALSE, 'pending', 'waiting', 2, '13:45:00'),
-(13, 6, 11, 3, CURDATE() + INTERVAL 1 DAY, '07:30:00', 'Numbness in left arm', 'pending', FALSE, 'pending', 'waiting', 3, '07:45:00'),
+(3, 7, 3, CURDATE() - INTERVAL 14 DAY, '07:30:00', 'Frequent migraines', 'completed', TRUE, 'completed', 'examined', 1, '07:30:00'),
+(8, 7, 3, CURDATE(), '13:30:00', 'Persistent dizziness', 'pending', FALSE, 'pending', 'waiting', 2, '13:45:00'),
+(13, 8, 3, CURDATE(), '13:30:00', 'Numbness in left arm', 'pending', FALSE, 'pending', 'waiting', 3, '13:45:00'),
+(18, 8, 3, CURDATE() + INTERVAL 2 DAY, '07:30:00', 'Memory issues evaluation', 'pending', FALSE, 'pending', 'waiting', 1, '07:30:00'),
+(23, 9, 3, CURDATE() + INTERVAL 1 DAY, '07:30:00', 'Seizure disorder follow-up', 'pending', FALSE, 'pending', 'waiting', 1, '07:30:00'),
 
 -- Orthopedics Appointments (Specialty ID 4)
-(4, 7, 12, 4, CURDATE() - INTERVAL 21 DAY, '13:30:00', 'Knee pain after running', 'completed', TRUE, 'completed', 'examined', 1, '13:30:00'),
-(9, 7, 13, 4, CURDATE(), '07:30:00', 'Back pain evaluation', 'pending', FALSE, 'pending', 'waiting', 2, '07:45:00'),
-(14, 8, 14, 4, CURDATE() + INTERVAL 1 DAY, '13:30:00', 'Shoulder mobility issues', 'pending', FALSE, 'pending', 'waiting', 3, '13:45:00'),
+(4, 10, 4, CURDATE() - INTERVAL 21 DAY, '07:30:00', 'Knee pain after running', 'completed', TRUE, 'completed', 'examined', 1, '07:30:00'),
+(9, 10, 4, CURDATE(), '13:30:00', 'Back pain evaluation', 'pending', FALSE, 'pending', 'waiting', 2, '13:45:00'),
+(14, 11, 4, CURDATE(), '13:30:00', 'Shoulder mobility issues', 'pending', FALSE, 'pending', 'waiting', 3, '13:45:00'),
+(19, 11, 4, CURDATE() + INTERVAL 2 DAY, '07:30:00', 'Ankle sprain follow-up', 'pending', FALSE, 'pending', 'waiting', 1, '07:30:00'),
+(24, 12, 4, CURDATE() + INTERVAL 1 DAY, '07:30:00', 'Hip replacement consultation', 'pending', FALSE, 'pending', 'waiting', 1, '07:30:00'),
 
 -- Pediatrics Appointments (Specialty ID 5)
-(41, 9, 15, 5, CURDATE() - INTERVAL 3 DAY, '07:30:00', 'Annual checkup for 6-year-old', 'completed', TRUE, 'completed', 'examined', 1, '07:30:00'),
-(42, 9, 16, 5, CURDATE(), '13:30:00', 'Persistent cough in 3-year-old', 'pending', FALSE, 'pending', 'waiting', 2, '13:45:00'),
-(43, 10, 17, 5, CURDATE() + INTERVAL 1 DAY, '07:30:00', 'Fever and rash in 8-year-old', 'pending', FALSE, 'pending', 'waiting', 3, '07:45:00'),
-
--- Gastroenterology Appointments (Specialty ID 6)
-(5, 11, 18, 6, CURDATE() - INTERVAL 8 DAY, '13:30:00', 'Persistent heartburn', 'completed', TRUE, 'completed', 'examined', 1, '13:30:00'),
-(10, 11, 19, 6, CURDATE(), '07:30:00', 'Abdominal pain evaluation', 'pending', FALSE, 'pending', 'waiting', 2, '07:45:00'),
-(15, 12, 20, 6, CURDATE() + INTERVAL 1 DAY, '13:30:00', 'Chronic diarrhea investigation', 'pending', FALSE, 'pending', 'waiting', 3, '13:45:00'),
-
--- Ophthalmology Appointments (Specialty ID 7)
-(20, 13, 21, 7, CURDATE() - INTERVAL 12 DAY, '07:30:00', 'Blurry vision', 'completed', TRUE, 'completed', 'examined', 1, '07:30:00'),
-(25, 14, 22, 7, CURDATE(), '13:30:00', 'Eye irritation and redness', 'pending', FALSE, 'pending', 'waiting', 2, '13:45:00'),
-
--- Pulmonology Appointments (Specialty ID 8)
-(30, 15, 23, 8, CURDATE() - INTERVAL 15 DAY, '13:30:00', 'Chronic cough, smoker', 'completed', TRUE, 'completed', 'examined', 1, '13:30:00'),
-(35, 16, 24, 8, CURDATE(), '07:30:00', 'Sleep apnea evaluation', 'pending', FALSE, 'pending', 'waiting', 2, '07:45:00'),
-
--- Endocrinology Appointments (Specialty ID 9)
-(40, 17, 25, 9, CURDATE() - INTERVAL 9 DAY, '07:30:00', 'Type 2 diabetes follow-up', 'completed', TRUE, 'completed', 'examined', 1, '07:30:00'),
-(45, 18, 26, 9, CURDATE(), '13:30:00', 'Thyroid function check', 'pending', FALSE, 'pending', 'waiting', 2, '13:45:00'),
-
--- Oncology Appointments (Specialty ID 10)
-(50, 19, 27, 10, CURDATE() - INTERVAL 4 DAY, '13:30:00', 'Post-chemotherapy follow-up', 'completed', TRUE, 'completed', 'examined', 1, '13:30:00'),
-(21, 20, 28, 10, CURDATE(), '07:30:00', 'Initial consultation for breast lump', 'pending', FALSE, 'pending', 'waiting', 2, '07:45:00');
-
+(41, 13, 5, CURDATE() - INTERVAL 3 DAY, '07:30:00', 'Annual checkup for 6-year-old', 'completed', TRUE, 'completed', 'examined', 1, '07:30:00'),
+(42, 13, 5, CURDATE(), '13:30:00', 'Persistent cough in 3-year-old', 'pending', FALSE, 'pending', 'waiting', 2, '13:45:00'),
+(43, 14, 5, CURDATE(), '13:30:00', 'Fever and rash in 8-year-old', 'pending', FALSE, 'pending', 'waiting', 3, '13:45:00'),
+(44, 14, 5, CURDATE() + INTERVAL 2 DAY, '07:30:00', 'Growth assessment for 10-year-old', 'pending', FALSE, 'pending', 'waiting', 1, '07:30:00'),
+(45, 15, 5, CURDATE() + INTERVAL 1 DAY, '07:30:00', 'Vaccination for infant', 'pending', FALSE, 'pending', 'waiting', 1, '07:30:00');
 
 
 -- Insert sample data into AppointmentServices table
--- Appointment IDs 1-27, Service IDs 1-22 are available
--- NOTE: Assuming these services were added to the specific appointments listed.
+-- Appointment IDs 1-25, Service IDs 1-16 are available
 INSERT INTO AppointmentServices (appointmentId, serviceId, price, notes) VALUES
+-- Cardiology appointments
 (1, 1, 500000, 'Basic heart checkup requested'), -- ApptService ID 1 (Appt 1, Service 1)
 (1, 3, 300000, 'ECG test recommended'), -- ApptService ID 2 (Appt 1, Service 3)
-(5, 5, 400000, 'Initial skin consultation'), -- ApptService ID 3 (Appt 5, Service 5)
-(8, 8, 600000, 'Neurological consultation for headaches'), -- ApptService ID 4 (Appt 8, Service 8)
-(8, 9, 700000, 'EEG test to check for abnormalities'), -- ApptService ID 5 (Appt 8, Service 9)
-(11, 11, 500000, 'Assessment of knee injury'), -- ApptService ID 6 (Appt 11, Service 11)
-(11, 12, 400000, 'X-ray of knee recommended'), -- ApptService ID 7 (Appt 11, Service 12)
-(14, 14, 400000, 'Regular checkup for 6-year-old'); -- ApptService ID 8 (Appt 14, Service 14)
+(3, 2, 1500000, 'Comprehensive heart examination needed'), -- ApptService ID 3 (Appt 3, Service 2)
+(6, 1, 500000, 'Regular heart checkup'), -- ApptService ID 4 (Appt 6, Service 1)
+(6, 4, 800000, 'Echocardiogram requested'), -- ApptService ID 5 (Appt 6, Service 4)
+
+-- Dermatology appointments
+(2, 5, 400000, 'Initial skin consultation'), -- ApptService ID 6 (Appt 2, Service 5)
+(2, 6, 600000, 'Skin biopsy needed'), -- ApptService ID 7 (Appt 2, Service 6)
+(7, 5, 400000, 'Follow-up skin consultation'), -- ApptService ID 8 (Appt 7, Service 5)
+(12, 7, 1000000, 'Mole removal procedure'), -- ApptService ID 9 (Appt 12, Service 7)
+
+-- Neurology appointments
+(3, 8, 600000, 'Neurological consultation for headaches'), -- ApptService ID 10 (Appt 3, Service 8)
+(3, 9, 700000, 'EEG test to check for abnormalities'), -- ApptService ID 11 (Appt 3, Service 9)
+(8, 8, 600000, 'Follow-up neurological consultation'), -- ApptService ID 12 (Appt 8, Service 8)
+(13, 10, 2500000, 'MRI Brain scan requested'), -- ApptService ID 13 (Appt 13, Service 10)
+
+-- Orthopedics appointments
+(4, 11, 500000, 'Assessment of knee injury'), -- ApptService ID 14 (Appt 4, Service 11)
+(4, 12, 400000, 'X-ray of knee recommended'), -- ApptService ID 15 (Appt 4, Service 12)
+(9, 11, 500000, 'Back pain consultation'), -- ApptService ID 16 (Appt 9, Service 11)
+(14, 13, 800000, 'Joint injection treatment'), -- ApptService ID 17 (Appt 14, Service 13)
+
+-- Pediatrics appointments
+(5, 14, 400000, 'Regular checkup for 6-year-old'), -- ApptService ID 18 (Appt 5, Service 14)
+(5, 15, 500000, 'Growth assessment requested'), -- ApptService ID 19 (Appt 5, Service 15)
+(10, 16, 300000, 'Vaccination appointment'), -- ApptService ID 20 (Appt 10, Service 16)
+(15, 14, 400000, 'General pediatric checkup'); -- ApptService ID 21 (Appt 15, Service 14)
 
 
 -- Insert sample data into MedicalRecord table
 -- Appointment IDs must exist. Linking to completed appointments.
--- Note: Original data linked to appointment IDs 1, 2, 3 which are completed.
 INSERT INTO MedicalRecord (appointmentId, diagnosis, notes, recommendations, followupDate) VALUES
 (1, 'Mild angina', 'Patient reported chest pain during exertion. ECG was normal at rest.', 'Avoid strenuous activity, prescribed Nitroglycerin as needed. Follow up in 4 weeks.', CURDATE() + INTERVAL 4 WEEK), -- Record ID 1 (for Appointment 1)
-(5, 'Contact dermatitis', 'Rash on arms consistent with allergic reaction.', 'Identify and avoid allergen. Apply topical steroid.', CURDATE() + INTERVAL 2 WEEK), -- Record ID 2 (for Appointment 5)
-(8, 'Migraine without aura', 'Frequent severe headaches, photo- and phonophobia.', 'Trigger identification, acute treatment with triptan, consider preventative therapy.', CURDATE() + INTERVAL 3 WEEK); -- Record ID 3 (for Appointment 8)
+(2, 'Contact dermatitis', 'Rash on arms consistent with allergic reaction.', 'Identify and avoid allergen. Apply topical steroid.', CURDATE() + INTERVAL 2 WEEK), -- Record ID 2 (for Appointment 2)
+(3, 'Migraine without aura', 'Frequent severe headaches, photo- and phonophobia.', 'Trigger identification, acute treatment with triptan, consider preventative therapy.', CURDATE() + INTERVAL 3 WEEK), -- Record ID 3 (for Appointment 3)
+(4, 'Patellofemoral pain syndrome', 'Pain in the anterior knee after running activities.', 'Rest, ice, compression, elevation. Physical therapy recommended.', CURDATE() + INTERVAL 3 WEEK), -- Record ID 4 (for Appointment 4)
+(5, 'Normal growth and development', 'Child shows normal growth patterns for age.', 'Continue regular checkups. Encourage balanced diet and physical activity.', CURDATE() + INTERVAL 6 MONTH); -- Record ID 5 (for Appointment 5)
 
 
 -- Insert sample data into TestRequest table
 INSERT INTO TestRequest (appointmentId, serviceId, requestDate, status, notes, requestedByDoctorId) VALUES
 -- Requests for completed appointments
 (1, 3, CURDATE() - INTERVAL 7 DAY, 'completed', 'Test request for ECG Test', 1), -- Request ID 1 (for Appointment 1, Dr. 1)
-(5, 6, CURDATE() - INTERVAL 10 DAY, 'completed', 'Test request for Skin Biopsy', 3), -- Request ID 2 (for Appointment 5, Dr. 3)
-(8, 9, CURDATE() - INTERVAL 14 DAY, 'completed', 'Test request for EEG Test', 5), -- Request ID 3 (for Appointment 8, Dr. 5)
+(2, 6, CURDATE() - INTERVAL 10 DAY, 'completed', 'Test request for Skin Biopsy', 4), -- Request ID 2 (for Appointment 2, Dr. 4)
+(3, 9, CURDATE() - INTERVAL 14 DAY, 'completed', 'Test request for EEG Test', 7), -- Request ID 3 (for Appointment 3, Dr. 7)
+(4, 12, CURDATE() - INTERVAL 21 DAY, 'completed', 'Test request for X-Ray', 10), -- Request ID 4 (for Appointment 4, Dr. 10)
 
 -- Pending requests for current appointments
-(6, 3, CURDATE(), 'pending', 'Test request for ECG Test', 1), -- Request ID 4 (for Appointment 6, Dr. 1)
-(9, 10, CURDATE(), 'pending', 'Test request for MRI Brain', 5), -- Request ID 5 (for Appointment 9, Dr. 5)
-(10, 12, CURDATE(), 'pending', 'Test request for X-Ray', 11), -- Request ID 6 (for Appointment 10, Dr. 11)
-(16, 4, CURDATE(), 'pending', 'Test request for Echocardiogram', 2); -- Request ID 7 (for Appointment 16, Dr. 2)
+(6, 3, CURDATE(), 'pending', 'Test request for ECG Test', 1), -- Request ID 5 (for Appointment 6, Dr. 1)
+(7, 6, CURDATE(), 'pending', 'Test request for Skin Biopsy', 4), -- Request ID 6 (for Appointment 7, Dr. 4)
+(8, 9, CURDATE(), 'pending', 'Test request for EEG Test', 7), -- Request ID 7 (for Appointment 8, Dr. 7)
+(9, 12, CURDATE(), 'pending', 'Test request for X-Ray', 10), -- Request ID 8 (for Appointment 9, Dr. 10)
+(10, 16, CURDATE(), 'pending', 'Test request for Vaccination', 13); -- Request ID 9 (for Appointment 10, Dr. 13)
 
 
 -- Insert sample data into TestResult table
--- recordId, serviceId, technicianId, roomId, resultFileId, resultType, status must match existing IDs/enums
--- technicianId refers to technicianId (AUTO_INCREMENT), not userId.
+-- recordId, appointmentId, requestId, serviceId, technicianId, roomId must match existing IDs
 INSERT INTO TestResult (recordId, appointmentId, requestId, serviceId, technicianId, roomId, resultText, resultFileId, resultType, normalRange, unit, interpretation, status, performedDate) VALUES
 -- ECG Test Result (for Medical Record 1, related to Appointment 1)
-(1, 1, 1, 3, 1, 1, 'Heart rate: 78 bpm, Regular rhythm, Normal QRS complex', 1, 'file', '60-100', 'bpm', 'Normal ECG at rest. Clinical symptoms suggest exertional ischemia.', 'completed', CURDATE() - INTERVAL 7 DAY), -- Result ID 1
+(1, 1, 1, 3, 1, 4, 'Heart rate: 78 bpm, Regular rhythm, Normal QRS complex', 1, 'file', '60-100', 'bpm', 'Normal ECG at rest. Clinical symptoms suggest exertional ischemia.', 'completed', CURDATE() - INTERVAL 7 DAY), -- Result ID 1
 
--- Skin Biopsy Result (for Medical Record 2, related to Appointment 5)
-(2, 5, 2, 6, 2, 5, NULL, 3, 'file', NULL, NULL, 'Histology shows epidermal spongiosis and superficial perivascular inflammation consistent with acute contact dermatitis.', 'completed', CURDATE() - INTERVAL 9 DAY), -- Result ID 2
+-- Skin Biopsy Result (for Medical Record 2, related to Appointment 2)
+(2, 2, 2, 6, 2, 9, NULL, 3, 'file', NULL, NULL, 'Histology shows epidermal spongiosis and superficial perivascular inflammation consistent with acute contact dermatitis.', 'completed', CURDATE() - INTERVAL 9 DAY), -- Result ID 2
 
--- EEG Test Result (for Medical Record 3, related to Appointment 8)
-(3, 8, 3, 9, 3, 6, 'Normal brain wave activity', 1, 'file', 'N/A', 'N/A', 'No epileptiform activity or focal slowing detected.', 'completed', CURDATE() - INTERVAL 13 DAY); -- Result ID 3
+-- EEG Test Result (for Medical Record 3, related to Appointment 3)
+(3, 3, 3, 9, 3, 13, 'Normal brain wave activity', 1, 'file', 'N/A', 'N/A', 'No epileptiform activity or focal slowing detected.', 'completed', CURDATE() - INTERVAL 13 DAY), -- Result ID 3
+
+-- X-Ray Result (for Medical Record 4, related to Appointment 4)
+(4, 4, 4, 12, 4, 19, 'No fractures or dislocations visible', 2, 'file', 'N/A', 'N/A', 'Mild joint space narrowing consistent with early osteoarthritis.', 'completed', CURDATE() - INTERVAL 20 DAY); -- Result ID 4
 
 -- Insert sample data into Medication table
 INSERT INTO Medication (name, description, dosage, price, category, manufacturer, sideEffects) VALUES
@@ -585,15 +475,131 @@ INSERT INTO Medication (name, description, dosage, price, category, manufacturer
 ('Naproxen', 'NSAID for pain and inflammation', '500mg tablet', 30000, 'Pain Relief', 'Roche', 'Stomach upset, heartburn'), -- Medication ID 4
 ('Omeprazole', 'Proton pump inhibitor for GERD', '20mg capsule', 45000, 'Gastroenterology', 'Abbott', 'Headache, nausea'), -- Medication ID 5
 ('Albuterol Inhaler', 'Bronchodilator for asthma', '90mcg/puff inhaler', 250000, 'Pulmonology', 'GlaxoSmithKline', 'Tremor, fast heartbeat'), -- Medication ID 6
-('Metformin', 'Oral medication for Type 2 Diabetes', '500mg tablet', 20000, 'Endocrinology', 'Bristol-Myers Squibb', 'Nausea, diarrhea'); -- Medication ID 7
+('Metformin', 'Oral medication for Type 2 Diabetes', '500mg tablet', 20000, 'Endocrinology', 'Bristol-Myers Squibb', 'Nausea, diarrhea'), -- Medication ID 7
+
+-- Additional 100 common medications
+('Lisinopril', 'ACE inhibitor for hypertension', '10mg tablet', 25000, 'Cardiovascular', 'Merck', 'Dry cough, dizziness'),
+('Atorvastatin', 'Statin for high cholesterol', '20mg tablet', 40000, 'Cardiovascular', 'Pfizer', 'Muscle pain, liver issues'),
+('Levothyroxine', 'Synthetic thyroid hormone', '50mcg tablet', 18000, 'Endocrinology', 'Abbott', 'Weight changes, insomnia'),
+('Amlodipine', 'Calcium channel blocker for hypertension', '5mg tablet', 22000, 'Cardiovascular', 'Novartis', 'Ankle swelling, headache'),
+('Metoprolol', 'Beta-blocker for hypertension and angina', '25mg tablet', 15000, 'Cardiovascular', 'AstraZeneca', 'Fatigue, cold extremities'),
+('Sertraline', 'SSRI for depression and anxiety', '50mg tablet', 35000, 'Psychiatry', 'Pfizer', 'Nausea, insomnia, sexual dysfunction'),
+('Gabapentin', 'Anticonvulsant for seizures and nerve pain', '300mg capsule', 28000, 'Neurology', 'Pfizer', 'Dizziness, somnolence'),
+('Hydrochlorothiazide', 'Diuretic for hypertension', '25mg tablet', 10000, 'Cardiovascular', 'Merck', 'Increased urination, electrolyte imbalance'),
+('Losartan', 'Angiotensin II receptor blocker for hypertension', '50mg tablet', 30000, 'Cardiovascular', 'Merck', 'Dizziness, cough'),
+('Fluoxetine', 'SSRI for depression and anxiety', '20mg capsule', 25000, 'Psychiatry', 'Eli Lilly', 'Nausea, anxiety, insomnia'),
+('Amoxicillin', 'Penicillin antibiotic', '500mg capsule', 15000, 'Infectious Disease', 'GlaxoSmithKline', 'Diarrhea, rash'),
+('Ibuprofen', 'NSAID for pain and inflammation', '400mg tablet', 8000, 'Pain Relief', 'Johnson & Johnson', 'Stomach upset, heartburn'),
+('Paracetamol', 'Analgesic and antipyretic', '500mg tablet', 5000, 'Pain Relief', 'Johnson & Johnson', 'Liver damage in overdose'),
+('Ciprofloxacin', 'Fluoroquinolone antibiotic', '500mg tablet', 45000, 'Infectious Disease', 'Bayer', 'Tendon damage, nausea'),
+('Azithromycin', 'Macrolide antibiotic', '250mg tablet', 40000, 'Infectious Disease', 'Pfizer', 'Diarrhea, abdominal pain'),
+('Loratadine', 'Antihistamine for allergies', '10mg tablet', 12000, 'Allergy', 'Schering-Plough', 'Drowsiness, dry mouth'),
+('Cetirizine', 'Antihistamine for allergies', '10mg tablet', 15000, 'Allergy', 'UCB', 'Drowsiness, dry mouth'),
+('Montelukast', 'Leukotriene modifier for asthma and allergies', '10mg tablet', 35000, 'Pulmonology', 'Merck', 'Headache, behavior changes'),
+('Ranitidine', 'H2 blocker for acid reflux', '150mg tablet', 20000, 'Gastroenterology', 'GlaxoSmithKline', 'Headache, constipation'),
+('Famotidine', 'H2 blocker for acid reflux', '20mg tablet', 18000, 'Gastroenterology', 'Merck', 'Headache, dizziness'),
+('Citalopram', 'SSRI for depression and anxiety', '20mg tablet', 22000, 'Psychiatry', 'Forest Laboratories', 'Nausea, sexual dysfunction'),
+('Escitalopram', 'SSRI for depression and anxiety', '10mg tablet', 30000, 'Psychiatry', 'Lundbeck', 'Insomnia, sexual dysfunction'),
+('Venlafaxine', 'SNRI for depression and anxiety', '75mg tablet', 35000, 'Psychiatry', 'Wyeth', 'Nausea, increased blood pressure'),
+('Duloxetine', 'SNRI for depression and anxiety', '30mg capsule', 45000, 'Psychiatry', 'Eli Lilly', 'Nausea, dry mouth, insomnia'),
+('Paroxetine', 'SSRI for depression and anxiety', '20mg tablet', 25000, 'Psychiatry', 'GlaxoSmithKline', 'Sexual dysfunction, withdrawal symptoms'),
+('Alprazolam', 'Benzodiazepine for anxiety', '0.5mg tablet', 18000, 'Psychiatry', 'Pfizer', 'Drowsiness, dependence'),
+('Diazepam', 'Benzodiazepine for anxiety', '5mg tablet', 15000, 'Psychiatry', 'Roche', 'Drowsiness, dependence'),
+('Lorazepam', 'Benzodiazepine for anxiety', '1mg tablet', 20000, 'Psychiatry', 'Wyeth', 'Drowsiness, dependence'),
+('Clonazepam', 'Benzodiazepine for anxiety and seizures', '0.5mg tablet', 22000, 'Psychiatry/Neurology', 'Roche', 'Drowsiness, dependence'),
+('Warfarin', 'Anticoagulant for preventing blood clots', '5mg tablet', 8000, 'Cardiovascular', 'Bristol-Myers Squibb', 'Bleeding, bruising'),
+('Clopidogrel', 'Antiplatelet for preventing blood clots', '75mg tablet', 40000, 'Cardiovascular', 'Sanofi-Aventis', 'Bleeding, bruising'),
+('Aspirin', 'Antiplatelet and pain reliever', '81mg tablet', 3000, 'Cardiovascular/Pain Relief', 'Bayer', 'Stomach upset, bleeding'),
+('Furosemide', 'Loop diuretic for edema and hypertension', '40mg tablet', 6000, 'Cardiovascular', 'Sanofi-Aventis', 'Dehydration, electrolyte imbalance'),
+('Spironolactone', 'Potassium-sparing diuretic', '25mg tablet', 15000, 'Cardiovascular', 'Pfizer', 'Hyperkalemia, gynecomastia'),
+('Tamsulosin', 'Alpha-blocker for benign prostatic hyperplasia', '0.4mg capsule', 35000, 'Urology', 'Boehringer Ingelheim', 'Dizziness, ejaculation problems'),
+('Finasteride', 'Anti-androgen for BPH and hair loss', '5mg tablet', 40000, 'Urology/Dermatology', 'Merck', 'Sexual dysfunction, depression'),
+('Sildenafil', 'PDE5 inhibitor for erectile dysfunction', '50mg tablet', 30000, 'Urology', 'Pfizer', 'Headache, flushing, vision changes'),
+('Tadalafil', 'PDE5 inhibitor for erectile dysfunction', '10mg tablet', 35000, 'Urology', 'Eli Lilly', 'Headache, flushing, muscle pain'),
+('Amitriptyline', 'Tricyclic antidepressant', '25mg tablet', 10000, 'Psychiatry/Pain Management', 'Merck', 'Drowsiness, dry mouth, constipation'),
+('Nortriptyline', 'Tricyclic antidepressant', '25mg tablet', 12000, 'Psychiatry', 'Lundbeck', 'Drowsiness, dry mouth, constipation'),
+('Fluconazole', 'Antifungal for fungal infections', '150mg tablet', 25000, 'Infectious Disease', 'Pfizer', 'Nausea, headache, liver effects'),
+('Clotrimazole', 'Antifungal for fungal infections', '1% cream', 20000, 'Dermatology', 'Bayer', 'Local irritation, burning'),
+('Prednisone', 'Corticosteroid for inflammation', '5mg tablet', 8000, 'Various', 'Merck', 'Weight gain, mood changes, increased blood sugar'),
+('Methylprednisolone', 'Corticosteroid for inflammation', '4mg tablet', 12000, 'Various', 'Pfizer', 'Weight gain, mood changes, increased blood sugar'),
+('Fluticasone', 'Inhaled corticosteroid for asthma', '44mcg/inhalation', 180000, 'Pulmonology', 'GlaxoSmithKline', 'Throat irritation, oral thrush'),
+('Triamcinolone', 'Topical corticosteroid', '0.1% cream', 35000, 'Dermatology', 'Bristol-Myers Squibb', 'Skin thinning, local irritation'),
+('Clobetasol', 'High-potency topical corticosteroid', '0.05% cream', 45000, 'Dermatology', 'GlaxoSmithKline', 'Skin thinning, local irritation'),
+('Simvastatin', 'Statin for high cholesterol', '20mg tablet', 18000, 'Cardiovascular', 'Merck', 'Muscle pain, liver issues'),
+('Rosuvastatin', 'Statin for high cholesterol', '10mg tablet', 45000, 'Cardiovascular', 'AstraZeneca', 'Muscle pain, liver issues'),
+('Pravastatin', 'Statin for high cholesterol', '20mg tablet', 25000, 'Cardiovascular', 'Bristol-Myers Squibb', 'Muscle pain, liver issues'),
+('Fenofibrate', 'Fibrate for high triglycerides', '145mg tablet', 30000, 'Cardiovascular', 'Abbott', 'Stomach upset, muscle pain'),
+('Gemfibrozil', 'Fibrate for high triglycerides', '600mg tablet', 22000, 'Cardiovascular', 'Pfizer', 'Stomach upset, muscle pain'),
+('Glyburide', 'Sulfonylurea for type 2 diabetes', '5mg tablet', 8000, 'Endocrinology', 'Sanofi-Aventis', 'Hypoglycemia, weight gain'),
+('Glipizide', 'Sulfonylurea for type 2 diabetes', '5mg tablet', 7000, 'Endocrinology', 'Pfizer', 'Hypoglycemia, weight gain'),
+('Pioglitazone', 'Thiazolidinedione for type 2 diabetes', '15mg tablet', 35000, 'Endocrinology', 'Takeda', 'Weight gain, edema, bone fractures'),
+('Sitagliptin', 'DPP-4 inhibitor for type 2 diabetes', '100mg tablet', 55000, 'Endocrinology', 'Merck', 'Upper respiratory infections, headache'),
+('Empagliflozin', 'SGLT2 inhibitor for type 2 diabetes', '10mg tablet', 60000, 'Endocrinology', 'Boehringer Ingelheim', 'Urinary tract infections, dehydration'),
+('Dapagliflozin', 'SGLT2 inhibitor for type 2 diabetes', '5mg tablet', 55000, 'Endocrinology', 'AstraZeneca', 'Urinary tract infections, dehydration'),
+('Canagliflozin', 'SGLT2 inhibitor for type 2 diabetes', '100mg tablet', 58000, 'Endocrinology', 'Johnson & Johnson', 'Urinary tract infections, dehydration'),
+('Liraglutide', 'GLP-1 agonist for type 2 diabetes', '1.2mg/0.2ml injection', 900000, 'Endocrinology', 'Novo Nordisk', 'Nausea, diarrhea, pancreatitis'),
+('Dulaglutide', 'GLP-1 agonist for type 2 diabetes', '0.75mg/0.5ml injection', 950000, 'Endocrinology', 'Eli Lilly', 'Nausea, diarrhea, pancreatitis'),
+('Insulin Glargine', 'Long-acting insulin for diabetes', '100units/ml injection', 500000, 'Endocrinology', 'Sanofi-Aventis', 'Hypoglycemia, weight gain'),
+('Insulin Lispro', 'Rapid-acting insulin for diabetes', '100units/ml injection', 450000, 'Endocrinology', 'Eli Lilly', 'Hypoglycemia, weight gain'),
+('Insulin Aspart', 'Rapid-acting insulin for diabetes', '100units/ml injection', 480000, 'Endocrinology', 'Novo Nordisk', 'Hypoglycemia, weight gain'),
+('Doxycycline', 'Tetracycline antibiotic', '100mg capsule', 18000, 'Infectious Disease', 'Pfizer', 'Photosensitivity, stomach upset'),
+('Tetracycline', 'Tetracycline antibiotic', '250mg capsule', 15000, 'Infectious Disease', 'Allergan', 'Photosensitivity, tooth discoloration'),
+('Clindamycin', 'Lincosamide antibiotic', '300mg capsule', 25000, 'Infectious Disease', 'Pfizer', 'Diarrhea, colitis'),
+('Trimethoprim-Sulfamethoxazole', 'Sulfonamide antibiotic', '160mg/800mg tablet', 12000, 'Infectious Disease', 'Roche', 'Rash, allergic reactions'),
+('Amoxicillin-Clavulanate', 'Penicillin antibiotic with beta-lactamase inhibitor', '875mg/125mg tablet', 35000, 'Infectious Disease', 'GlaxoSmithKline', 'Diarrhea, nausea'),
+('Cephalexin', 'First-generation cephalosporin antibiotic', '500mg capsule', 20000, 'Infectious Disease', 'GlaxoSmithKline', 'Diarrhea, allergic reactions'),
+('Cefuroxime', 'Second-generation cephalosporin antibiotic', '250mg tablet', 30000, 'Infectious Disease', 'GlaxoSmithKline', 'Nausea, diarrhea'),
+('Ceftriaxone', 'Third-generation cephalosporin antibiotic', '1g injection', 50000, 'Infectious Disease', 'Roche', 'Pain at injection site, diarrhea'),
+('Levofloxacin', 'Fluoroquinolone antibiotic', '500mg tablet', 50000, 'Infectious Disease', 'Johnson & Johnson', 'Tendon damage, nausea'),
+('Moxifloxacin', 'Fluoroquinolone antibiotic', '400mg tablet', 55000, 'Infectious Disease', 'Bayer', 'Tendon damage, nausea'),
+('Isoniazid', 'Antitubercular drug', '300mg tablet', 10000, 'Infectious Disease', 'Sanofi-Aventis', 'Liver toxicity, peripheral neuropathy'),
+('Rifampin', 'Antitubercular drug', '300mg capsule', 20000, 'Infectious Disease', 'Sanofi-Aventis', 'Orange discoloration of fluids, liver effects'),
+('Ethambutol', 'Antitubercular drug', '400mg tablet', 15000, 'Infectious Disease', 'Pfizer', 'Visual disturbances, rash'),
+('Pyrazinamide', 'Antitubercular drug', '500mg tablet', 18000, 'Infectious Disease', 'Merck', 'Liver toxicity, joint pain'),
+('Acyclovir', 'Antiviral for herpes infections', '400mg tablet', 25000, 'Infectious Disease', 'GlaxoSmithKline', 'Nausea, headache'),
+('Valacyclovir', 'Antiviral for herpes infections', '500mg tablet', 40000, 'Infectious Disease', 'GlaxoSmithKline', 'Headache, nausea'),
+('Oseltamivir', 'Antiviral for influenza', '75mg capsule', 60000, 'Infectious Disease', 'Roche', 'Nausea, vomiting'),
+('Ondansetron', 'Antiemetic for nausea and vomiting', '4mg tablet', 15000, 'Gastroenterology', 'GlaxoSmithKline', 'Headache, constipation'),
+('Promethazine', 'Antiemetic and antihistamine', '25mg tablet', 8000, 'Gastroenterology/Allergy', 'Wyeth', 'Drowsiness, dry mouth'),
+('Pantoprazole', 'Proton pump inhibitor for GERD', '40mg tablet', 30000, 'Gastroenterology', 'Pfizer', 'Headache, diarrhea'),
+('Esomeprazole', 'Proton pump inhibitor for GERD', '20mg capsule', 50000, 'Gastroenterology', 'AstraZeneca', 'Headache, diarrhea'),
+('Lansoprazole', 'Proton pump inhibitor for GERD', '30mg capsule', 35000, 'Gastroenterology', 'Takeda', 'Headache, diarrhea'),
+('Rabeprazole', 'Proton pump inhibitor for GERD', '20mg tablet', 40000, 'Gastroenterology', 'Eisai', 'Headache, gas'),
+('Metoclopramide', 'Prokinetic for GERD and gastroparesis', '10mg tablet', 12000, 'Gastroenterology', 'ANI Pharmaceuticals', 'Restlessness, drowsiness, extrapyramidal symptoms'),
+('Diphenhydramine', 'First-generation antihistamine', '25mg capsule', 5000, 'Allergy', 'Johnson & Johnson', 'Drowsiness, dry mouth'),
+('Hydroxyzine', 'First-generation antihistamine', '25mg tablet', 8000, 'Allergy/Psychiatry', 'Pfizer', 'Drowsiness, dry mouth'),
+('Fexofenadine', 'Second-generation antihistamine', '120mg tablet', 20000, 'Allergy', 'Sanofi-Aventis', 'Headache, minimal drowsiness'),
+('Desloratadine', 'Second-generation antihistamine', '5mg tablet', 25000, 'Allergy', 'Merck', 'Headache, minimal drowsiness'),
+('Azelastine', 'Antihistamine nasal spray', '0.1% spray', 120000, 'Allergy', 'Meda Pharmaceuticals', 'Bitter taste, headache'),
+('Beclomethasone', 'Intranasal corticosteroid', '50mcg/spray', 150000, 'Allergy', 'GlaxoSmithKline', 'Nasal irritation, headache'),
+('Fluticasone Nasal', 'Intranasal corticosteroid', '50mcg/spray', 180000, 'Allergy', 'GlaxoSmithKline', 'Nasal irritation, headache'),
+('Mometasone Nasal', 'Intranasal corticosteroid', '50mcg/spray', 170000, 'Allergy', 'Merck', 'Nasal irritation, headache'),
+('Tiotropium', 'Long-acting muscarinic antagonist for COPD', '18mcg capsule for inhalation', 600000, 'Pulmonology', 'Boehringer Ingelheim', 'Dry mouth, constipation'),
+('Umeclidinium', 'Long-acting muscarinic antagonist for COPD', '62.5mcg inhaler', 550000, 'Pulmonology', 'GlaxoSmithKline', 'Dry mouth, constipation, tachycardia'),
+('Salmeterol', 'Long-acting beta-agonist for asthma and COPD', '50mcg diskus', 450000, 'Pulmonology', 'GlaxoSmithKline', 'Tremor, tachycardia'),
+('Formoterol', 'Long-acting beta-agonist for asthma and COPD', '12mcg capsule for inhalation', 430000, 'Pulmonology', 'Novartis', 'Tremor, tachycardia'),
+('Budesonide-Formoterol', 'ICS/LABA combination for asthma and COPD', '160mcg/4.5mcg inhaler', 650000, 'Pulmonology', 'AstraZeneca', 'Oral thrush, tremor'),
+('Fluticasone-Salmeterol', 'ICS/LABA combination for asthma and COPD', '250mcg/50mcg diskus', 700000, 'Pulmonology', 'GlaxoSmithKline', 'Oral thrush, tremor'),
+('Fluticasone-Vilanterol', 'ICS/LABA combination for asthma and COPD', '100mcg/25mcg inhaler', 720000, 'Pulmonology', 'GlaxoSmithKline', 'Oral thrush, tremor'),
+('Levetiracetam', 'Anticonvulsant for seizures', '500mg tablet', 40000, 'Neurology', 'UCB', 'Drowsiness, dizziness, behavioral changes'),
+('Lamotrigine', 'Anticonvulsant for seizures and bipolar disorder', '100mg tablet', 35000, 'Neurology/Psychiatry', 'GlaxoSmithKline', 'Rash, dizziness, headache'),
+('Valproic Acid', 'Anticonvulsant for seizures and bipolar disorder', '500mg tablet', 18000, 'Neurology/Psychiatry', 'Abbott', 'Weight gain, tremor, hair loss'),
+('Phenytoin', 'Anticonvulsant for seizures', '100mg tablet', 10000, 'Neurology', 'Pfizer', 'Gum problems, blood disorders, coordination problems'),
+('Carbamazepine', 'Anticonvulsant for seizures and neuropathic pain', '200mg tablet', 15000, 'Neurology', 'Novartis', 'Dizziness, blurred vision, blood disorders'),
+('Topiramate', 'Anticonvulsant for seizures and migraine prevention', '50mg tablet', 30000, 'Neurology', 'Johnson & Johnson', 'Weight loss, cognitive slowing, tingling'),
+('Pregabalin', 'Anticonvulsant for seizures, neuropathic pain, and anxiety', '75mg capsule', 45000, 'Neurology/Pain Management', 'Pfizer', 'Dizziness, somnolence, weight gain'),
+('Rizatriptan', 'Triptan for migraine relief', '10mg tablet', 60000, 'Neurology', 'Merck', 'Dizziness, fatigue, chest tightness'),
+('Propranolol', 'Beta-blocker for migraine prevention and hypertension', '40mg tablet', 8000, 'Neurology/Cardiovascular', 'Wyeth', 'Fatigue, cold extremities, bradycardia');
 
 
 -- Insert sample data into Prescription table
 -- recordId must match existing MedicalRecord IDs. doctorId must match existing Doctor IDs.
 INSERT INTO Prescription (recordId, doctorId, notes, status) VALUES
 (1, 1, 'Patient advised to carry nitroglycerin at all times.', 'active'), -- Prescription ID 1 (for Record 1, Dr 1)
-(2, 3, 'Patient should avoid contact with potential allergens and follow up if rash worsens.', 'active'), -- Prescription ID 2 (for Record 2, Dr 3)
-(3, 5, 'Migraine trigger diary recommended.', 'active'); -- Prescription ID 3 (for Record 3, Dr 5)
+(2, 4, 'Patient should avoid contact with potential allergens and follow up if rash worsens.', 'active'), -- Prescription ID 2 (for Record 2, Dr 4)
+(3, 7, 'Migraine trigger diary recommended.', 'active'), -- Prescription ID 3 (for Record 3, Dr 7)
+(4, 10, 'Physical therapy referral provided. Use knee brace during activities.', 'active'), -- Prescription ID 4 (for Record 4, Dr 10)
+(5, 13, 'Growth chart provided to parents. Next regular checkup in 6 months.', 'active'); -- Prescription ID 5 (for Record 5, Dr 13)
 
 
 -- Insert sample data into PrescriptionDetail table
@@ -601,16 +607,18 @@ INSERT INTO Prescription (recordId, doctorId, notes, status) VALUES
 INSERT INTO PrescriptionDetail (prescriptionId, medicationId, dosage, frequency, duration, instructions) VALUES
 (1, 1, '0.4mg', 'As needed for chest pain', 'Until next visit', 'Place one tablet under the tongue when chest pain occurs. May repeat every 5 minutes for up to 3 doses. If pain persists, seek emergency care.'), -- Prescription 1, Medication 1
 (2, 2, 'Thin layer', 'Twice daily', '14 days', 'Apply thinly to affected areas after washing. Avoid sun exposure on treated skin.'), -- Prescription 2, Medication 2
-(3, 3, '50mg', 'As needed for migraine', 'As needed (max 9 doses/month)', 'Take one tablet at the first sign of a migraine headache.'); -- Prescription 3, Medication 3
+(3, 3, '50mg', 'As needed for migraine', 'As needed (max 9 doses/month)', 'Take one tablet at the first sign of a migraine headache.'), -- Prescription 3, Medication 3
+(4, 4, '500mg', 'Twice daily with food', '10 days', 'Take with food to minimize stomach irritation. Do not exceed recommended dose.'), -- Prescription 4, Medication 4
+(5, 5, '20mg', 'Once daily in the morning', '30 days', 'Take on an empty stomach, 30 minutes before breakfast.'); -- Prescription 5, Medication 5
 
 
 -- Insert sample data into Payment table
 -- appointmentId must match existing Appointment IDs.
 INSERT INTO Payment (appointmentId, amount, method, status, transactionId, paymentDate) VALUES
 (1, 800000, 'credit_card', 'completed', 'TXN123456789', NOW() - INTERVAL 6 DAY), -- Payment ID 1 (for Appointment 1) - Basic Checkup (500k) + ECG (300k) = 800k
-(5, 400000, 'bank_transfer', 'completed', 'TXN123456790', NOW() - INTERVAL 9 DAY), -- Payment ID 2 (for Appointment 5) - Skin Consultation (400k)
-(8, 1300000, 'credit_card', 'completed', 'TXN123456791', NOW() - INTERVAL 13 DAY); -- Payment ID 3 (for Appointment 8) - Neuro Consultation (600k) + EEG (700k) = 1.3M
+(2, 1000000, 'bank_transfer', 'completed', 'TXN123456790', NOW() - INTERVAL 9 DAY), -- Payment ID 2 (for Appointment 2) - Skin Consultation (400k) + Skin Biopsy (600k) = 1M
+(3, 1300000, 'credit_card', 'completed', 'TXN123456791', NOW() - INTERVAL 13 DAY), -- Payment ID 3 (for Appointment 3) - Neuro Consultation (600k) + EEG (700k) = 1.3M
+(4, 900000, 'cash', 'completed', 'TXN123456792', NOW() - INTERVAL 20 DAY), -- Payment ID 4 (for Appointment 4) - Ortho Consultation (500k) + X-Ray (400k) = 900k
+(5, 900000, 'insurance', 'completed', 'TXN123456793', NOW() - INTERVAL 2 DAY); -- Payment ID 5 (for Appointment 5) - Checkup (400k) + Growth Assessment (500k) = 900k
 
 
--- Display a message to confirm completion
-SELECT 'Database FINAL_PROJECT_OOSE created and sample data inserted based on provided schema.' AS Message;

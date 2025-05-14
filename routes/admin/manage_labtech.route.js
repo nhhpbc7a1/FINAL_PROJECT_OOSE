@@ -303,15 +303,32 @@ router.post('/update/:technicianId', async function (req, res) { // <--- Changed
         profileImagePath = `/public/uploads/profile_images/${filename}`;
 
         // Delete old image *after* successful upload
-        if (oldImagePath && oldImagePath !== profileImagePath) {
+        if (oldImagePath) {
+          // Normalize the path for comparison - handle both absolute and relative paths
+          const normalizedPath = oldImagePath.startsWith('/') ? oldImagePath : `/${oldImagePath}`;
+          
+          // Check against all possible variations of the default path
+          const defaultPaths = [
+            '/public/images/default-avatar.png',
+            'public/images/default-avatar.png',
+            '/public/images/default-avatar.jpg',
+            'public/images/default-avatar.jpg'
+          ];
+          
+          // Only delete if not a default image and different from new image
+          if (!defaultPaths.includes(normalizedPath) && oldImagePath !== profileImagePath) {
             try {
-                 const fullOldPath = path.join(__dirname, '../../', oldImagePath);
-                 await fs.unlink(fullOldPath);
-                 console.log('Deleted old profile image:', oldImagePath);
-             } catch (unlinkError) {
-                  console.error('Error deleting old profile image:', unlinkError);
-             }
-         }
+              const fullOldPath = path.join(__dirname, '../../', oldImagePath);
+              await fs.access(fullOldPath); // Check if file exists before attempting to delete
+              await fs.unlink(fullOldPath);
+              console.log('Deleted old profile image:', oldImagePath);
+            } catch (unlinkError) {
+              console.error('Error deleting old profile image:', unlinkError);
+            }
+          } else {
+            console.log('Skipping deletion of default or reused profile image:', oldImagePath);
+          }
+        }
     } else {
         profileImagePath = oldImagePath; // Keep old path if no new file
     }

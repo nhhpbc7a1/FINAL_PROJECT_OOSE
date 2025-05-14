@@ -296,13 +296,30 @@ router.post('/update/:serviceId', async function (req, res) {
       imagePath = `/public/images/services/${filename}`;
 
       // Delete old image if it exists and is not the default image
-      if (oldImagePath && oldImagePath !== '/public/images/services/default-service.jpg') {
-        try {
-          const fullOldPath = path.join(__dirname, '../../', oldImagePath);
-          await fs.unlink(fullOldPath);
-          console.log('Deleted old service image:', oldImagePath);
-        } catch (unlinkError) {
-          console.error('Error deleting old service image:', unlinkError);
+      if (oldImagePath) {
+        // Normalize the path for comparison - handle both absolute and relative paths
+        const normalizedPath = oldImagePath.startsWith('/') ? oldImagePath : `/${oldImagePath}`;
+        
+        // Check against all possible variations of the default path
+        const defaultPaths = [
+          '/public/images/services/default-service.jpg',
+          'public/images/services/default-service.jpg',
+          '/public/images/services/default-service.png',
+          'public/images/services/default-service.png'
+        ];
+        
+        // Only delete if not a default image
+        if (!defaultPaths.includes(normalizedPath)) {
+          try {
+            const fullOldPath = path.join(__dirname, '../../', oldImagePath);
+            await fs.access(fullOldPath); // Check if file exists before attempting to delete
+            await fs.unlink(fullOldPath);
+            console.log('Deleted old service image:', oldImagePath);
+          } catch (unlinkError) {
+            console.error('Error deleting old service image:', unlinkError);
+          }
+        } else {
+          console.log('Skipping deletion of default image:', oldImagePath);
         }
       }
     } else {
