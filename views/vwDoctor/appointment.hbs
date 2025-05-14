@@ -1,516 +1,571 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Doctor Appointment</title>
-  <link rel="stylesheet" href="/public/css/doctor-side/Appointment.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-</head>
-<body>
-  <div class="container">
-      <div class="content-container">
-        <!-- Left Column -->
-        <div class="left-column">
-          <div class="appointment-container">
-            <div class="date-filter">
-              <div class="date-input">
-                <input id="datepicker" type="text" placeholder="{{selectedDate}}" value="{{selectedDate}}" />
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M19 4H18V2H16V4H8V2H6V4H5C3.89 4 3.01 4.9 3.01 6L3 20C3 21.1 3.89 22 5 22H19C20.1 22 21 21.1 21 20V6C21 4.9 20.1 4 19 4ZM19 20H5V9H19V20Z" fill="#6c757d"/>
-                </svg>
-              </div>  
-              <button class="view-btn" id="viewBtn">View</button>
-              <button class="filter-btn">Filter</button>
-            </div>
-           <div class="appointment-date" id="appointmentDateText">{{formattedDate}}</div>
-            
-            {{#if error}}
-              <div class="error-message">{{error}}</div>
-            {{else}}
-              {{#if hasAppointments}}
-                <div class="appointments-list">
-                {{#each appointments}}
-                  <div class="appointment-card {{#if (eq appointmentId ../selectedAppointment.appointmentId)}}active{{/if}}" data-id="{{appointmentId}}">
-                    <div class="appointment-time">{{timeFormatted}}</div>
-                    <div class="patient-name">{{patientName}}</div>
-                    <div class="appointment-type">{{reason}}</div>
-                    <div class="appointment-location">{{specialtyName}} - Room {{#if roomNumber}}{{roomNumber}}{{else}}Not assigned{{/if}}</div>
-                    <div class="appointment-status status-{{patientAppointmentStatus}}">{{patientAppointmentStatus}}</div>
-                    <div class="appointment-number">{{appointmentNumber}}</div>
-                  </div>
-                {{/each}}
-                </div>
-              {{else}}
-                <div class="no-appointments">
-                  <p>No appointments scheduled for this date.</p>
-                </div>
-              {{/if}}
-            {{/if}}
+{{#section 'css'}}
+<link rel="stylesheet" href="/public/css/doctor-side/Appointment.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+{{/section}}
+
+{{#section 'title'}}Doctor Appointment{{/section}}
+
+<!-- Left Column -->
+<div class="left-column">
+  <div class="appointment-container">
+    <div class="date-filter">
+      <div class="date-input">
+        <input id="datepicker" type="text" placeholder="{{selectedDate}}" value="{{selectedDate}}" />
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 4H18V2H16V4H8V2H6V4H5C3.89 4 3.01 4.9 3.01 6L3 20C3 21.1 3.89 22 5 22H19C20.1 22 21 21.1 21 20V6C21 4.9 20.1 4 19 4ZM19 20H5V9H19V20Z" fill="#6c757d"/>
+        </svg>
+      </div>  
+      <button class="view-btn" id="viewBtn">View</button>
+      <button class="filter-btn">Filter</button>
+    </div>
+   <div class="appointment-date" id="appointmentDateText">{{formattedDate}}</div>
+    
+    {{#if error}}
+      <div class="error-message">{{error}}</div>
+    {{else}}
+      {{#if hasAppointments}}
+        <div class="appointments-list">
+        {{#each appointments}}
+          <div class="appointment-card {{#if (eq appointmentId ../selectedAppointment.appointmentId)}}active{{/if}}" data-id="{{appointmentId}}">
+            <div class="appointment-time">{{timeFormatted}}</div>
+            <div class="patient-name">{{patientName}}</div>
+            <div class="appointment-type">{{reason}}</div>
+            <div class="appointment-location">{{specialtyName}} - Room {{#if roomNumber}}{{roomNumber}}{{else}}Not assigned{{/if}}</div>
+            <div class="appointment-status status-{{patientAppointmentStatus}}">{{patientAppointmentStatus}}</div>
+            <div class="appointment-number">{{appointmentNumber}}</div>
+          </div>
+        {{/each}}
+        </div>
+      {{else}}
+        <div class="no-appointments">
+          <p>No appointments scheduled for this date.</p>
+        </div>
+      {{/if}}
+    {{/if}}
+  </div>
+</div>
+
+<!-- Right Column -->
+<div class="right-column">
+ <div class="appointment-details">
+    <div class="details-header">
+      <div class="details-title">Appointment Details</div>
+      {{#if selectedAppointment}}
+      <button class="print-btn">Print</button>
+      {{/if}}
+    </div>
+    
+    {{#if selectedAppointment}}
+    <div class="tabs">
+      <button class="tab tab-btn active" data-tab="patient-info">Patient info</button> 
+      <button class="tab tab-btn" data-tab="medical-history">Medical History</button>
+      <button class="tab tab-btn" data-tab="previous-visits">Previous Visits</button>
+    </div>
+    
+    <div class="tab-content" id="patient-info" style="display: block;">
+      <div class="patient-profile">
+        <div class="patient-avatar">{{selectedAppointment.patientName.[0]}}</div>
+        <div>
+          <div class="patient-name">{{selectedAppointment.patientName}}</div>
+          <div class="patient-id">Patient ID: P-{{selectedAppointment.patientId}}</div>
+          <div class="patient-meta">
+            <span>{{selectedAppointment.patientAge}} years old</span>
+            <span>{{selectedAppointment.patientGenderFormatted}}</span>
+            <span>Phone: {{selectedAppointment.patientPhone}}</span>
+          </div>
+        </div>
+        <a href="/doctor/patient-details?patientId={{selectedAppointment.patientId}}" class="patient-details-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="#0D99FF"/>
+          </svg>
+          Patient Details
+        </a>
+      </div>
+      
+      <div class="appointment-info">
+        <div class="info-title">Appointment Information</div>
+        <div class="info-grid">
+          <div class="info-field">
+            <div class="field-label">Appointment Date</div>
+            <div class="field-value">{{selectedAppointment.dateFormatted}}</div>
+          </div>
+          <div class="info-field">
+            <div class="field-label">Appointment Time</div>
+            <div class="field-value">{{selectedAppointment.timeRangeFormatted}}</div>
+          </div>
+          <div class="info-field">
+            <div class="field-label">Appointment Type</div>
+            <div class="field-value">{{selectedAppointment.reason}}</div>
+          </div>
+          <div class="info-field">
+            <div class="field-label">Department</div>
+            <div class="field-value">{{selectedAppointment.specialtyName}}</div>
+          </div>
+          <div class="info-field">
+            <div class="field-label">Room</div>
+            <div class="field-value">Room {{#if selectedAppointment.roomNumber}}{{selectedAppointment.roomNumber}}{{else}}Not assigned{{/if}}</div>
+          </div>
+          <div class="info-field status-field">
+            <div class="field-label">Status</div>
+            <div class="field-value status-{{selectedAppointment.patientAppointmentStatus}}">{{selectedAppointment.patientAppointmentStatus}}</div>
           </div>
         </div>
         
-        <!-- Right Column -->
-        <div class="right-column">
-         <div class="appointment-details">
-            <div class="details-header">
-              <div class="details-title">Appointment Details</div>
-              {{#if selectedAppointment}}
-              <button class="print-btn">Print</button>
-              {{/if}}
+        <div class="contact-info">
+          <div class="info-title">Contact information</div>
+          <div class="info-grid">
+            <div class="info-field">
+              <div class="field-label">Phone Number</div>
+              <div class="field-value">{{selectedAppointment.patientPhone}}</div>
             </div>
-            
-            {{#if selectedAppointment}}
-            <div class="tabs">
-              <button class="tab tab-btn active" data-tab="patient-info">Patient info</button> 
-              <button class="tab tab-btn" data-tab="medical-history">Medical History</button>
-              <button class="tab tab-btn" data-tab="previous-visits">Previous Visits</button>
+            <div class="info-field">
+              <div class="field-label">Email</div>
+              <div class="field-value">{{selectedAppointment.email}}</div>
             </div>
-            
-            <div class="tab-content" id="patient-info" style="display: block;">
-              <div class="patient-profile">
-                <div class="patient-avatar">{{selectedAppointment.patientName.[0]}}</div>
-                <div>
-                  <div class="patient-name">{{selectedAppointment.patientName}}</div>
-                  <div class="patient-id">Patient ID: P-{{selectedAppointment.patientId}}</div>
-                  <div class="patient-meta">
-                    <span>{{selectedAppointment.patientAge}} years old</span>
-                    <span>{{selectedAppointment.patientGenderFormatted}}</span>
-                    <span>Phone: {{selectedAppointment.patientPhone}}</span>
-                  </div>
-                </div>
-                <a href="/doctor/patient-details?patientId={{selectedAppointment.patientId}}" class="patient-details-btn">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="#0D99FF"/>
-                  </svg>
-                  Patient Details
-                </a>
-              </div>
-              
-              <div class="appointment-info">
-                <div class="info-title">Appointment Information</div>
-                <div class="info-grid">
-                  <div class="info-field">
-                    <div class="field-label">Appointment Date</div>
-                    <div class="field-value">{{selectedAppointment.dateFormatted}}</div>
-                  </div>
-                  <div class="info-field">
-                    <div class="field-label">Appointment Time</div>
-                    <div class="field-value">{{selectedAppointment.timeRangeFormatted}}</div>
-                  </div>
-                  <div class="info-field">
-                    <div class="field-label">Appointment Type</div>
-                    <div class="field-value">{{selectedAppointment.reason}}</div>
-                  </div>
-                  <div class="info-field">
-                    <div class="field-label">Department</div>
-                    <div class="field-value">{{selectedAppointment.specialtyName}}</div>
-                  </div>
-                  <div class="info-field">
-                    <div class="field-label">Room</div>
-                    <div class="field-value">Room {{#if selectedAppointment.roomNumber}}{{selectedAppointment.roomNumber}}{{else}}Not assigned{{/if}}</div>
-                  </div>
-                  <div class="info-field status-field">
-                    <div class="field-label">Status</div>
-                    <div class="field-value status-{{selectedAppointment.patientAppointmentStatus}}">{{selectedAppointment.patientAppointmentStatus}}</div>
-                  </div>
-                </div>
-                
-                <div class="contact-info">
-                  <div class="info-title">Contact information</div>
-                  <div class="info-grid">
-                    <div class="info-field">
-                      <div class="field-label">Phone Number</div>
-                      <div class="field-value">{{selectedAppointment.patientPhone}}</div>
-                    </div>
-                    <div class="info-field">
-                      <div class="field-label">Email</div>
-                      <div class="field-value">{{selectedAppointment.email}}</div>
-                    </div>
-                  </div>
-                </div>
-                
-                <a href="/doctor/examination?appointmentId={{selectedAppointment.appointmentId}}" id="examinationBtn" class="action-btn">Examination</a>
-              </div>
-            </div>
-            
-            <div class="tab-content" id="medical-history" style="display: none;">
-              <div class="medical-history-content">
-                <div class="section-title">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM12 12C10.35 12 9 10.65 9 9C9 7.35 10.35 6 12 6C13.65 6 15 7.35 15 9C15 10.65 13.65 12 12 12ZM6.29 18C6.83 16.34 8.29 15 10 15H14C15.71 15 17.17 16.34 17.71 18H6.29Z" fill="#0D99FF"/>
-                  </svg>
-                  <h3>Medical History</h3>
-                </div>
-                
-                <div class="medical-records-list" id="medicalRecordsList">
-                  <div class="loading-records">
-                    <div class="spinner"></div>
-                    <span>Loading medical records...</span>
-                  </div>
-                </div>
-                
-                <div class="no-records-message" style="display: none;">
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2C6.47 2 2 6.47 2 12C2 17.53 6.47 22 12 22C17.53 22 22 17.53 22 12C22 6.47 17.53 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20ZM15.59 7L12 10.59L8.41 7L7 8.41L10.59 12L7 15.59L8.41 17L12 13.41L15.59 17L17 15.59L13.41 12L17 8.41L15.59 7Z" fill="#6c757d"/>
-                  </svg>
-                  <p>No medical records found for this patient.</p>
-                </div>
-              </div>
-            </div>
-            
-            <div class="tab-content" id="previous-visits" style="display: none;">
-              <div class="previous-visits-content">
-                <div class="section-title">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V8H19V19ZM19 5H5V7H19V5ZM17 12H12V17H17V12Z" fill="#0D99FF"/>
-                  </svg>
-                  <h3>Previous Visits</h3>
-                </div>
-                
-                <div class="previous-visits-list" id="previousVisitsList">
-                  <div class="loading-visits">
-                    <div class="spinner"></div>
-                    <span>Loading previous visits...</span>
-                  </div>
-                </div>
-                
-                <div class="no-visits-message" style="display: none;">
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2C6.47 2 2 6.47 2 12C2 17.53 6.47 22 12 22C17.53 22 22 17.53 22 12C22 6.47 17.53 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20ZM15.59 7L12 10.59L8.41 7L7 8.41L10.59 12L7 15.59L8.41 17L12 13.41L15.59 17L17 15.59L13.41 12L17 8.41L15.59 7Z" fill="#6c757d"/>
-                  </svg>
-                  <p>No previous visits found for this patient.</p>
-                </div>
-              </div>
-            </div>
-            {{else}}
-            <div class="no-appointment-selected">
-              <p>Select an appointment from the list to view details</p>
-            </div>
-            {{/if}}
           </div>
+        </div>
+        
+        <a href="/doctor/examination?appointmentId={{selectedAppointment.appointmentId}}" id="examinationBtn" class="action-btn">Examination</a>
+      </div>
+    </div>
+    
+    <div class="tab-content" id="medical-history" style="display: none;">
+      <div class="medical-history-content">
+        <div class="section-title">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM12 12C10.35 12 9 10.65 9 9C9 7.35 10.35 6 12 6C13.65 6 15 7.35 15 9C15 10.65 13.65 12 12 12ZM6.29 18C6.83 16.34 8.29 15 10 15H14C15.71 15 17.17 16.34 17.71 18H6.29Z" fill="#0D99FF"/>
+          </svg>
+          <h3>Medical History</h3>
+        </div>
+        
+        <div class="medical-records-list" id="medicalRecordsList">
+          <div class="loading-records">
+            <div class="spinner"></div>
+            <span>Loading medical records...</span>
+          </div>
+        </div>
+        
+        <div class="no-records-message" style="display: none;">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.47 2 2 6.47 2 12C2 17.53 6.47 22 12 22C17.53 22 22 17.53 22 12C22 6.47 17.53 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20ZM15.59 7L12 10.59L8.41 7L7 8.41L10.59 12L7 15.59L8.41 17L12 13.41L15.59 17L17 15.59L13.41 12L17 8.41L15.59 7Z" fill="#6c757d"/>
+          </svg>
+          <p>No medical records found for this patient.</p>
         </div>
       </div>
+    </div>
+    
+    <div class="tab-content" id="previous-visits" style="display: none;">
+      <div class="previous-visits-content">
+        <div class="section-title">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V8H19V19ZM19 5H5V7H19V5ZM17 12H12V17H17V12Z" fill="#0D99FF"/>
+          </svg>
+          <h3>Previous Visits</h3>
+        </div>
+        
+        <div class="previous-visits-list" id="previousVisitsList">
+          <div class="loading-visits">
+            <div class="spinner"></div>
+            <span>Loading previous visits...</span>
+          </div>
+        </div>
+        
+        <div class="no-visits-message" style="display: none;">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.47 2 2 6.47 2 12C2 17.53 6.47 22 12 22C17.53 22 22 17.53 22 12C22 6.47 17.53 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20ZM15.59 7L12 10.59L8.41 7L7 8.41L10.59 12L7 15.59L8.41 17L12 13.41L15.59 17L17 15.59L13.41 12L17 8.41L15.59 7Z" fill="#6c757d"/>
+          </svg>
+          <p>No previous visits found for this patient.</p>
+        </div>
+      </div>
+    </div>
+    {{else}}
+    <div class="no-appointment-selected">
+      <p>Select an appointment from the list to view details</p>
+    </div>
+    {{/if}}
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <script>
-    // Debug datepicker values
-    console.log("Initial date from server:", "{{selectedDate}}");
-    
-    // Initialize date picker with consistent formats
-    const fp = flatpickr("#datepicker", {
-      dateFormat: "Y-m-d", // Keep internal format as YYYY-MM-DD
-      defaultDate: "{{selectedDate}}",
-      allowInput: true,
-      altInput: true,
-      altFormat: "d/m/Y", // Show as DD/MM/YYYY
-      onReady: function(selectedDates, dateStr, instance) {
-        console.log("Datepicker initialized with date:", dateStr, "and internal value:", instance.input.value);
-        
-        // Make sure the date is properly displayed on page load
-        if (selectedDates.length > 0) {
-          const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-          const formatted = selectedDates[0].toLocaleDateString('en-US', options);
-          document.getElementById("appointmentDateText").textContent = formatted;
-        }
-      },
-      onChange: function(selectedDates, dateStr, instance) {
-        console.log("Date changed to:", dateStr, "and internal value:", instance.input.value);
-        
-        if (selectedDates.length > 0) {
-          const selectedDate = selectedDates[0];
-          // Format date for display
-          const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-          const formatted = selectedDate.toLocaleDateString('en-US', options);
-          document.getElementById("appointmentDateText").textContent = formatted;
-        }
+</div>
+
+{{#section 'js'}}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+  // Debug datepicker values
+  console.log("Initial date from server:", "{{selectedDate}}");
+  
+  // Initialize date picker with consistent formats
+  const fp = flatpickr("#datepicker", {
+    dateFormat: "Y-m-d", // Keep internal format as YYYY-MM-DD
+    defaultDate: "{{selectedDate}}",
+    allowInput: true,
+    altInput: true,
+    altFormat: "d/m/Y", // Show as DD/MM/YYYY
+    onReady: function(selectedDates, dateStr, instance) {
+      console.log("Datepicker initialized with date:", dateStr, "and internal value:", instance.input.value);
+      
+      // Make sure the date is properly displayed on page load
+      if (selectedDates.length > 0) {
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const formatted = selectedDates[0].toLocaleDateString('en-US', options);
+        document.getElementById("appointmentDateText").textContent = formatted;
       }
-    });
-
-    // View button functionality
-    document.getElementById('viewBtn').addEventListener('click', function() {
-      // Get the internal value which should be in YYYY-MM-DD format
-      const internalDate = fp.input.value;
-      const displayDate = document.querySelector(".flatpickr-input.flatpickr-input").value;
+    },
+    onChange: function(selectedDates, dateStr, instance) {
+      console.log("Date changed to:", dateStr, "and internal value:", instance.input.value);
       
-      console.log("View button clicked. Input value:", internalDate);
-      console.log("Display value:", displayDate);
-      
-      // Format date as YYYY-MM-DD
-      let dateToUse = internalDate;
-      
-      // If using the display format (DD/MM/YYYY), convert it
-      if (displayDate.includes('/') && displayDate.split('/').length === 3) {
-        const parts = displayDate.split('/');
-        // Assume it's in DD/MM/YYYY format
-        dateToUse = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-        console.log("Converted date:", dateToUse);
+      if (selectedDates.length > 0) {
+        const selectedDate = selectedDates[0];
+        // Format date for display
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const formatted = selectedDate.toLocaleDateString('en-US', options);
+        document.getElementById("appointmentDateText").textContent = formatted;
       }
-      
-      window.location.href = `/doctor/appointments?date=${dateToUse}`;
-    });
+    }
+  });
 
-    // Make appointment cards clickable
-    document.querySelectorAll('.appointment-card').forEach(card => {
-      card.addEventListener('click', function() {
-        const appointmentId = this.getAttribute('data-id');
-        const currentDate = fp.input.value; // Use internal YYYY-MM-DD format
-        
-        // Highlight the selected card
-        document.querySelectorAll('.appointment-card').forEach(c => {
-          c.classList.remove('active');
-        });
-        this.classList.add('active');
-        
-        // Load appointment details 
-        window.location.href = `/doctor/appointments?date=${currentDate}&appointmentId=${appointmentId}`;
-      });
-    });
-
-    // Tab switching functionality
-    const tabs = document.querySelectorAll('.tab-btn');
-    const tabContents = document.querySelectorAll('.tab-content');
+  // View button functionality
+  document.getElementById('viewBtn').addEventListener('click', function() {
+    // Get the internal value which should be in YYYY-MM-DD format
+    const internalDate = fp.input.value;
+    const displayDate = document.querySelector(".flatpickr-input.flatpickr-input").value;
     
-    tabs.forEach(tab => {
-      tab.addEventListener('click', function() {
-        // Remove active class from all tabs
-        tabs.forEach(t => t.classList.remove('active'));
-        // Add active class to clicked tab
-        this.classList.add('active');
-        
-        // Hide all tab contents
-        tabContents.forEach(content => {
-          content.style.display = 'none';
-        });
-        
-        // Show the corresponding tab content
-        const tabId = this.getAttribute('data-tab');
-        document.getElementById(tabId).style.display = 'block';
-        
-        // Load content if switching to medical history or previous visits tabs
-        if (tabId === 'medical-history') {
-          loadMedicalHistory();
-        } else if (tabId === 'previous-visits') {
-          loadPreviousVisits();
-        }
-      });
-    });
+    console.log("View button clicked. Input value:", internalDate);
+    console.log("Display value:", displayDate);
     
-    // Function to load medical history
-    function loadMedicalHistory() {
-      const patientId = '{{selectedAppointment.patientId}}';
-      if (!patientId) return;
-      
-      const medicalRecordsList = document.getElementById('medicalRecordsList');
-      const noRecordsMessage = document.querySelector('.no-records-message');
-      
-      // Show loading state
-      medicalRecordsList.innerHTML = `
-        <div class="loading-records">
-          <div class="spinner"></div>
-          <span>Loading medical records...</span>
-        </div>
-      `;
-      
-      console.log('Fetching medical records for patient:', patientId);
-      
-      // Fetch medical records from API
-      fetch(`/doctor/api/patients/${patientId}/medical-records`)
-        .then(response => {
-          console.log('Response status:', response.status);
-          return response.json();
-        })
-        .then(data => {
-          console.log('Medical records data:', data);
-          
-          if (data.records && data.records.length > 0) {
-            let html = '';
-            
-            data.records.forEach(record => {
-              html += `
-                <div class="medical-record-item">
-                  <div class="record-header">
-                    <div class="record-title">${record.title || 'Medical Record'}</div>
-                    <div class="record-date">${record.dateFormatted || 'N/A'}</div>
-                  </div>
-                  <div class="record-content">
-                    <div class="diagnosis-section">
-                      <strong>Diagnosis:</strong> ${record.diagnosis || 'No diagnosis recorded'}
-                    </div>
-                    ${record.notes ? `
-                      <div class="notes-section">
-                        <strong>Notes:</strong> ${record.notes}
-                      </div>
-                    ` : ''}
-                    ${record.recommendations ? `
-                      <div class="recommendations-section">
-                        <strong>Recommendations:</strong> ${record.recommendations}
-                      </div>
-                    ` : ''}
-                  </div>
-                  <div class="record-meta">
-                    <div class="record-doctor">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="#6c757d"/>
-                      </svg>
-                      Dr. ${record.doctorName || 'Unknown'}
-                    </div>
-                    <div class="record-department">${record.department || 'General'}</div>
-                  </div>
-                </div>
-              `;
-            });
-            
-            medicalRecordsList.innerHTML = html;
-            noRecordsMessage.style.display = 'none';
-          } else {
-            medicalRecordsList.innerHTML = '';
-            noRecordsMessage.style.display = 'flex';
-          }
-        })
-        .catch(error => {
-          console.error('Error fetching medical records:', error);
-          medicalRecordsList.innerHTML = `
-            <div class="error-message">
-              Failed to load medical records. Please try again.
-            </div>
-          `;
-          noRecordsMessage.style.display = 'none';
-        });
+    // Format date as YYYY-MM-DD
+    let dateToUse = internalDate;
+    
+    // If using the display format (DD/MM/YYYY), convert it
+    if (displayDate.includes('/') && displayDate.split('/').length === 3) {
+      const parts = displayDate.split('/');
+      // Assume it's in DD/MM/YYYY format
+      dateToUse = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+      console.log("Converted date:", dateToUse);
     }
     
-    // Function to load previous visits
-    function loadPreviousVisits() {
-      const patientId = '{{selectedAppointment.patientId}}';
-      const currentAppointmentId = '{{selectedAppointment.appointmentId}}';
-      if (!patientId) return;
+    window.location.href = `/doctor/appointments?date=${dateToUse}`;
+  });
+
+  // Make appointment cards clickable
+  document.querySelectorAll('.appointment-card').forEach(card => {
+    card.addEventListener('click', function() {
+      const appointmentId = this.getAttribute('data-id');
+      const currentDate = fp.input.value; // Use internal YYYY-MM-DD format
       
-      const previousVisitsList = document.getElementById('previousVisitsList');
-      const noVisitsMessage = document.querySelector('.no-visits-message');
+      // Highlight the selected card
+      document.querySelectorAll('.appointment-card').forEach(c => {
+        c.classList.remove('active');
+      });
+      this.classList.add('active');
       
-      // Show loading state
-      previousVisitsList.innerHTML = `
-        <div class="loading-visits">
-          <div class="spinner"></div>
-          <span>Loading previous visits...</span>
-        </div>
-      `;
+      // Load appointment details 
+      window.location.href = `/doctor/appointments?date=${currentDate}&appointmentId=${appointmentId}`;
+    });
+  });
+
+  // Tab switching functionality
+  const tabs = document.querySelectorAll('.tab-btn');
+  const tabContents = document.querySelectorAll('.tab-content');
+  
+  tabs.forEach(tab => {
+    tab.addEventListener('click', function() {
+      // Remove active class from all tabs
+      tabs.forEach(t => t.classList.remove('active'));
+      // Add active class to clicked tab
+      this.classList.add('active');
       
-      console.log('Fetching previous visits for patient ID:', patientId);
-      console.log('Current appointment ID:', currentAppointmentId);
+      // Hide all tab contents
+      tabContents.forEach(content => {
+        content.style.display = 'none';
+      });
       
-      // Construct the API URL
-      const apiUrl = `/doctor/api/patients/${patientId}/appointments?exclude=${currentAppointmentId}`;
-      console.log('API URL for previous visits:', apiUrl);
+      // Show the corresponding tab content
+      const tabId = this.getAttribute('data-tab');
+      document.getElementById(tabId).style.display = 'block';
       
-      // Fetch previous visits from API
-      fetch(apiUrl)
-        .then(response => {
-          console.log('Previous visits API response status:', response.status);
-          return response.json();
-        })
-        .then(data => {
-          console.log('Previous visits API response data:', data);
+      // Load content if switching to medical history or previous visits tabs
+      if (tabId === 'medical-history') {
+        loadMedicalHistory();
+      } else if (tabId === 'previous-visits') {
+        loadPreviousVisits();
+      }
+    });
+  });
+  
+  // Function to load medical history
+  function loadMedicalHistory() {
+    const patientId = '{{selectedAppointment.patientId}}';
+    if (!patientId) return;
+    
+    const medicalRecordsList = document.getElementById('medicalRecordsList');
+    const noRecordsMessage = document.querySelector('.no-records-message');
+    
+    // Show loading state
+    medicalRecordsList.innerHTML = `
+      <div class="loading-records">
+        <div class="spinner"></div>
+        <span>Loading medical records...</span>
+      </div>
+    `;
+    
+    console.log('Fetching medical records for patient:', patientId);
+    
+    // Fetch medical records from API
+    fetch(`/doctor/api/patients/${patientId}/medical-records`)
+      .then(response => {
+        console.log('Response status:', response.status);
+        return response.json();
+      })
+      .then(data => {
+        console.log('Medical records data:', data);
+        
+        if (data.records && data.records.length > 0) {
+          let html = '';
           
-          if (data.appointments && data.appointments.length > 0) {
-            console.log(`Rendering ${data.appointments.length} previous visits`);
-            let html = '';
-            
-            data.appointments.forEach(visit => {
-              // Format status badge class
-              const statusClass = `visit-status-${visit.status.toLowerCase()}`;
-              
-              // Add special styling for current visit
-              const visitItemClass = visit.isCurrent ? 'previous-visit-item current-visit' : 'previous-visit-item';
-              
-              html += `
-                <div class="${visitItemClass}">
-                  <div class="visit-header">
-                    <div class="visit-title">
-                      ${visit.reason || 'Regular Visit'}${visit.titleSuffix || ''}
-                      <span class="visit-status ${statusClass}">${visit.status}</span>
-                    </div>
-                    <div class="visit-date">${visit.dateFormatted || 'N/A'} ${visit.timeFormatted ? `at ${visit.timeFormatted}` : ''}</div>
-                  </div>
-                  <div class="visit-content">
-                    ${visit.notes ? `
-                      <div class="visit-notes">
-                        <strong>Notes:</strong> ${visit.notes}
-                      </div>
-                    ` : 'No notes available for this visit.'}
-                    
-                    ${visit.diagnosis ? `
-                      <div class="visit-diagnosis">
-                        <strong>Diagnosis:</strong> ${visit.diagnosis}
-                      </div>
-                    ` : ''}
-                    
-                    ${visit.isCurrent ? `
-                      <div class="current-visit-notice">
-                        <em>This is the appointment you are currently viewing</em>
-                      </div>
-                    ` : ''}
-                  </div>
-                  <div class="visit-meta">
-                    <div class="visit-doctor">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="#6c757d"/>
-                      </svg>
-                      Dr. ${visit.doctorName || 'Unknown'}
-                    </div>
-                    <div class="visit-department">${visit.department || 'General'}</div>
-                  </div>
+          data.records.forEach(record => {
+            html += `
+              <div class="medical-record-item">
+                <div class="record-header">
+                  <div class="record-title">${record.title || 'Medical Record'}</div>
+                  <div class="record-date">${record.dateFormatted || 'N/A'}</div>
                 </div>
-              `;
-            });
-            
-            previousVisitsList.innerHTML = html;
-            noVisitsMessage.style.display = 'none';
-            
-            // Add CSS for current visit highlight
-            const style = document.createElement('style');
-            style.textContent = `
-              .current-visit {
-                border-left: 4px solid #0D99FF;
-                background-color: rgba(13, 153, 255, 0.05);
-              }
-              .current-visit-notice {
-                margin-top: 10px;
-                padding: 8px;
-                background-color: rgba(13, 153, 255, 0.1);
-                border-radius: 4px;
-                color: #0D99FF;
-                font-size: 13px;
-                text-align: center;
-              }
+                <div class="record-content">
+                  <div class="diagnosis-section">
+                    <strong>Diagnosis:</strong> ${record.diagnosis || 'No diagnosis recorded'}
+                  </div>
+                  ${record.notes ? `
+                    <div class="notes-section">
+                      <strong>Notes:</strong> ${record.notes}
+                    </div>
+                  ` : ''}
+                  ${record.recommendations ? `
+                    <div class="recommendations-section">
+                      <strong>Recommendations:</strong> ${record.recommendations}
+                    </div>
+                  ` : ''}
+                </div>
+                <div class="record-meta">
+                  <div class="record-doctor">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="#6c757d"/>
+                    </svg>
+                    Dr. ${record.doctorName || 'Unknown'}
+                  </div>
+                  <div class="record-department">${record.department || 'General'}</div>
+                </div>
+              </div>
             `;
-            document.head.appendChild(style);
-            
-          } else {
-            console.log('No previous visits found in API response');
-            previousVisitsList.innerHTML = '';
-            noVisitsMessage.style.display = 'flex';
-          }
-        })
-        .catch(error => {
-          console.error('Error fetching previous visits:', error);
-          previousVisitsList.innerHTML = `
-            <div class="error-message">
-              Failed to load previous visits. Please try again.
-              <br><small>${error.message || 'Unknown error'}</small>
-            </div>
-          `;
-          noVisitsMessage.style.display = 'none';
-        });
-    }
+          });
+          
+          medicalRecordsList.innerHTML = html;
+          noRecordsMessage.style.display = 'none';
+        } else {
+          medicalRecordsList.innerHTML = '';
+          noRecordsMessage.style.display = 'flex';
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching medical records:', error);
+        medicalRecordsList.innerHTML = `
+          <div class="error-message">
+            Failed to load medical records. Please try again.
+          </div>
+        `;
+        noRecordsMessage.style.display = 'none';
+      });
+  }
+  
+  // Function to load previous visits
+  function loadPreviousVisits() {
+    const patientId = '{{selectedAppointment.patientId}}';
+    const currentAppointmentId = '{{selectedAppointment.appointmentId}}';
+    if (!patientId) return;
     
-    // Press Enter in datepicker to trigger view button
-    document.getElementById('datepicker').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        document.getElementById('viewBtn').click();
-      }
+    const previousVisitsList = document.getElementById('previousVisitsList');
+    const noVisitsMessage = document.querySelector('.no-visits-message');
+    
+    // Show loading state
+    previousVisitsList.innerHTML = `
+      <div class="loading-visits">
+        <div class="spinner"></div>
+        <span>Loading previous visits...</span>
+      </div>
+    `;
+    
+    console.log('Fetching previous visits for patient ID:', patientId);
+    console.log('Current appointment ID:', currentAppointmentId);
+    
+    // Construct the API URL
+    const apiUrl = `/doctor/api/patients/${patientId}/appointments?exclude=${currentAppointmentId}`;
+    console.log('API URL for previous visits:', apiUrl);
+    
+    // Fetch previous visits from API
+    fetch(apiUrl)
+      .then(response => {
+        console.log('Previous visits API response status:', response.status);
+        return response.json();
+      })
+      .then(data => {
+        console.log('Previous visits API response data:', data);
+        
+        if (data.appointments && data.appointments.length > 0) {
+          console.log(`Rendering ${data.appointments.length} previous visits`);
+          let html = '';
+          
+          data.appointments.forEach(visit => {
+            // Format status badge class
+            const statusClass = `visit-status-${visit.status.toLowerCase()}`;
+            
+            // Add special styling for current visit
+            const visitItemClass = visit.isCurrent ? 'previous-visit-item current-visit' : 'previous-visit-item';
+            
+            html += `
+              <div class="${visitItemClass}">
+                <div class="visit-header">
+                  <div class="visit-title">
+                    ${visit.reason || 'Regular Visit'}${visit.titleSuffix || ''}
+                    <span class="visit-status ${statusClass}">${visit.status}</span>
+                  </div>
+                  <div class="visit-date">${visit.dateFormatted || 'N/A'} ${visit.timeFormatted ? `at ${visit.timeFormatted}` : ''}</div>
+                </div>
+                <div class="visit-content">
+                  ${visit.notes ? `
+                    <div class="visit-notes">
+                      <strong>Notes:</strong> ${visit.notes}
+                    </div>
+                  ` : 'No notes available for this visit.'}
+                  
+                  ${visit.diagnosis ? `
+                    <div class="visit-diagnosis">
+                      <strong>Diagnosis:</strong> ${visit.diagnosis}
+                    </div>
+                  ` : ''}
+                  
+                  ${visit.isCurrent ? `
+                    <div class="current-visit-notice">
+                      <em>This is the appointment you are currently viewing</em>
+                    </div>
+                  ` : ''}
+                </div>
+                <div class="visit-meta">
+                  <div class="visit-doctor">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="#6c757d"/>
+                    </svg>
+                    Dr. ${visit.doctorName || 'Unknown'}
+                  </div>
+                  <div class="visit-department">${visit.department || 'General'}</div>
+                </div>
+              </div>
+            `;
+          });
+          
+          previousVisitsList.innerHTML = html;
+          noVisitsMessage.style.display = 'none';
+          
+          // Add CSS for current visit highlight
+          const style = document.createElement('style');
+          style.textContent = `
+            .current-visit {
+              border-left: 4px solid #0D99FF;
+              background-color: rgba(13, 153, 255, 0.05);
+            }
+            .current-visit-notice {
+              margin-top: 10px;
+              padding: 8px;
+              background-color: rgba(13, 153, 255, 0.1);
+              border-radius: 4px;
+              color: #0D99FF;
+              font-size: 13px;
+              text-align: center;
+            }
+          `;
+          document.head.appendChild(style);
+          
+        } else {
+          console.log('No previous visits found in API response');
+          previousVisitsList.innerHTML = '';
+          noVisitsMessage.style.display = 'flex';
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching previous visits:', error);
+        previousVisitsList.innerHTML = `
+          <div class="error-message">
+            Failed to load previous visits. Please try again.
+            <br><small>${error.message || 'Unknown error'}</small>
+          </div>
+        `;
+        noVisitsMessage.style.display = 'none';
+      });
+  }
+  
+  // Press Enter in datepicker to trigger view button
+  document.getElementById('datepicker').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      document.getElementById('viewBtn').click();
+    }
+  });
+
+  // Popup function for notifications
+  function showPopup(title, message, btnText = "OK", callback = null) {
+    // Create popup elements
+    const overlay = document.createElement('div');
+    overlay.className = 'popup-overlay';
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    overlay.style.display = 'flex';
+    overlay.style.justifyContent = 'center';
+    overlay.style.alignItems = 'center';
+    overlay.style.zIndex = '1000';
+    
+    const content = document.createElement('div');
+    content.className = 'popup-content';
+    content.style.backgroundColor = '#fff';
+    content.style.padding = '30px';
+    content.style.borderRadius = '10px';
+    content.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.3)';
+    content.style.maxWidth = '400px';
+    content.style.width = '80%';
+    content.style.textAlign = 'center';
+    
+    const popupTitle = document.createElement('h2');
+    popupTitle.textContent = title;
+    popupTitle.style.margin = '0 0 15px 0';
+    popupTitle.style.color = '#2563EB';
+    
+    const popupMessage = document.createElement('p');
+    popupMessage.textContent = message;
+    popupMessage.style.marginBottom = '20px';
+    
+    const button = document.createElement('button');
+    button.className = 'popup-btn';
+    button.textContent = btnText;
+    button.style.backgroundColor = '#2563EB';
+    button.style.color = 'white';
+    button.style.border = 'none';
+    button.style.padding = '10px 25px';
+    button.style.borderRadius = '5px';
+    button.style.cursor = 'pointer';
+    button.style.fontSize = '16px';
+    
+    // Assemble popup
+    content.appendChild(popupTitle);
+    content.appendChild(popupMessage);
+    content.appendChild(button);
+    overlay.appendChild(content);
+    
+    // Add to document
+    document.body.appendChild(overlay);
+    
+    // Add click event
+    button.addEventListener('click', function() {
+      document.body.removeChild(overlay);
+      if (callback) callback();
     });
-  </script>
-</body>
-</html>
+  }
+</script>
+{{/section}}

@@ -239,26 +239,23 @@
     font-weight: 500;
   }
   
-  .status-examined {
-    background-color: #36B37E;
-    color: #fff;
-    box-shadow: 0 2px 4px rgba(54, 179, 126, 0.3);
-    text-transform: capitalize;
-  }
-  
-  .status-examining {
-    background-color: #FFAB00;
-    color: #fff;
-    box-shadow: 0 2px 4px rgba(255, 171, 0, 0.3);
-    text-transform: capitalize;
-  }
-  
-  .status-waiting {
-    background-color: #0D99FF;
-    color: #fff;
-    box-shadow: 0 2px 4px rgba(13, 153, 255, 0.3);
-    text-transform: capitalize;
-  }
+    /* Existing CSS */
+    
+    /* Status colors */
+    .status-waiting {
+      background-color: #3b82f6;
+      color: white;
+    }
+    
+    .status-examining {
+      background-color: #f59e0b;
+      color: white;
+    }
+    
+    .status-examined {
+      background-color: #10b981;
+      color: white;
+    }
   
   .appointment-number {
     position: absolute;

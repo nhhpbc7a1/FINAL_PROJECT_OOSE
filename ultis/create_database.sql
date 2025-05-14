@@ -277,7 +277,7 @@ CREATE TABLE IF NOT EXISTS Medication (
 -- Create Prescription table (Links to MedicalRecord and Doctor)
 CREATE TABLE IF NOT EXISTS Prescription (
     prescriptionId INT AUTO_INCREMENT PRIMARY KEY,
-    recordId INT UNIQUE NOT NULL, -- Each prescription links to a medical record entry
+    recordId INT NOT NULL, -- Each prescription links to a medical record entry (removed UNIQUE constraint)
     doctorId INT NOT NULL, -- Doctor who issued the prescription
     prescriptionDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     notes TEXT, -- General notes for the pharmacist or patient

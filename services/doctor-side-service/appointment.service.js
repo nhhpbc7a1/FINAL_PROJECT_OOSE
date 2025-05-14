@@ -294,6 +294,7 @@ export default {
         }
     },
 
+    // Restore the original function
     async updatePatientAppointmentStatus(appointmentId, status) {
         try {
             await db('Appointment')
@@ -303,6 +304,53 @@ export default {
         } catch (error) {
             console.error(`Error updating appointment status to ${status}:`, error);
             throw new Error('Failed to update appointment status');
+        }
+    },
+
+    /**
+     * Update the patient appointment status with transition handling
+     * @param {number} appointmentId - The appointment ID
+     * @param {string} newStatus - The new status to set
+     * @param {boolean} forceUpdate - Force update regardless of status validation
+     * @returns {Promise<boolean>} - Success status
+     */
+    async updatePatientAppointmentStatusWithTransition(appointmentId, newStatus, forceUpdate = false) {
+        try {
+            // Check current status first
+            const appointment = await db('Appointment')
+                .where('appointmentId', appointmentId)
+                .first('patientAppointmentStatus');
+            
+            if (!appointment) {
+                throw new Error(`Appointment with ID ${appointmentId} not found`);
+            }
+            
+            const currentStatus = appointment.patientAppointmentStatus;
+            console.log(`Current status for appointment ${appointmentId}: ${currentStatus}, changing to: ${newStatus}`);
+            
+            // Define allowed status transitions
+            const allowedTransitions = {
+                'waiting': ['examining', 'examined'], // Waiting can go to examining or examined
+                'examining': ['waiting', 'examined'], // Examining can go back to waiting or to examined
+                'examined': [] // Examined is final state
+            };
+            
+            // Check if transition is allowed
+            if (!forceUpdate && allowedTransitions[currentStatus] && 
+                !allowedTransitions[currentStatus].includes(newStatus)) {
+                throw new Error(`Invalid status transition from ${currentStatus} to ${newStatus}`);
+            }
+            
+            // Update the status
+            await db('Appointment')
+                .where('appointmentId', appointmentId)
+                .update({ patientAppointmentStatus: newStatus });
+            
+            console.log(`Successfully updated appointment ${appointmentId} status to ${newStatus}`);
+            return true;
+        } catch (error) {
+            console.error(`Error updating appointment ${appointmentId} status to ${newStatus}:`, error);
+            throw error;
         }
     },
 
