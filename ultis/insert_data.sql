@@ -25,24 +25,30 @@ INSERT INTO Role (roleName) VALUES
 INSERT INTO User (email, password, fullName, gender, dob, phoneNumber, address, accountStatus, roleId) VALUES
 -- Administrators (roleId = 1)
 ('admin@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Admin User', 'male', '1975-05-10', '0901234567', '123 Admin St', 'active', 1), -- userId 1
-('manager@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Manager User', 'female', '1980-11-22', '0901234568', '124 Admin St', 'active', 1), -- userId 2
+('manager@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Manager User', 'female', '1980-11-22', '0901234568', '124 Admin St', 'active', 1); -- userId 2
 
+
+INSERT INTO User (email, password, fullName, gender, dob, phoneNumber, address, accountStatus, roleId,profileImage) VALUES
 -- Doctors (roleId = 2)
-('drsmith@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. John Smith', 'male', '1978-09-15', '0901234569', '125 Doctor St', 'active', 2), -- userId 3 (Doctor 1)
-('drnguyen@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Nguyen Van A', 'male', '1982-03-20', '0901234570', '126 Doctor St', 'active', 2), -- userId 4 (Doctor 2)
-('drpham@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Pham Thi B', 'female', '1985-07-01', '0901234571', '127 Doctor St', 'active', 2), -- userId 5 (Doctor 3)
-('drle@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Le Van C', 'male', '1976-12-05', '0901234572', '128 Doctor St', 'active', 2), -- userId 6 (Doctor 4)
-('drtran@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Tran Thi D', 'female', '1988-02-28', '0901234573', '129 Doctor St', 'active', 2), -- userId 7 (Doctor 5)
-('drvo@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Vo Van E', 'male', '1980-04-18', '0901234581', '137 Doctor St', 'active', 2), -- userId 8 (Doctor 6)
-('drdang@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Dang Thi F', 'female', '1983-09-03', '0901234582', '138 Doctor St', 'active', 2), -- userId 9 (Doctor 7)
-('drbui@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Bui Van G', 'male', '1979-11-11', '0901234583', '139 Doctor St', 'active', 2), -- userId 10 (Doctor 8)
-('drhoang@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Hoang Thi H', 'female', '1987-06-22', '0901234584', '140 Doctor St', 'active', 2), -- userId 11 (Doctor 9)
-('drcao@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Cao Van I', 'male', '1981-01-30', '0901234585', '141 Doctor St', 'active', 2), -- userId 12 (Doctor 10)
-('drdinh@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Dinh Thi K', 'female', '1984-08-05', '0901234586', '142 Doctor St', 'active', 2), -- userId 13 (Doctor 11)
-('drtruong@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Truong Van L', 'male', '1977-03-17', '0901234587', '143 Doctor St', 'active', 2), -- userId 14 (Doctor 12)
-('drvoh@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Vo Thi M', 'female', '1986-05-29', '0901234588', '144 Doctor St', 'active', 2), -- userId 15 (Doctor 13)
-('drhuynh@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Huynh Van N', 'male', '1989-10-14', '0901234589', '145 Doctor St', 'active', 2), -- userId 16 (Doctor 14)
-('drphan@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Phan Thi O', 'female', '1991-02-23', '0901234590', '146 Doctor St', 'active', 2), -- userId 17 (Doctor 15)
+('drsmith@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. John Smith', 'male', '1978-09-15', '0901234569', '125 Doctor St', 'active', 2,'/public/uploads/profile_images/nu_1.jpg'), -- userId 3 (Doctor 1)
+('drnguyen@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Nguyen Van A', 'male', '1982-03-20', '0901234570', '126 Doctor St', 'active', 2,'/public/uploads/profile_images/nam_1.jpg'), -- userId 4 (Doctor 2)
+('drpham@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Pham Thi B', 'female', '1985-07-01', '0901234571', '127 Doctor St', 'active', 2,'/public/uploads/profile_images/nu_2.jpg'), -- userId 5 (Doctor 3)
+('drle@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Le Van C', 'male', '1976-12-05', '0901234572', '128 Doctor St', 'active', 2,'/public/uploads/profile_images/nam_2.jpg'), -- userId 6 (Doctor 4)
+('drtran@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Tran Thi D', 'female', '1988-02-28', '0901234573', '129 Doctor St', 'active', 2,'/public/uploads/profile_images/nu_3.jpg'), -- userId 7 (Doctor 5)
+('drvo@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Vo Van E', 'male', '1980-04-18', '0901234581', '137 Doctor St', 'active', 2,'/public/uploads/profile_images/nam_3.jpg'), -- userId 8 (Doctor 6)
+('drdang@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Dang Thi F', 'female', '1983-09-03', '0901234582', '138 Doctor St', 'active', 2,'/public/uploads/profile_images/nu_4.jpg'), -- userId 9 (Doctor 7)
+('drbui@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Bui Van G', 'male', '1979-11-11', '0901234583', '139 Doctor St', 'active', 2,'/public/uploads/profile_images/nam_4.jpg'), -- userId 10 (Doctor 8)
+('drhoang@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Hoang Thi H', 'female', '1987-06-22', '0901234584', '140 Doctor St', 'active', 2,'/public/uploads/profile_images/nu_5.jpg'), -- userId 11 (Doctor 9)
+('drcao@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Cao Van I', 'male', '1981-01-30', '0901234585', '141 Doctor St', 'active', 2,'/public/uploads/profile_images/nam_5.jpg'), -- userId 12 (Doctor 10)
+('drdinh@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Dinh Thi K', 'female', '1984-08-05', '0901234586', '142 Doctor St', 'active', 2,'/public/uploads/profile_images/nu_6.jpg'), -- userId 13 (Doctor 11)
+('drtruong@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Truong Van L', 'male', '1977-03-17', '0901234587', '143 Doctor St', 'active', 2,'/public/uploads/profile_images/nam_6.jpg'), -- userId 14 (Doctor 12)
+('drvoh@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Vo Thi M', 'female', '1986-05-29', '0901234588', '144 Doctor St', 'active', 2,'/public/uploads/profile_images/nu_7.jpg'), -- userId 15 (Doctor 13)
+('drhuynh@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Huynh Van N', 'male', '1989-10-14', '0901234589', '145 Doctor St', 'active', 2,'/public/uploads/profile_images/nam_7.jpg'), -- userId 16 (Doctor 14)
+('drphan@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Phan Thi O', 'female', '1991-02-23', '0901234590', '146 Doctor St', 'active', 2,'/public/uploads/profile_images/nu_8.jpg'); -- userId 17 (Doctor 15)
+
+
+INSERT INTO User (email, password, fullName, gender, dob, phoneNumber, address, accountStatus, roleId) VALUES
+
 ('drdo@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Do Van P', 'male', '1983-07-08', '0901234591', '147 Doctor St', 'active', 2), -- userId 18 (Doctor 16)
 ('drngo@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Ngo Thi Q', 'female', '1976-12-01', '0901234592', '148 Doctor St', 'active', 2), -- userId 19 (Doctor 17)
 ('drduong@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Duong Van R', 'male', '1988-04-20', '0901234593', '149 Doctor St', 'active', 2), -- userId 20 (Doctor 18)
@@ -50,7 +56,6 @@ INSERT INTO User (email, password, fullName, gender, dob, phoneNumber, address, 
 ('dranh@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Nguyen Thi T', 'female', '1985-02-07', '0901234595', '151 Doctor St', 'active', 2), -- userId 22 (Doctor 20)
 ('drlinh@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Le Hoang U', 'male', '1979-07-25', '0901234596', '152 Doctor St', 'active', 2), -- userId 23 (Doctor 21)
 ('drtien@hospital.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Dr. Tran Minh V', 'male', '1986-11-09', '0901234597', '153 Doctor St', 'active', 2), -- userId 24 (Doctor 22)
-
 -- Patients (roleId = 3)
 ('patient1@example.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Nguyen Van X', 'male', '1990-06-11', '0901234574', '130 Patient St', 'active', 3), -- userId 25 (Patient 1)
 ('patient2@example.com', '$2y$10$96uOlG86tdM2R.NL7gsG.upbyeBcM6T8IMUc9B1KhwBKymPYUQD/G', 'Tran Thi Y', 'female', '1995-08-19', '0901234575', '131 Patient St', 'active', 3), -- userId 26 (Patient 2)
@@ -202,12 +207,12 @@ INSERT INTO Administrator (userId, position) VALUES
 
 -- Insert sample data into Specialty table (5 specialties)
 -- Hospital ID 1 is the Main Hospital
-INSERT INTO Specialty (name, description, hospitalId) VALUES
-('Cardiology', 'Deals with disorders of the heart and cardiovascular system', 1), -- Specialty ID 1
-('Dermatology', 'Focused on diagnosing and treating skin disorders', 1), -- Specialty ID 2
-('Neurology', 'Deals with disorders of the nervous system', 1), -- Specialty ID 3
-('Orthopedics', 'Focused on conditions involving the musculoskeletal system', 1), -- Specialty ID 4
-('Pediatrics', 'Medical care of infants, children, and adolescents', 1); -- Specialty ID 5
+INSERT INTO Specialty (name, description, hospitalId, icon) VALUES
+('Cardiology', 'Deals with disorders of the heart and cardiovascular system', 1, '/public/images/specialties/specialty-Cardiology_1747194713085.png'), -- Specialty ID 1
+('Dermatology', 'Focused on diagnosing and treating skin disorders', 1, '/public/images/specialties/specialty-Dermatology_1747194718194.png'), -- Specialty ID 2
+('Neurology', 'Deals with disorders of the nervous system', 1, '/public/images/specialties/specialty-Neurology_1747194724496.png'), -- Specialty ID 3
+('Orthopedics', 'Focused on conditions involving the musculoskeletal system', 1, '/public/images/specialties/specialty-Orthopedics_1747194732228.png'), -- Specialty ID 4
+('Pediatrics', 'Medical care of infants, children, and adolescents', 1, '/public/images/specialties/specialty-Pediatrics_1747194533344.png'); -- Specialty ID 5
 
 -- Insert sample data into Room table (25 rooms - 5 per specialty)
 -- Specialty IDs 1-5 are available
@@ -298,13 +303,16 @@ INSERT INTO LabTechnician (userId, specialization, specialtyId) VALUES
 
 -- Insert sample data into Service table
 -- Specialty IDs 1-5 are available
-INSERT INTO Service (name, description, price, duration, type, category, specialtyId, status) VALUES
--- Cardiology Services (Specialty ID 1)
-('Basic Heart Checkup', 'Basic heart examination including ECG', 500000, 30, 'service', 'Examination', 1, 'active'), -- Service ID 1
-('Comprehensive Heart Examination', 'Comprehensive heart examination with stress test', 1500000, 60, 'service', 'Examination', 1, 'active'), -- Service ID 2
-('ECG Test', 'Electrocardiogram test', 300000, 15, 'test', 'Diagnostic', 1, 'active'), -- Service ID 3
-('Echocardiogram', 'Ultrasound of the heart', 800000, 30, 'test', 'Diagnostic', 1, 'active'), -- Service ID 4
 
+INSERT INTO Service (name, description, price, duration, type, category, specialtyId, status, image) VALUES
+-- Cardiology Services (Specialty ID 1)
+('Basic Heart Checkup', 'Basic heart examination including ECG', 500000, 30, 'service', 'Examination', 1, 'active', '/public/images/services/service-Basic_Heart_Checkup_174722622856790.jpg'), -- Service ID 1
+('Comprehensive Heart Examination', 'Comprehensive heart examination with stress test', 1500000, 60, 'service', 'Examination', 1, 'active', '/public/images/services/service-Comprehensive_Heart_Examination_1747228582479.jpg'), -- Service ID 2
+('ECG Test', 'Electrocardiogram test', 300000, 15, 'test', 'Diagnostic', 1, 'active', '/public/images/services/service-ECG_Test_1747228503805.png'), -- Service ID 3
+('Echocardiogram', 'Ultrasound of the heart', 800000, 30, 'test', 'Diagnostic', 1, 'active', '/public/images/services/service-Echocardiogram_1747228554124.jpg'); -- Service ID 4
+
+
+INSERT INTO Service (name, description, price, duration, type, category, specialtyId, status) VALUES
 -- Dermatology Services (Specialty ID 2)
 ('Skin Consultation', 'General skin consultation', 400000, 30, 'service', 'Consultation', 2, 'active'), -- Service ID 5
 ('Skin Biopsy', 'Removal of a small piece of skin for testing', 600000, 20, 'test', 'Diagnostic', 2, 'active'), -- Service ID 6
@@ -622,3 +630,201 @@ INSERT INTO Payment (appointmentId, amount, method, status, transactionId, payme
 (5, 900000, 'insurance', 'completed', 'TXN123456793', NOW() - INTERVAL 2 DAY); -- Payment ID 5 (for Appointment 5) - Checkup (400k) + Growth Assessment (500k) = 900k
 
 
+
+use FINAL_PROJECT_OOSE;
+
+-- Insert additional 10 appointments with "waiting" status for each doctor
+INSERT INTO Appointment (
+    patientId,
+    doctorId,
+    specialtyId,
+    appointmentDate,
+    appointmentTime,
+    reason,
+    status,
+    emailVerified,
+    paymentStatus,
+    patientAppointmentStatus,
+    queueNumber,
+    estimatedTime
+)
+VALUES
+-- Doctor 1 (Cardiology - Specialty ID 1)
+(1, 1, 1, CURDATE(), '08:00:00', 'Heart checkup', 'pending', TRUE, 'pending', 'waiting', 5, '08:00:00'),
+(2, 1, 1, CURDATE(), '08:30:00', 'Chest pain', 'pending', TRUE, 'pending', 'waiting', 6, '08:30:00'),
+(3, 1, 1, CURDATE(), '09:00:00', 'Hypertension followup', 'pending', TRUE, 'pending', 'waiting', 7, '09:00:00'),
+(4, 1, 1, CURDATE(), '09:30:00', 'Heart palpitations', 'pending', TRUE, 'pending', 'waiting', 8, '09:30:00'),
+(5, 1, 1, CURDATE(), '10:00:00', 'Family history of heart disease', 'pending', TRUE, 'pending', 'waiting', 9, '10:00:00'),
+(6, 1, 1, CURDATE(), '10:30:00', 'Shortness of breath', 'pending', TRUE, 'pending', 'waiting', 10, '10:30:00'),
+(7, 1, 1, CURDATE(), '11:00:00', 'Elevated cholesterol', 'pending', TRUE, 'pending', 'waiting', 11, '11:00:00'),
+(8, 1, 1, CURDATE(), '11:30:00', 'Coronary artery disease', 'pending', TRUE, 'pending', 'waiting', 12, '11:30:00'),
+(9, 1, 1, CURDATE(), '13:00:00', 'Angina', 'pending', TRUE, 'pending', 'waiting', 13, '13:00:00'),
+(10, 1, 1, CURDATE(), '13:30:00', 'Post-heart attack checkup', 'pending', TRUE, 'pending', 'waiting', 14, '13:30:00'),
+
+-- Doctor 2 (Cardiology - Specialty ID 1)
+(11, 2, 1, CURDATE(), '08:00:00', 'Heart rhythm issues', 'pending', TRUE, 'pending', 'waiting', 5, '08:00:00'),
+(12, 2, 1, CURDATE(), '08:30:00', 'Cardiac arrhythmia', 'pending', TRUE, 'pending', 'waiting', 6, '08:30:00'),
+(13, 2, 1, CURDATE(), '09:00:00', 'Heart valve issues', 'pending', TRUE, 'pending', 'waiting', 7, '09:00:00'),
+(14, 2, 1, CURDATE(), '09:30:00', 'Chest pain evaluation', 'pending', TRUE, 'pending', 'waiting', 8, '09:30:00'),
+(15, 2, 1, CURDATE(), '10:00:00', 'Heart murmur', 'pending', TRUE, 'pending', 'waiting', 9, '10:00:00'),
+(16, 2, 1, CURDATE(), '10:30:00', 'Congestive heart failure', 'pending', TRUE, 'pending', 'waiting', 10, '10:30:00'),
+(17, 2, 1, CURDATE(), '11:00:00', 'Cardiac stress test', 'pending', TRUE, 'pending', 'waiting', 11, '11:00:00'),
+(18, 2, 1, CURDATE(), '11:30:00', 'Cardiomyopathy', 'pending', TRUE, 'pending', 'waiting', 12, '11:30:00'),
+(19, 2, 1, CURDATE(), '13:00:00', 'Pericarditis', 'pending', TRUE, 'pending', 'waiting', 13, '13:00:00'),
+(20, 2, 1, CURDATE(), '13:30:00', 'Endocarditis', 'pending', TRUE, 'pending', 'waiting', 14, '13:30:00'),
+
+-- Doctor 3 (Cardiology - Specialty ID 1)
+(21, 3, 1, CURDATE(), '08:00:00', 'Heart blockage', 'pending', TRUE, 'pending', 'waiting', 2, '08:00:00'),
+(22, 3, 1, CURDATE(), '08:30:00', 'Atrial fibrillation', 'pending', TRUE, 'pending', 'waiting', 3, '08:30:00'),
+(23, 3, 1, CURDATE(), '09:00:00', 'Heart transplant evaluation', 'pending', TRUE, 'pending', 'waiting', 4, '09:00:00'),
+(24, 3, 1, CURDATE(), '09:30:00', 'Congenital heart defect', 'pending', TRUE, 'pending', 'waiting', 5, '09:30:00'),
+(25, 3, 1, CURDATE(), '10:00:00', 'Dilated cardiomyopathy', 'pending', TRUE, 'pending', 'waiting', 6, '10:00:00'),
+(26, 3, 1, CURDATE(), '10:30:00', 'Ventricular tachycardia', 'pending', TRUE, 'pending', 'waiting', 7, '10:30:00'),
+(27, 3, 1, CURDATE(), '11:00:00', 'Cardiac amyloidosis', 'pending', TRUE, 'pending', 'waiting', 8, '11:00:00'),
+(28, 3, 1, CURDATE(), '11:30:00', 'Postural orthostatic tachycardia', 'pending', TRUE, 'pending', 'waiting', 9, '11:30:00'),
+(29, 3, 1, CURDATE(), '13:00:00', 'Mitral valve prolapse', 'pending', TRUE, 'pending', 'waiting', 10, '13:00:00'),
+(30, 3, 1, CURDATE(), '13:30:00', 'Aortic stenosis', 'pending', TRUE, 'pending', 'waiting', 11, '13:30:00'),
+
+-- Doctor 4 (Dermatology - Specialty ID 2)
+(31, 4, 2, CURDATE(), '08:00:00', 'Acne treatment', 'pending', TRUE, 'pending', 'waiting', 3, '08:00:00'),
+(32, 4, 2, CURDATE(), '08:30:00', 'Eczema flare-up', 'pending', TRUE, 'pending', 'waiting', 4, '08:30:00'),
+(33, 4, 2, CURDATE(), '09:00:00', 'Psoriasis evaluation', 'pending', TRUE, 'pending', 'waiting', 5, '09:00:00'),
+(34, 4, 2, CURDATE(), '09:30:00', 'Suspicious mole check', 'pending', TRUE, 'pending', 'waiting', 6, '09:30:00'),
+(35, 4, 2, CURDATE(), '10:00:00', 'Skin cancer screening', 'pending', TRUE, 'pending', 'waiting', 7, '10:00:00'),
+(36, 4, 2, CURDATE(), '10:30:00', 'Rosacea treatment', 'pending', TRUE, 'pending', 'waiting', 8, '10:30:00'),
+(37, 4, 2, CURDATE(), '11:00:00', 'Dermatitis', 'pending', TRUE, 'pending', 'waiting', 9, '11:00:00'),
+(38, 4, 2, CURDATE(), '11:30:00', 'Wart removal', 'pending', TRUE, 'pending', 'waiting', 10, '11:30:00'),
+(39, 4, 2, CURDATE(), '13:00:00', 'Fungal skin infection', 'pending', TRUE, 'pending', 'waiting', 11, '13:00:00'),
+(40, 4, 2, CURDATE(), '13:30:00', 'Shingles treatment', 'pending', TRUE, 'pending', 'waiting', 12, '13:30:00'),
+
+-- Doctor 5 (Dermatology - Specialty ID 2)
+(41, 5, 2, CURDATE(), '08:00:00', 'Hair loss consultation', 'pending', TRUE, 'pending', 'waiting', 4, '08:00:00'),
+(42, 5, 2, CURDATE(), '08:30:00', 'Keloid treatment', 'pending', TRUE, 'pending', 'waiting', 5, '08:30:00'),
+(43, 5, 2, CURDATE(), '09:00:00', 'Birthmark evaluation', 'pending', TRUE, 'pending', 'waiting', 6, '09:00:00'),
+(44, 5, 2, CURDATE(), '09:30:00', 'Vitiligo consultation', 'pending', TRUE, 'pending', 'waiting', 7, '09:30:00'),
+(45, 5, 2, CURDATE(), '10:00:00', 'Skin tag removal', 'pending', TRUE, 'pending', 'waiting', 8, '10:00:00'),
+(46, 5, 2, CURDATE(), '10:30:00', 'Melasma treatment', 'pending', TRUE, 'pending', 'waiting', 9, '10:30:00'),
+(47, 5, 2, CURDATE(), '11:00:00', 'Hives evaluation', 'pending', TRUE, 'pending', 'waiting', 10, '11:00:00'),
+(48, 5, 2, CURDATE(), '11:30:00', 'Scar treatment', 'pending', TRUE, 'pending', 'waiting', 11, '11:30:00'),
+(49, 5, 2, CURDATE(), '13:00:00', 'Seborrheic dermatitis', 'pending', TRUE, 'pending', 'waiting', 12, '13:00:00'),
+(50, 5, 2, CURDATE(), '13:30:00', 'Skin biopsy followup', 'pending', TRUE, 'pending', 'waiting', 13, '13:30:00'),
+
+-- Doctor 6 (Dermatology - Specialty ID 2)
+(1, 6, 2, CURDATE(), '08:00:00', 'Allergic skin reaction', 'pending', TRUE, 'pending', 'waiting', 2, '08:00:00'),
+(2, 6, 2, CURDATE(), '08:30:00', 'Cyst removal', 'pending', TRUE, 'pending', 'waiting', 3, '08:30:00'),
+(3, 6, 2, CURDATE(), '09:00:00', 'Dermatofibroma', 'pending', TRUE, 'pending', 'waiting', 4, '09:00:00'),
+(4, 6, 2, CURDATE(), '09:30:00', 'Molluscum contagiosum', 'pending', TRUE, 'pending', 'waiting', 5, '09:30:00'),
+(5, 6, 2, CURDATE(), '10:00:00', 'Impetigo treatment', 'pending', TRUE, 'pending', 'waiting', 6, '10:00:00'),
+(6, 6, 2, CURDATE(), '10:30:00', 'Cellulitis', 'pending', TRUE, 'pending', 'waiting', 7, '10:30:00'),
+(7, 6, 2, CURDATE(), '11:00:00', 'Cold sore treatment', 'pending', TRUE, 'pending', 'waiting', 8, '11:00:00'),
+(8, 6, 2, CURDATE(), '11:30:00', 'Scabies evaluation', 'pending', TRUE, 'pending', 'waiting', 9, '11:30:00'),
+(9, 6, 2, CURDATE(), '13:00:00', 'Ringworm treatment', 'pending', TRUE, 'pending', 'waiting', 10, '13:00:00'),
+(10, 6, 2, CURDATE(), '13:30:00', 'Hyperhidrosis', 'pending', TRUE, 'pending', 'waiting', 11, '13:30:00'),
+
+-- Doctor 7 (Neurology - Specialty ID 3)
+(11, 7, 3, CURDATE(), '08:00:00', 'Chronic headaches', 'pending', TRUE, 'pending', 'waiting', 3, '08:00:00'),
+(12, 7, 3, CURDATE(), '08:30:00', 'Multiple sclerosis', 'pending', TRUE, 'pending', 'waiting', 4, '08:30:00'),
+(13, 7, 3, CURDATE(), '09:00:00', 'Parkinson\'s disease', 'pending', TRUE, 'pending', 'waiting', 5, '09:00:00'),
+(14, 7, 3, CURDATE(), '09:30:00', 'Epilepsy management', 'pending', TRUE, 'pending', 'waiting', 6, '09:30:00'),
+(15, 7, 3, CURDATE(), '10:00:00', 'Stroke recovery', 'pending', TRUE, 'pending', 'waiting', 7, '10:00:00'),
+(16, 7, 3, CURDATE(), '10:30:00', 'Dementia evaluation', 'pending', TRUE, 'pending', 'waiting', 8, '10:30:00'),
+(17, 7, 3, CURDATE(), '11:00:00', 'Neuropathy treatment', 'pending', TRUE, 'pending', 'waiting', 9, '11:00:00'),
+(18, 7, 3, CURDATE(), '11:30:00', 'Bell\'s palsy', 'pending', TRUE, 'pending', 'waiting', 10, '11:30:00'),
+(19, 7, 3, CURDATE(), '13:00:00', 'Vertigo evaluation', 'pending', TRUE, 'pending', 'waiting', 11, '13:00:00'),
+(20, 7, 3, CURDATE(), '13:30:00', 'Myasthenia gravis', 'pending', TRUE, 'pending', 'waiting', 12, '13:30:00'),
+
+-- Doctor 8 (Neurology - Specialty ID 3)
+(21, 8, 3, CURDATE(), '08:00:00', 'Alzheimer\'s disease', 'pending', TRUE, 'pending', 'waiting', 4, '08:00:00'),
+(22, 8, 3, CURDATE(), '08:30:00', 'Huntington\'s disease', 'pending', TRUE, 'pending', 'waiting', 5, '08:30:00'),
+(23, 8, 3, CURDATE(), '09:00:00', 'Amyotrophic lateral sclerosis', 'pending', TRUE, 'pending', 'waiting', 6, '09:00:00'),
+(24, 8, 3, CURDATE(), '09:30:00', 'Spinal cord injury', 'pending', TRUE, 'pending', 'waiting', 7, '09:30:00'),
+(25, 8, 3, CURDATE(), '10:00:00', 'Trigeminal neuralgia', 'pending', TRUE, 'pending', 'waiting', 8, '10:00:00'),
+(26, 8, 3, CURDATE(), '10:30:00', 'Brain tumor evaluation', 'pending', TRUE, 'pending', 'waiting', 9, '10:30:00'),
+(27, 8, 3, CURDATE(), '11:00:00', 'Guillain-Barré syndrome', 'pending', TRUE, 'pending', 'waiting', 10, '11:00:00'),
+(28, 8, 3, CURDATE(), '11:30:00', 'Meningitis followup', 'pending', TRUE, 'pending', 'waiting', 11, '11:30:00'),
+(29, 8, 3, CURDATE(), '13:00:00', 'Encephalitis', 'pending', TRUE, 'pending', 'waiting', 12, '13:00:00'),
+(30, 8, 3, CURDATE(), '13:30:00', 'Sleep disorders', 'pending', TRUE, 'pending', 'waiting', 13, '13:30:00'),
+
+-- Doctor 9 (Neurology - Specialty ID 3)
+(31, 9, 3, CURDATE(), '08:00:00', 'Chronic migraines', 'pending', TRUE, 'pending', 'waiting', 2, '08:00:00'),
+(32, 9, 3, CURDATE(), '08:30:00', 'Cluster headaches', 'pending', TRUE, 'pending', 'waiting', 3, '08:30:00'),
+(33, 9, 3, CURDATE(), '09:00:00', 'Tourette syndrome', 'pending', TRUE, 'pending', 'waiting', 4, '09:00:00'),
+(34, 9, 3, CURDATE(), '09:30:00', 'Dystonia', 'pending', TRUE, 'pending', 'waiting', 5, '09:30:00'),
+(35, 9, 3, CURDATE(), '10:00:00', 'Essential tremor', 'pending', TRUE, 'pending', 'waiting', 6, '10:00:00'),
+(36, 9, 3, CURDATE(), '10:30:00', 'Restless leg syndrome', 'pending', TRUE, 'pending', 'waiting', 7, '10:30:00'),
+(37, 9, 3, CURDATE(), '11:00:00', 'Narcolepsy', 'pending', TRUE, 'pending', 'waiting', 8, '11:00:00'),
+(38, 9, 3, CURDATE(), '11:30:00', 'Peripheral neuropathy', 'pending', TRUE, 'pending', 'waiting', 9, '11:30:00'),
+(39, 9, 3, CURDATE(), '13:00:00', 'Post-concussion syndrome', 'pending', TRUE, 'pending', 'waiting', 10, '13:00:00'),
+(40, 9, 3, CURDATE(), '13:30:00', 'Cerebral palsy', 'pending', TRUE, 'pending', 'waiting', 11, '13:30:00'),
+
+-- Doctor 10 (Orthopedics - Specialty ID 4)
+(41, 10, 4, CURDATE(), '08:00:00', 'Knee pain', 'pending', TRUE, 'pending', 'waiting', 3, '08:00:00'),
+(42, 10, 4, CURDATE(), '08:30:00', 'Rotator cuff injury', 'pending', TRUE, 'pending', 'waiting', 4, '08:30:00'),
+(43, 10, 4, CURDATE(), '09:00:00', 'ACL tear', 'pending', TRUE, 'pending', 'waiting', 5, '09:00:00'),
+(44, 10, 4, CURDATE(), '09:30:00', 'Hip replacement consultation', 'pending', TRUE, 'pending', 'waiting', 6, '09:30:00'),
+(45, 10, 4, CURDATE(), '10:00:00', 'Fracture followup', 'pending', TRUE, 'pending', 'waiting', 7, '10:00:00'),
+(46, 10, 4, CURDATE(), '10:30:00', 'Carpal tunnel syndrome', 'pending', TRUE, 'pending', 'waiting', 8, '10:30:00'),
+(47, 10, 4, CURDATE(), '11:00:00', 'Tennis elbow', 'pending', TRUE, 'pending', 'waiting', 9, '11:00:00'),
+(48, 10, 4, CURDATE(), '11:30:00', 'Osteoarthritis', 'pending', TRUE, 'pending', 'waiting', 10, '11:30:00'),
+(49, 10, 4, CURDATE(), '13:00:00', 'Plantar fasciitis', 'pending', TRUE, 'pending', 'waiting', 11, '13:00:00'),
+(50, 10, 4, CURDATE(), '13:30:00', 'Herniated disc', 'pending', TRUE, 'pending', 'waiting', 12, '13:30:00'),
+
+-- Doctor 11 (Orthopedics - Specialty ID 4)
+(1, 11, 4, CURDATE(), '08:00:00', 'Shoulder dislocation', 'pending', TRUE, 'pending', 'waiting', 4, '08:00:00'),
+(2, 11, 4, CURDATE(), '08:30:00', 'Meniscus tear', 'pending', TRUE, 'pending', 'waiting', 5, '08:30:00'),
+(3, 11, 4, CURDATE(), '09:00:00', 'Spinal stenosis', 'pending', TRUE, 'pending', 'waiting', 6, '09:00:00'),
+(4, 11, 4, CURDATE(), '09:30:00', 'Scoliosis evaluation', 'pending', TRUE, 'pending', 'waiting', 7, '09:30:00'),
+(5, 11, 4, CURDATE(), '10:00:00', 'Knee replacement followup', 'pending', TRUE, 'pending', 'waiting', 8, '10:00:00'),
+(6, 11, 4, CURDATE(), '10:30:00', 'Ankle sprain', 'pending', TRUE, 'pending', 'waiting', 9, '10:30:00'),
+(7, 11, 4, CURDATE(), '11:00:00', 'Achilles tendinitis', 'pending', TRUE, 'pending', 'waiting', 10, '11:00:00'),
+(8, 11, 4, CURDATE(), '11:30:00', 'Rheumatoid arthritis', 'pending', TRUE, 'pending', 'waiting', 11, '11:30:00'),
+(9, 11, 4, CURDATE(), '13:00:00', 'Gout', 'pending', TRUE, 'pending', 'waiting', 12, '13:00:00'),
+(10, 11, 4, CURDATE(), '13:30:00', 'Bursitis', 'pending', TRUE, 'pending', 'waiting', 13, '13:30:00'),
+
+-- Doctor 12 (Orthopedics - Specialty ID 4)
+(11, 12, 4, CURDATE(), '08:00:00', 'Stress fracture', 'pending', TRUE, 'pending', 'waiting', 2, '08:00:00'),
+(12, 12, 4, CURDATE(), '08:30:00', 'Shin splints', 'pending', TRUE, 'pending', 'waiting', 3, '08:30:00'),
+(13, 12, 4, CURDATE(), '09:00:00', 'Frozen shoulder', 'pending', TRUE, 'pending', 'waiting', 4, '09:00:00'),
+(14, 12, 4, CURDATE(), '09:30:00', 'Joint pain', 'pending', TRUE, 'pending', 'waiting', 5, '09:30:00'),
+(15, 12, 4, CURDATE(), '10:00:00', 'Wrist fracture', 'pending', TRUE, 'pending', 'waiting', 6, '10:00:00'),
+(16, 12, 4, CURDATE(), '10:30:00', 'Hip dysplasia', 'pending', TRUE, 'pending', 'waiting', 7, '10:30:00'),
+(17, 12, 4, CURDATE(), '11:00:00', 'Spine fusion evaluation', 'pending', TRUE, 'pending', 'waiting', 8, '11:00:00'),
+(18, 12, 4, CURDATE(), '11:30:00', 'Tarsal tunnel syndrome', 'pending', TRUE, 'pending', 'waiting', 9, '11:30:00'),
+(19, 12, 4, CURDATE(), '13:00:00', 'Cubital tunnel syndrome', 'pending', TRUE, 'pending', 'waiting', 10, '13:00:00'),
+(20, 12, 4, CURDATE(), '13:30:00', 'Osteomyelitis', 'pending', TRUE, 'pending', 'waiting', 11, '13:30:00'),
+
+-- Doctor 13 (Pediatrics - Specialty ID 5)
+(21, 13, 5, CURDATE(), '08:00:00', 'Well-child visit (2 years)', 'pending', TRUE, 'pending', 'waiting', 3, '08:00:00'),
+(22, 13, 5, CURDATE(), '08:30:00', 'Childhood vaccinations', 'pending', TRUE, 'pending', 'waiting', 4, '08:30:00'),
+(23, 13, 5, CURDATE(), '09:00:00', 'Infant colic', 'pending', TRUE, 'pending', 'waiting', 5, '09:00:00'),
+(24, 13, 5, CURDATE(), '09:30:00', 'Child ear infection', 'pending', TRUE, 'pending', 'waiting', 6, '09:30:00'),
+(25, 13, 5, CURDATE(), '10:00:00', 'Pediatric asthma', 'pending', TRUE, 'pending', 'waiting', 7, '10:00:00'),
+(26, 13, 5, CURDATE(), '10:30:00', 'Childhood obesity', 'pending', TRUE, 'pending', 'waiting', 8, '10:30:00'),
+(27, 13, 5, CURDATE(), '11:00:00', 'Growth issues', 'pending', TRUE, 'pending', 'waiting', 9, '11:00:00'),
+(28, 13, 5, CURDATE(), '11:30:00', 'Developmental delay assessment', 'pending', TRUE, 'pending', 'waiting', 10, '11:30:00'),
+(29, 13, 5, CURDATE(), '13:00:00', 'Pediatric allergies', 'pending', TRUE, 'pending', 'waiting', 11, '13:00:00'),
+(30, 13, 5, CURDATE(), '13:30:00', 'Infant jaundice', 'pending', TRUE, 'pending', 'waiting', 12, '13:30:00'),
+
+-- Doctor 14 (Pediatrics - Specialty ID 5)
+(31, 14, 5, CURDATE(), '08:00:00', 'Newborn checkup', 'pending', TRUE, 'pending', 'waiting', 4, '08:00:00'),
+(32, 14, 5, CURDATE(), '08:30:00', 'Childhood immunizations', 'pending', TRUE, 'pending', 'waiting', 5, '08:30:00'),
+(33, 14, 5, CURDATE(), '09:00:00', 'Pediatric fever', 'pending', TRUE, 'pending', 'waiting', 6, '09:00:00'),
+(34, 14, 5, CURDATE(), '09:30:00', 'Child respiratory infection', 'pending', TRUE, 'pending', 'waiting', 7, '09:30:00'),
+(35, 14, 5, CURDATE(), '10:00:00', 'Childhood eczema', 'pending', TRUE, 'pending', 'waiting', 8, '10:00:00'),
+(36, 14, 5, CURDATE(), '10:30:00', 'ADHD evaluation', 'pending', TRUE, 'pending', 'waiting', 9, '10:30:00'),
+(37, 14, 5, CURDATE(), '11:00:00', 'Pediatric diabetes', 'pending', TRUE, 'pending', 'waiting', 10, '11:00:00'),
+(38, 14, 5, CURDATE(), '11:30:00', 'Childhood seizures', 'pending', TRUE, 'pending', 'waiting', 11, '11:30:00'),
+(39, 14, 5, CURDATE(), '13:00:00', 'Autism spectrum assessment', 'pending', TRUE, 'pending', 'waiting', 12, '13:00:00'),
+(40, 14, 5, CURDATE(), '13:30:00', 'Infant feeding issues', 'pending', TRUE, 'pending', 'waiting', 13, '13:30:00'),
+
+-- Doctor 15 (Pediatrics - Specialty ID 5)
+(41, 15, 5, CURDATE(), '08:00:00', 'Well-child visit (5 years)', 'pending', TRUE, 'pending', 'waiting', 2, '08:00:00'),
+(42, 15, 5, CURDATE(), '08:30:00', 'Pediatric food allergies', 'pending', TRUE, 'pending', 'waiting', 3, '08:30:00'),
+(43, 15, 5, CURDATE(), '09:00:00', 'Child sore throat', 'pending', TRUE, 'pending', 'waiting', 4, '09:00:00'),
+(44, 15, 5, CURDATE(), '09:30:00', 'Childhood obesity prevention', 'pending', TRUE, 'pending', 'waiting', 5, '09:30:00'),
+(45, 15, 5, CURDATE(), '10:00:00', 'Pediatric acne', 'pending', TRUE, 'pending', 'waiting', 6, '10:00:00'),
+(46, 15, 5, CURDATE(), '10:30:00', 'Childhood arthritis', 'pending', TRUE, 'pending', 'waiting', 7, '10:30:00'),
+(47, 15, 5, CURDATE(), '11:00:00', 'Teen health screening', 'pending', TRUE, 'pending', 'waiting', 8, '11:00:00'),
+(48, 15, 5, CURDATE(), '11:30:00', 'Child behavioral issues', 'pending', TRUE, 'pending', 'waiting', 9, '11:30:00'),
+(49, 15, 5, CURDATE(), '13:00:00', 'Growth chart evaluation', 'pending', TRUE, 'pending', 'waiting', 10, '13:00:00'),
+(50, 15, 5, CURDATE(), '13:30:00', 'Pediatric headaches', 'pending', TRUE, 'pending', 'waiting', 11, '13:30:00'); 
