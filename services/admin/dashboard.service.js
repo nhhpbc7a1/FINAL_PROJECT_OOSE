@@ -94,23 +94,42 @@ export default {
             const startDate = new Date();
             startDate.setMonth(startDate.getMonth() - months);
 
-            const appointments = await db('Appointment')
-                .where('appointmentDate', '>=', startDate.toISOString().split('T')[0])
-                .select(
-                    db.raw("DATE_FORMAT(appointmentDate, '%Y-%m') as month"),
-                    db.raw('COUNT(CASE WHEN status = "completed" THEN 1 END) as completed'),
-                    db.raw('COUNT(CASE WHEN status = "cancelled" THEN 1 END) as cancelled')
-                )
-                .groupBy('month')
-                .orderBy('month');
+            // Use a single raw query to avoid alias issues
+            const result = await db.raw(`
+                SELECT 
+                    DATE_FORMAT(appointmentDate, '%Y-%m') as month,
+                    COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed,
+                    COUNT(CASE WHEN status = 'cancelled' THEN 1 END) as cancelled
+                FROM Appointment
+                WHERE appointmentDate >= ?
+                GROUP BY DATE_FORMAT(appointmentDate, '%Y-%m')
+                ORDER BY month
+            `, [startDate.toISOString().split('T')[0]]);
+            
+            // Extract rows from the raw query result (first element of the result array)
+            const appointments = result[0];
+            
+            // Add some debug logging
+            console.log('Appointment chart data query result:', result);
+            console.log('Appointments array:', appointments);
+            
+            // If we don't have any data, return empty chart data
+            if (!appointments || appointments.length === 0) {
+                return {
+                    labels: [],
+                    completed: [],
+                    cancelled: []
+                };
+            }
 
             // Format data for chart
             const labels = appointments.map(a => {
+                if (!a.month) return '';
                 const [year, month] = a.month.split('-');
                 return new Date(year, month - 1).toLocaleString('default', { month: 'short' });
             });
-            const completed = appointments.map(a => a.completed);
-            const cancelled = appointments.map(a => a.cancelled);
+            const completed = appointments.map(a => a.completed || 0);
+            const cancelled = appointments.map(a => a.cancelled || 0);
 
             return {
                 labels,
@@ -119,6 +138,7 @@ export default {
             };
         } catch (error) {
             console.error('Error fetching appointment chart data:', error);
+            console.error('Error details:', error.stack);
             throw new Error('Unable to load appointment chart data');
         }
     },
@@ -152,7 +172,7 @@ export default {
                 .join('Specialty', 'Doctor.specialtyId', '=', 'Specialty.specialtyId')
                 .leftJoin('Appointment', function() {
                     this.on('Doctor.doctorId', '=', 'Appointment.doctorId')
-                        .andOn('Appointment.appointmentDate', '>=', db.raw('DATE_FORMAT(NOW(), "%Y-%m-01")'))
+                        .andOn('Appointment.appointmentDate', '>=', db.raw("DATE_FORMAT(NOW(), '%Y-%m-01')"))
                         .andOn('Appointment.status', '=', db.raw('"completed"'));
                 })
                 .select(
@@ -180,7 +200,7 @@ export default {
                 .join('Service', 'AppointmentServices.serviceId', '=', 'Service.serviceId')
                 .join('Specialty', 'Service.specialtyId', '=', 'Specialty.specialtyId')
                 .join('Appointment', 'AppointmentServices.appointmentId', '=', 'Appointment.appointmentId')
-                .where('Appointment.appointmentDate', '>=', db.raw('DATE_FORMAT(NOW(), "%Y-%m-01")'))
+                .where('Appointment.appointmentDate', '>=', db.raw("DATE_FORMAT(NOW(), '%Y-%m-01')"))
                 .where('Appointment.status', '=', 'completed')
                 .select(
                     'Service.name as serviceName',
