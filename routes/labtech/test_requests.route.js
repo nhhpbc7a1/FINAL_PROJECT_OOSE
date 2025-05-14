@@ -50,7 +50,7 @@ router.get('/', async (req, res) => {
 
         console.log('testRequests:', testRequests);
         
-        res.render('vwLabTech/test_requests', {
+        res.render('vwLabtech/test_requests', {
             testRequests,
             filters,
             pagination,
@@ -100,7 +100,7 @@ router.get('/:id', async (req, res) => {
             formattedPatientDob: testRequest.patientDob ? moment(testRequest.patientDob).format('DD/MM/YYYY') : 'N/A'
         };
         
-        res.render('vwLabTech/test_request_detail', {
+        res.render('vwLabtech/test_request_detail', {
             testRequest: formattedRequest,
             testResult,
             helpers: {

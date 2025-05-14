@@ -56,7 +56,7 @@ router.get('/', async (req, res) => {
         
         // Get test types for filter dropdown
         const testTypes = await testResultsService.getTestTypesBySpecialty(labTechnician.specialtyId);
-        res.render('vwLabTech/test_results', {
+        res.render('vwLabtech/test_results', {
             testResults,
             filters,
             pagination,
@@ -95,7 +95,7 @@ router.get('/:id', async (req, res) => {
             });
         }
         
-        res.render('vwLabTech/test_result_detail', {
+        res.render('vwLabtech/test_result_detail', {
             testResult,
             helpers: {
                 formatDate: function(date) {
@@ -169,7 +169,7 @@ router.get('/edit/:id', async (req, res) => {
 
         console.log(testResult);
         
-        res.render('vwLabTech/test_result_edit', {
+        res.render('vwLabtech/test_result_edit', {
             title: 'Edit Test Result',
             testResult,
             rooms,
@@ -296,7 +296,7 @@ router.get('/print/:id', async (req, res) => {
             return res.redirect('/labtech/test-results');
         }
         
-        res.render('vwLabTech/test_result_print', {
+        res.render('vwLabtech/test_result_print', {
             layout: 'print',
             ...printData,
             helpers: {
