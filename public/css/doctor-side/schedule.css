@@ -1,0 +1,338 @@
+/* Doctor Schedule Page Styles */
+:root {
+  --primary-color: #006eb9;
+  --secondary-color: #0095ff;
+  --accent-color: #28a745;
+  --warning-color: #FF9800;
+  --danger-color: #dc3545;
+  --text-color: #333;
+  --text-light: #6c757d;
+  --bg-light: #f8f9fa;
+  --bg-card: #ffffff;
+  --border-color: #e9ecef;
+}
+
+/* Additional calendar styling */
+.fc-theme-standard td, .fc-theme-standard th {
+  border-color: var(--border-color);
+}
+
+.fc .fc-col-header-cell-cushion {
+  padding: 8px;
+  color: var(--text-color);
+  font-weight: 600;
+}
+
+.fc .fc-daygrid-day-number {
+  color: var(--text-color);
+  font-weight: 500;
+  padding: 8px;
+}
+
+.fc-direction-ltr .fc-daygrid-event.fc-event-end,
+.fc-direction-ltr .fc-daygrid-event.fc-event-start {
+  margin-left: 2px;
+  margin-right: 2px;
+  border-radius: 4px;
+}
+
+.fc-event {
+  cursor: pointer;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 2px 4px;
+  font-size: 0.85em;
+}
+
+.fc-timegrid-event {
+  border-radius: 4px;
+  padding: 2px 4px;
+}
+
+.fc-timegrid-slot {
+  height: 40px !important;
+}
+
+.fc-timegrid-slot-lane {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.fc-header-toolbar {
+  margin-bottom: 1.5em !important;
+}
+
+.fc-toolbar-title {
+  font-size: 1.5em !important;
+  font-weight: 600 !important;
+  color: var(--text-color) !important;
+}
+
+.fc-button-primary {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+.fc-button-primary:hover {
+  background-color: #005b96 !important;
+  border-color: #005b96 !important;
+}
+
+.fc-button-primary:not(:disabled).fc-button-active,
+.fc-button-primary:not(:disabled):active {
+  background-color: #004b7d !important;
+  border-color: #004b7d !important;
+}
+
+/* Event colors */
+.event-available {
+  background-color: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+}
+
+.event-fullfilled {
+  background-color: var(--warning-color) !important;
+  border-color: var(--warning-color) !important;
+} 
+ /* Inline styles to match existing design */
+  .content-container {
+    padding: 20px;
+  }
+  
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .section-header h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-color);
+  }
+
+  .date-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .date-selector input {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+
+  .date-selector button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+  }
+
+  .date-selector button:hover {
+    background-color: #005b96;
+  }
+
+  .view-switcher {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    background-color: var(--bg-light);
+    border-radius: 8px;
+    padding: 5px;
+    width: fit-content;
+  }
+
+  .view-option {
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s;
+  }
+
+  .view-option.active {
+    background-color: var(--primary-color);
+    color: white;
+  }
+
+  /* Calendar view */
+  .calendar-view {
+    height: 700px;
+    margin-bottom: 30px;
+  }
+
+  /* List view */
+  .schedule-list {
+    display: none;
+  }
+
+  .schedule-list.active {
+    display: block;
+  }
+
+  .schedule-item {
+    display: flex;
+    padding: 16px;
+    border-radius: 10px;
+    background-color: var(--bg-card);
+    margin-bottom: 12px;
+    border-left: 4px solid var(--primary-color);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .schedule-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .schedule-item.available {
+    border-left-color: var(--accent-color);
+  }
+
+  .schedule-item.fullfilled {
+    border-left-color: var(--warning-color);
+  }
+
+  .time-slot {
+    min-width: 120px;
+    text-align: center;
+    padding-right: 20px;
+    border-right: 1px solid var(--border-color);
+  }
+
+  .time-slot .time {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--primary-color);
+  }
+
+  .time-slot .date {
+    font-size: 14px;
+    color: var(--text-light);
+    margin-top: 5px;
+  }
+
+  .schedule-details {
+    flex: 1;
+    padding-left: 20px;
+  }
+
+  .schedule-details .room {
+    font-size: 15px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+  }
+
+  .schedule-details .room svg {
+    margin-right: 8px;
+    color: var(--text-light);
+  }
+
+  .schedule-status {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: 5px;
+  }
+
+  .schedule-status.available {
+    background-color: rgba(40, 167, 69, 0.1);
+    color: var(--accent-color);
+  }
+
+  .schedule-status.fullfilled {
+    background-color: rgba(255, 152, 0, 0.1);
+    color: var(--warning-color);
+  }
+
+  .no-schedules {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--text-light);
+  }
+
+  .no-schedules svg {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 20px;
+    color: var(--border-color);
+  }
+
+  .no-schedules p {
+    font-size: 16px;
+    margin-bottom: 20px;
+  }
+
+  .actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
+  .actions .view-btn {
+    background-color: var(--primary-color);
+    color: white;
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    text-decoration: none;
+  }
+
+  .actions .edit-btn {
+    background-color: var(--secondary-color);
+    color: white;
+  }
+
+  /* Responsive styles */
+  @media (max-width: 768px) {
+    .schedule-item {
+      flex-direction: column;
+    }
+    
+    .time-slot {
+      border-right: none;
+      border-bottom: 1px solid var(--border-color);
+      padding-right: 0;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+      width: 100%;
+    }
+    
+    .schedule-details {
+      padding-left: 0;
+    }
+  }
+
+  /* Calendar event styling */
+  .event-available {
+    background-color: var(--accent-color) !important;
+    border-color: var(--accent-color) !important;
+  }
+
+  .event-fullfilled {
+    background-color: var(--warning-color) !important;
+    border-color: var(--warning-color) !important;
+  }

@@ -1,404 +1,395 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Patient Details</title>
-  <link rel="stylesheet" href="/public/css/doctor-side/patientDetails.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+{{#section 'css'}}
+<link rel="stylesheet" href="/public/css/doctor-side/patientDetails.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+{{/section}}
 
- 
-</head>
-<body>
-  <div class="container">
-    <div class="content-container">
-      <div class="column">
-        <a href="/doctor/patients" class="back-link">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="#6c757d"/>
-          </svg>
-          Back to Patients
-        </a>
-        <div class="page-header">
-          <h1 class="page-title">Patient Details</h1>
+{{#section 'title'}}Patient Details{{/section}}
+
+<div class="column">
+  <a href="/doctor/patients" class="back-link">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="#6c757d"/>
+    </svg>
+    Back to Patients
+  </a>
+  <div class="page-header">
+    <h1 class="page-title">Patient Details</h1>
+  </div>
+
+  {{#if prescriptionSuccess}}
+  <div class="success-message">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="#4CAF50"/>
+    </svg>
+    <span>{{prescriptionSuccess}}</span>
+  </div>
+  {{/if}}
+
+  {{#if patient}}
+  <div class="patient-details-card">
+    <div class="patient-header">
+      <div class="patient-avatar">
+        <span>{{patient.fullName.[0]}}</span>
+      </div>
+      <div class="patient-header-info">
+        <h2>{{patient.fullName}}</h2>
+        <div class="patient-meta">
+          <span>{{patient.age}} years old</span>
+          <span>{{patient.gender}}</span>
+          <span>Last visit: {{patient.formattedLastVisit}}</span>
+          <span>Code: {{patient.patientCode}}</span>
         </div>
-
-        {{#if prescriptionSuccess}}
-        <div class="success-message">
+      </div>
+      <div class="patient-action">
+        <button class="message-btn">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="#4CAF50"/>
+            <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H6L4 18V4H20V16Z" fill="white"/>
           </svg>
-          <span>{{prescriptionSuccess}}</span>
-        </div>
-        {{/if}}
+          Message
+        </button>
+      </div>
+    </div>
 
-        {{#if patient}}
-        <div class="patient-details-card">
-          <div class="patient-header">
-            <div class="patient-avatar">
-              <span>{{patient.fullName.[0]}}</span>
-            </div>
-            <div class="patient-header-info">
-              <h2>{{patient.fullName}}</h2>
-              <div class="patient-meta">
-                <span>{{patient.age}} years old</span>
-                <span>{{patient.gender}}</span>
-                <span>Last visit: {{patient.formattedLastVisit}}</span>
-                <span>Code: {{patient.patientCode}}</span>
-              </div>
-            </div>
-            <div class="patient-action">
-              <button class="message-btn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H6L4 18V4H20V16Z" fill="white"/>
-                </svg>
-                Message
-              </button>
-            </div>
+    <div class="tabs-container">
+      <div class="tabs-header">
+        <div class="tab active" data-tab="overview">Overview</div>
+        <div class="tab" data-tab="appointment">Appointment</div>
+        <div class="tab" data-tab="lab-results">Lab Results</div>
+        <div class="tab" data-tab="prescription">Prescription</div>
+      </div>
+
+      <div class="tab-content active" id="overview">
+        <div class="section-header">
+          <h3>Patient Information</h3>
+          <button class="edit-btn">Edit</button>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-field">
+            <div class="field-label">Full Name</div>
+            <div class="field-value">{{patient.fullName}}</div>
           </div>
 
-          <div class="tabs-container">
-            <div class="tabs-header">
-              <div class="tab active" data-tab="overview">Overview</div>
-              <div class="tab" data-tab="appointment">Appointment</div>
-              <div class="tab" data-tab="lab-results">Lab Results</div>
-              <div class="tab" data-tab="prescription">Prescription</div>
-            </div>
-
-            <div class="tab-content active" id="overview">
-              <div class="section-header">
-                <h3>Patient Information</h3>
-                <button class="edit-btn">Edit</button>
-              </div>
-
-              <div class="info-grid">
-                <div class="info-field">
-                  <div class="field-label">Full Name</div>
-                  <div class="field-value">{{patient.fullName}}</div>
-                </div>
-
-                <div class="info-field">
-                  <div class="field-label">Date of Birth</div>
-                  <div class="field-value">{{patient.formattedDob}}</div>
-                </div>
-
-                <div class="info-field">
-                  <div class="field-label">Phone number</div>
-                  <div class="field-value">{{patient.phoneNumber}}</div>
-                </div>
-
-                <div class="info-field">
-                  <div class="field-label">Email</div>
-                  <div class="field-value">{{patient.email}}</div>
-                </div>
-
-                <div class="info-field">
-                  <div class="field-label">Address</div>
-                  <div class="field-value">{{patient.address}}</div>
-                </div>
-
-                <div class="info-field">
-                  <div class="field-label">Blood Type</div>
-                  <div class="field-value">{{patient.bloodType}}</div>
-                </div>
-
-                {{#if patient.healthInsuranceNumber}}
-                <div class="info-field">
-                  <div class="field-label">Health Insurance</div>
-                  <div class="field-value">{{patient.healthInsuranceNumber}}</div>
-                </div>
-                {{/if}}
-
-                {{#if patient.emergencyContact}}
-                <div class="info-field">
-                  <div class="field-label">Emergency Contact</div>
-                  <div class="field-value">{{patient.emergencyContact}}</div>
-                </div>
-                {{/if}}
-              </div>
-            </div>
-
-            <div class="tab-content" id="appointment">
-              {{#if patient.appointments.length}}
-                <div class="section-header">
-                  <h3>Appointment History</h3>
-                  <a href="/doctor/appointment-detail?patientId={{patient.patientId}}" class="view-all-btn">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M10 3H4C3.45 3 3 3.45 3 4V10C3 10.55 3.45 11 4 11H10C10.55 11 11 10.55 11 10V4C11 3.45 10.55 3 10 3ZM10 13H4C3.45 13 3 13.45 3 14V20C3 20.55 3.45 21 4 21H10C10.55 21 11 20.55 11 20V14C11 13.45 10.55 13 10 13ZM14 13H20C20.55 13 21 13.45 21 14V20C21 20.55 20.55 21 20 21H14C13.45 21 13 20.55 13 20V14C13 13.45 13.45 13 14 13ZM20 3H14C13.45 3 13 3.45 13 4V10C13 10.55 13.45 11 14 11H20C20.55 11 21 10.55 21 10V4C21 3.45 20.55 3 20 3Z" fill="currentColor"/>
-                    </svg>
-                    View All Appointments
-                  </a>
-                </div>
-                <div class="appointments-list">
-                  <table class="data-table">
-                    <thead>
-                      <tr>
-                        <th>Date</th>
-                        <th>Time</th>
-                        <th>Specialty</th>
-                        <th>Doctor</th>
-                        <th>Room</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {{#each (limitTo patient.appointments 5)}}
-                        <tr>
-                          <td>{{formattedDate}}</td>
-                          <td>{{formattedTime}}</td>
-                          <td>{{specialtyName}}</td>
-                          <td>{{doctorName}}</td>
-                          <td>{{#if roomNumber}}{{roomNumber}}{{else}}Not assigned{{/if}}</td>
-                          <td>
-                            <span class="status-badge {{patientAppointmentStatus}}">{{patientAppointmentStatus}}</span>
-                          </td>
-                          <td>
-                            <div class="action-buttons">
-                              <a href="/doctor/examination?appointmentId={{appointmentId}}" class="action-btn view" title="View Details">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path d="M12 4.5C7 4.5 2.73 7.61 1 12C2.73 16.39 7 19.5 12 19.5C17 19.5 21.27 16.39 23 12C21.27 7.61 17 4.5 12 4.5ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17ZM12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9Z" fill="currentColor"/>
-                                </svg>
-                              </a>
-                            </div>
-                          </td>
-                        </tr>
-                      {{/each}}
-                    </tbody>
-                  </table>
-                </div>
-                {{#if (gt patient.appointments.length 5)}}
-                <div class="see-all-container">
-                  <a href="/doctor/appointment-detail?patientId={{patient.patientId}}" class="see-all-btn">
-                    See all {{patient.appointments.length}} appointments
-                  </a>
-                </div>
-                {{/if}}
-              {{else}}
-              <div class="placeholder-content">
-                  <p>No appointment history found for this patient.</p>
-              </div>
-              {{/if}}
-            </div>
-
-            <div class="tab-content" id="lab-results">
-              {{#if patient.labResults.length}}
-                <div class="section-header">
-                  <h3>Laboratory Results</h3>
-                  <a href="/doctor/lab-results?patientId={{patient.patientId}}" class="view-all-btn">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M7 2V4H8V18C8 19.1 8.9 20 10 20H16C17.1 20 18 19.1 18 18V4H19V2H7ZM11 16H10V6H11V16ZM14 16H13V6H14V16Z" fill="currentColor"/>
-                    </svg>
-                    View All Lab Results
-                  </a>
-                </div>
-                <div class="lab-results-list">
-                  <table class="data-table">
-                    <thead>
-                      <tr>
-                        <th>Date</th>
-                        <th>Test Type</th>
-                        <th>Result</th>
-                        <th>Normal Range</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {{#each (limitTo patient.labResults 5)}}
-                        <tr>
-                          <td>{{formattedDate}}</td>
-                          <td>{{serviceName}}</td>
-                          <td>
-                            {{#if resultText}}
-                              {{resultText}} {{#if unit}}{{unit}}{{/if}}
-                            {{else}}
-                              <span class="file-badge">File Result</span>
-                            {{/if}}
-                          </td>
-                          <td>{{normalRange}}</td>
-                          <td>
-                            <span class="status-badge {{status}}">{{status}}</span>
-                          </td>
-                          <td>
-                            <div class="action-buttons">
-                              <a href="/doctor/lab-results/view?labResultId={{labResultId}}" class="action-btn view" title="View Details">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path d="M12 4.5C7 4.5 2.73 7.61 1 12C2.73 16.39 7 19.5 12 19.5C17 19.5 21.27 16.39 23 12C21.27 7.61 17 4.5 12 4.5ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17ZM12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9Z" fill="currentColor"/>
-                                </svg>
-                              </a>
-                              {{#if filePath}}
-                                <a href="{{filePath}}" class="action-btn download" download title="Download Result">
-                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" fill="currentColor"/>
-                                  </svg>
-                                </a>
-                              {{/if}}
-                            </div>
-                          </td>
-                        </tr>
-                      {{/each}}
-                    </tbody>
-                  </table>
-                </div>
-                {{#if (gt patient.labResults.length 5)}}
-                <div class="see-all-container">
-                  <a href="/doctor/lab-results?patientId={{patient.patientId}}" class="see-all-btn">
-                    See all {{patient.labResults.length}} lab results
-                  </a>
-                </div>
-                {{/if}}
-              {{else}}
-              <div class="placeholder-content">
-                  <p>No laboratory results found for this patient.</p>
-              </div>
-              {{/if}}
-            </div>
-
-            <div class="tab-content" id="prescription">
-              {{#if patient.prescriptions.length}}
-                <div class="section-header">
-                  <h3>Prescription History</h3>
-                  <button class="new-prescription-btn" id="createNewPrescription">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z" fill="currentColor"/>
-                    </svg>
-                    Create New Prescription
-                  </button>
-                </div>
-                <div class="prescriptions-list">
-                  <table class="data-table">
-                    <thead>
-                      <tr>
-                        <th>Date</th>
-                        <th>Diagnosis</th>
-                        <th>Medications</th>
-                        <th>Doctor</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {{#each patient.prescriptions}}
-                        <tr>
-                          <td>{{formattedDate}}</td>
-                          <td>{{diagnosis}}</td>
-                          <td>{{medications}}</td>
-                          <td>{{doctorName}}</td>
-                          <td>
-                            <span class="status-badge {{status}}">{{status}}</span>
-                          </td>
-                          <td>
-                            <div class="action-buttons">
-                              <a href="/doctor/prescription-medicine?prescriptionId={{prescriptionId}}" class="action-btn view">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path d="M12 4.5C7 4.5 2.73 7.61 1 12C2.73 16.39 7 19.5 12 19.5C17 19.5 21.27 16.39 23 12C21.27 7.61 17 4.5 12 4.5ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17ZM12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9Z" fill="currentColor"/>
-                                </svg>
-                              </a>
-                              <a href="/doctor/prescription-medicine/print?prescriptionId={{prescriptionId}}" class="action-btn print">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" fill="currentColor"/>
-                                </svg>
-                              </a>
-                            </div>
-                          </td>
-                        </tr>
-                      {{/each}}
-                    </tbody>
-                  </table>
-                </div>
-              {{else}}
-              <div class="placeholder-content">
-                  <p>No prescription history found for this patient.</p>
-                  <button class="new-prescription-btn" id="createNewPrescription">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z" fill="currentColor"/>
-                    </svg>
-                    Create New Prescription
-                  </button>
-              </div>
-              {{/if}}
-              
-              <!-- Hidden form for submitting patient data to prescription page -->
-              <form id="prescriptionForm" action="/doctor/prescription-medicine" method="GET" style="display: none;">
-                <input type="hidden" name="patientId" value="{{patient.patientId}}">
-                <input type="hidden" name="patientName" value="{{patient.fullName}}">
-                <input type="hidden" name="patientGender" value="{{patient.gender}}">
-                <input type="hidden" name="patientDob" value="{{patient.dob}}">
-                <input type="hidden" name="patientAge" value="{{patient.age}}">
-                <input type="hidden" name="patientBloodType" value="{{patient.bloodType}}">
-                <!-- Get the appointment status from the most recent appointment if available -->
-                <input type="hidden" name="patientAppointmentStatus" value="{{#if patient.appointments.[0]}}{{patient.appointments.[0].patientAppointmentStatus}}{{else}}examining{{/if}}">
-              </form>
-            </div>
+          <div class="info-field">
+            <div class="field-label">Date of Birth</div>
+            <div class="field-value">{{patient.formattedDob}}</div>
           </div>
+
+          <div class="info-field">
+            <div class="field-label">Phone number</div>
+            <div class="field-value">{{patient.phoneNumber}}</div>
+          </div>
+
+          <div class="info-field">
+            <div class="field-label">Email</div>
+            <div class="field-value">{{patient.email}}</div>
+          </div>
+
+          <div class="info-field">
+            <div class="field-label">Address</div>
+            <div class="field-value">{{patient.address}}</div>
+          </div>
+
+          <div class="info-field">
+            <div class="field-label">Blood Type</div>
+            <div class="field-value">{{patient.bloodType}}</div>
+          </div>
+
+          {{#if patient.healthInsuranceNumber}}
+          <div class="info-field">
+            <div class="field-label">Health Insurance</div>
+            <div class="field-value">{{patient.healthInsuranceNumber}}</div>
+          </div>
+          {{/if}}
+
+          {{#if patient.emergencyContact}}
+          <div class="info-field">
+            <div class="field-label">Emergency Contact</div>
+            <div class="field-value">{{patient.emergencyContact}}</div>
+          </div>
+          {{/if}}
         </div>
+      </div>
+
+      <div class="tab-content" id="appointment">
+        {{#if patient.appointments.length}}
+          <div class="section-header">
+            <h3>Appointment History</h3>
+            <a href="/doctor/appointment-detail?patientId={{patient.patientId}}" class="view-all-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 3H4C3.45 3 3 3.45 3 4V10C3 10.55 3.45 11 4 11H10C10.55 11 11 10.55 11 10V4C11 3.45 10.55 3 10 3ZM10 13H4C3.45 13 3 13.45 3 14V20C3 20.55 3.45 21 4 21H10C10.55 21 11 20.55 11 20V14C11 13.45 10.55 13 10 13ZM14 13H20C20.55 13 21 13.45 21 14V20C21 20.55 20.55 21 20 21H14C13.45 21 13 20.55 13 20V14C13 13.45 13.45 13 14 13ZM20 3H14C13.45 3 13 3.45 13 4V10C13 10.55 13.45 11 14 11H20C20.55 11 21 10.55 21 10V4C21 3.45 20.55 3 20 3Z" fill="currentColor"/>
+              </svg>
+              View All Appointments
+            </a>
+          </div>
+          <div class="appointments-list">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Time</th>
+                  <th>Specialty</th>
+                  <th>Doctor</th>
+                  <th>Room</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{#each (limitTo patient.appointments 5)}}
+                  <tr>
+                    <td>{{formattedDate}}</td>
+                    <td>{{formattedTime}}</td>
+                    <td>{{specialtyName}}</td>
+                    <td>{{doctorName}}</td>
+                    <td>{{#if roomNumber}}{{roomNumber}}{{else}}Not assigned{{/if}}</td>
+                    <td>
+                      <span class="status-badge {{patientAppointmentStatus}}">{{patientAppointmentStatus}}</span>
+                    </td>
+                    <td>
+                      <div class="action-buttons">
+                        <a href="/doctor/examination?appointmentId={{appointmentId}}" class="action-btn view" title="View Details">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12C2.73 16.39 7 19.5 12 19.5C17 19.5 21.27 16.39 23 12C21.27 7.61 17 4.5 12 4.5ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17ZM12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9Z" fill="currentColor"/>
+                          </svg>
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                {{/each}}
+              </tbody>
+            </table>
+          </div>
+          {{#if (gt patient.appointments.length 5)}}
+          <div class="see-all-container">
+            <a href="/doctor/appointment-detail?patientId={{patient.patientId}}" class="see-all-btn">
+              See all {{patient.appointments.length}} appointments
+            </a>
+          </div>
+          {{/if}}
         {{else}}
-        <div class="not-found-message">
-          <p>Patient not found or no patient ID provided.</p>
-          <a href="/doctor/patients" class="btn btn-primary">Back to Patient List</a>
+        <div class="placeholder-content">
+            <p>No appointment history found for this patient.</p>
         </div>
         {{/if}}
       </div>
+
+      <div class="tab-content" id="lab-results">
+        {{#if patient.labResults.length}}
+          <div class="section-header">
+            <h3>Laboratory Results</h3>
+            <a href="/doctor/lab-results?patientId={{patient.patientId}}" class="view-all-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M7 2V4H8V18C8 19.1 8.9 20 10 20H16C17.1 20 18 19.1 18 18V4H19V2H7ZM11 16H10V6H11V16ZM14 16H13V6H14V16Z" fill="currentColor"/>
+              </svg>
+              View All Lab Results
+            </a>
+          </div>
+          <div class="lab-results-list">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Test Type</th>
+                  <th>Result</th>
+                  <th>Normal Range</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{#each (limitTo patient.labResults 5)}}
+                  <tr>
+                    <td>{{formattedDate}}</td>
+                    <td>{{serviceName}}</td>
+                    <td>
+                      {{#if resultText}}
+                        {{resultText}} {{#if unit}}{{unit}}{{/if}}
+                      {{else}}
+                        <span class="file-badge">File Result</span>
+                      {{/if}}
+                    </td>
+                    <td>{{normalRange}}</td>
+                    <td>
+                      <span class="status-badge {{status}}">{{status}}</span>
+                    </td>
+                    <td>
+                      <div class="action-buttons">
+                        <a href="/doctor/lab-results/view?labResultId={{labResultId}}" class="action-btn view" title="View Details">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12C2.73 16.39 7 19.5 12 19.5C17 19.5 21.27 16.39 23 12C21.27 7.61 17 4.5 12 4.5ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17ZM12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9Z" fill="currentColor"/>
+                          </svg>
+                        </a>
+                        {{#if filePath}}
+                          <a href="{{filePath}}" class="action-btn download" download title="Download Result">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" fill="currentColor"/>
+                            </svg>
+                          </a>
+                        {{/if}}
+                      </div>
+                    </td>
+                  </tr>
+                {{/each}}
+              </tbody>
+            </table>
+          </div>
+          {{#if (gt patient.labResults.length 5)}}
+          <div class="see-all-container">
+            <a href="/doctor/lab-results?patientId={{patient.patientId}}" class="see-all-btn">
+              See all {{patient.labResults.length}} lab results
+            </a>
+          </div>
+          {{/if}}
+        {{else}}
+        <div class="placeholder-content">
+            <p>No laboratory results found for this patient.</p>
+        </div>
+        {{/if}}
+      </div>
+
+      <div class="tab-content" id="prescription">
+        {{#if patient.prescriptions.length}}
+          <div class="section-header">
+            <h3>Prescription History</h3>
+            <button class="new-prescription-btn" id="createNewPrescription">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z" fill="currentColor"/>
+              </svg>
+              Create New Prescription
+            </button>
+          </div>
+          <div class="prescriptions-list">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Diagnosis</th>
+                  <th>Medications</th>
+                  <th>Doctor</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{#each patient.prescriptions}}
+                  <tr>
+                    <td>{{formattedDate}}</td>
+                    <td>{{diagnosis}}</td>
+                    <td>{{medications}}</td>
+                    <td>{{doctorName}}</td>
+                    <td>
+                      <span class="status-badge {{status}}">{{status}}</span>
+                    </td>
+                    <td>
+                      <div class="action-buttons">
+                        <a href="/doctor/prescription-medicine?prescriptionId={{prescriptionId}}" class="action-btn view">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12C2.73 16.39 7 19.5 12 19.5C17 19.5 21.27 16.39 23 12C21.27 7.61 17 4.5 12 4.5ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17ZM12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9Z" fill="currentColor"/>
+                          </svg>
+                        </a>
+                        <a href="/doctor/prescription-medicine/print?prescriptionId={{prescriptionId}}" class="action-btn print">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" fill="currentColor"/>
+                          </svg>
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                {{/each}}
+              </tbody>
+            </table>
+          </div>
+        {{else}}
+        <div class="placeholder-content">
+            <p>No prescription history found for this patient.</p>
+            <button class="new-prescription-btn" id="createNewPrescription">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z" fill="currentColor"/>
+              </svg>
+              Create New Prescription
+            </button>
+        </div>
+        {{/if}}
+        
+        <!-- Hidden form for submitting patient data to prescription page -->
+        <form id="prescriptionForm" action="/doctor/prescription-medicine" method="GET" style="display: none;">
+          <input type="hidden" name="patientId" value="{{patient.patientId}}">
+          <input type="hidden" name="patientName" value="{{patient.fullName}}">
+          <input type="hidden" name="patientGender" value="{{patient.gender}}">
+          <input type="hidden" name="patientDob" value="{{patient.dob}}">
+          <input type="hidden" name="patientAge" value="{{patient.age}}">
+          <input type="hidden" name="patientBloodType" value="{{patient.bloodType}}">
+          <!-- Get the appointment status from the most recent appointment if available -->
+          <input type="hidden" name="patientAppointmentStatus" value="{{#if patient.appointments.[0]}}{{patient.appointments.[0].patientAppointmentStatus}}{{else}}examining{{/if}}">
+        </form>
+      </div>
     </div>
   </div>
+  {{else}}
+  <div class="not-found-message">
+    <p>Patient not found or no patient ID provided.</p>
+    <a href="/doctor/patients" class="btn btn-primary">Back to Patient List</a>
+  </div>
+  {{/if}}
+</div>
 
-  <script>
-    // Enhanced tab switching functionality
-    document.addEventListener('DOMContentLoaded', function() {
-      const tabs = document.querySelectorAll('.tab');
-      const tabContents = document.querySelectorAll('.tab-content');
-      
-      // Show the active tab content on page load
-      function setActiveTab(tabName) {
-          // Remove active class from all tabs and contents
-          tabs.forEach(t => t.classList.remove('active'));
-          tabContents.forEach(c => c.classList.remove('active'));
-          
-        // Add active class to selected tab
-        const selectedTab = document.querySelector(`.tab[data-tab="${tabName}"]`);
-        if (selectedTab) {
-          selectedTab.classList.add('active');
-        }
-          
-          // Show corresponding content
-        const selectedContent = document.getElementById(tabName);
-        if (selectedContent) {
-          selectedContent.classList.add('active');
-        }
+{{#section 'js'}}
+<script>
+  // Enhanced tab switching functionality
+  document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('.tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    // Show the active tab content on page load
+    function setActiveTab(tabName) {
+        // Remove active class from all tabs and contents
+        tabs.forEach(t => t.classList.remove('active'));
+        tabContents.forEach(c => c.classList.remove('active'));
+        
+      // Add active class to selected tab
+      const selectedTab = document.querySelector(`.tab[data-tab="${tabName}"]`);
+      if (selectedTab) {
+        selectedTab.classList.add('active');
       }
-      
-      // Add click event to each tab
-      tabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-          const tabName = this.getAttribute('data-tab');
-          setActiveTab(tabName);
-          
-          // Optionally store the selected tab in sessionStorage for persistence
-          sessionStorage.setItem('selectedPatientTab', tabName);
-        });
-      });
-      
-      // Check if there's a previously selected tab stored
-      const savedTab = sessionStorage.getItem('selectedPatientTab');
-      if (savedTab) {
-        setActiveTab(savedTab);
-      } else {
-        // Default to first tab if none saved
-        const defaultTab = tabs[0].getAttribute('data-tab');
-        setActiveTab(defaultTab);
+        
+        // Show corresponding content
+      const selectedContent = document.getElementById(tabName);
+      if (selectedContent) {
+        selectedContent.classList.add('active');
       }
-      
-      // Handle Create New Prescription button click
-      const prescriptionButtons = document.querySelectorAll('#createNewPrescription');
-      prescriptionButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-          e.preventDefault();
-          // Submit the hidden form to navigate to prescription page with patient data
-          document.getElementById('prescriptionForm').submit();
-        });
+    }
+    
+    // Add click event to each tab
+    tabs.forEach(tab => {
+      tab.addEventListener('click', function() {
+        const tabName = this.getAttribute('data-tab');
+        setActiveTab(tabName);
+        
+        // Optionally store the selected tab in sessionStorage for persistence
+        sessionStorage.setItem('selectedPatientTab', tabName);
       });
     });
-  </script>
-</body>
-</html>
+    
+    // Check if there's a previously selected tab stored
+    const savedTab = sessionStorage.getItem('selectedPatientTab');
+    if (savedTab) {
+      setActiveTab(savedTab);
+    } else {
+      // Default to first tab if none saved
+      const defaultTab = tabs[0].getAttribute('data-tab');
+      setActiveTab(defaultTab);
+    }
+    
+    // Handle Create New Prescription button click
+    const prescriptionButtons = document.querySelectorAll('#createNewPrescription');
+    prescriptionButtons.forEach(button => {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        // Submit the hidden form to navigate to prescription page with patient data
+        document.getElementById('prescriptionForm').submit();
+      });
+    });
+  });
+</script>
+{{/section}}

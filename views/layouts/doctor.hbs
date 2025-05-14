@@ -4,17 +4,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Doctor Dashboard</title>
+  <title>{{#if _sections.title}}{{_sections.title}}{{else}}Doctor Dashboard{{/if}}</title>
   <link rel="stylesheet" href="/public/css/doctor-layout.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
   <!-- Tabler Icons CDN -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.40.0/tabler-icons.min.css">
+  {{{_sections.css}}}
 </head>
 
 <body>
   <div class="container">
     <aside class="sidebar" id="sidebar">
+      <!-- Logo area particles -->
+      <div class="logo-area-particles"></div>
+      
       <div class="sidebar-header">
         <div class="logo">
           <img src="/public/images/logo/logo.png" alt="Logo page">
@@ -31,9 +35,21 @@
         <i class="ti ti-dots"></i>
       </div>
 
+      <!-- Add particle container divs -->
+      <div class="sidebar-menu-particles"></div>
+      <div class="sidebar-bottom-particles"></div>
+      <div class="sidebar-mini-particles"></div>
+      <div class="sidebar-edge-particles"></div>
+      <div class="menu-floating-particles"></div>
+      
+      <!-- Random individual particles -->
+      <div class="random-particles-1"></div>
+      <div class="random-particles-2"></div>
+      <div class="random-particles-3"></div>
+
       <div class="menu">
         <ul>
-          <li class="active">
+          <li class="{{#if (eq active 'dashboard')}}active{{/if}}">
             <a href="/doctor/dashboard">
               <span>
                 <i class="ti ti-dashboard"></i>
@@ -41,16 +57,24 @@
               </span>
             </a>
           </li>
-          <li>
+          <li class="{{#if (eq active 'appointments')}}active{{/if}}">
             <a href="/doctor/appointments">
               <span>
                 <i class="ti ti-calendar-event"></i>
                 <span>Appointments</span>
               </span>
-              <span class="badge">{{appointmentCount}}</span>
+         
             </a>
           </li>
-          <li>
+           <li class="{{#if (eq active 'schedule')}}active{{/if}}">
+            <a href="/doctor/schedule">
+              <span>
+                <i class="ti ti-calendar"></i>
+                <span>Schedule</span>
+              </span>
+            </a>
+          </li>
+          <li class="{{#if (eq active 'patients')}}active{{/if}}">
             <a href="/doctor/patients">
               <span>
                 <i class="ti ti-users"></i>
@@ -58,7 +82,7 @@
               </span>
             </a>
           </li>
-          <li>
+          <li class="{{#if (eq active 'messages')}}active{{/if}}">
             <a href="/doctor/messages">
               <span>
                 <i class="ti ti-messages"></i>
@@ -76,8 +100,8 @@
     <main class="main">
       <header class="header">
         <div class="page-info">
-          <h1 class="page-title" id="currentPageTitle">Dashboard</h1>
-          <span class="page-subtitle" id="currentPageSubtitle">Welcome back, Dr. TobeyNguyen</span>
+          <h1 class="page-title" id="currentPageTitle">{{#if _sections.title}}{{_sections.title}}{{else}}Dashboard{{/if}}</h1>
+          <span class="page-subtitle" id="currentPageSubtitle">Welcome back, Dr. {{authUser.fullName}}</span>
         </div>
 
         <div class="header-actions">
@@ -117,6 +141,7 @@
     </main>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+  <script src="/public/js/sidebar-toggle.js" defer></script>
 
   <script>
     // Add active class to current page link
@@ -149,10 +174,13 @@
       const toggleBtn = document.getElementById('toggleSidebar');
       const sidebar = document.getElementById('sidebar');
 
+      // We're now handling this in sidebar-toggle.js for better responsiveness
+      /* 
       toggleBtn.addEventListener('click', function () {
         sidebar.classList.toggle('collapsed');
         // Icon rotation is now handled by CSS
       });
+      */
 
       // Setup action buttons
       setupActionButtons();
@@ -195,7 +223,7 @@
       if (!pageTitle || !pageSubtitle) return;
 
       let title = 'Dashboard';
-      let subtitle = 'Welcome back, Dr. TobeyNguyen';
+      let subtitle = 'Welcome back, Dr. {{authUser.fullName}}';
 
       if (currentPath.includes('/doctor/dashboard')) {
         title = 'Dashboard';
@@ -209,6 +237,9 @@
       } else if (currentPath.includes('/doctor/messages')) {
         title = 'Notifications';
         subtitle = 'Your messages and alerts';
+      } else if (currentPath.includes('/doctor/schedule')) {
+        title = 'Schedule';
+        subtitle = 'Manage your work schedule';
       }
 
       pageTitle.textContent = title;
@@ -363,6 +394,16 @@
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
 
+  <!-- Section for page-specific JavaScript -->
+  {{{_sections.js}}}
+
+  <script>
+    // Initialize required functions after the page is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      setupActionButtons();
+      setupNotificationPopup();
+    });
+  </script>
 </body>
 
 </html>

@@ -1,183 +1,251 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Doctor Examination</title>
-  <link rel="stylesheet" href="/public/css/doctor-side/examination.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+{{#section 'css'}}
+<link rel="stylesheet" href="/public/css/doctor-side/examination.css">
+{{/section}}
 
+{{#section 'title'}}Doctor Examination{{/section}}
 
+<div class="column"> 
+  <a href="/doctor/appointments" class="back-link">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="#6c757d"/>
+    </svg>
+    Back to Appointments
+  </a>
 
-</head>
-<body>
-  <div class="container">
-      <div class="content-container">
-        <div class="column"> 
-         <a href="/doctor/appointments" class="back-link">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="#6c757d"/>
-          </svg>
-          Back to Appointments
-        </a>
+  {{#if successMessage}}
+  <div class="success-message">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="#4CAF50"/>
+    </svg>
+    <span>{{successMessage}}</span>
+  </div>
+  {{/if}}
 
-        {{#if successMessage}}
-        <div class="success-message">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="#4CAF50"/>
-          </svg>
-          <span>{{successMessage}}</span>
-        </div>
+  <!-- Hidden input to store appointmentId -->
+  <input type="hidden" id="appointmentIdInput" value="{{appointment.appointmentId}}" />
+  <input type="hidden" id="appointmentStatusInput" value="{{appointment.patientAppointmentStatus}}" />
+
+  <div class="page-header">
+    <h1 class="page-title">Medical examination form</h1>
+    <div class="page-actions">
+      <button class="test-request-btn">Test Request</button>
+    </div>
+  </div>
+
+  <div class="patient-card">
+    <div class="patient-initials">
+      {{appointment.patientName.[0]}}
+    </div>
+    <div class="patient-info">
+      <h3>{{appointment.patientName}}</h3>
+      <div class="patient-details">
+        <span>{{appointment.patientAge}} years old</span>
+        <span>{{appointment.patientGenderFormatted}}</span>
+        <span class="patient-code">Code: P-{{appointment.patientId}}</span>
+        <span class="badge">{{appointment.patientAppointmentStatus}}</span>
+        {{#if appointment.roomNumber}}
+        <span class="room-info">Room: {{appointment.roomNumber}}</span>
+        {{else}}
+        <span class="room-info">Room: Not assigned</span>
         {{/if}}
+      </div>
+    </div>
+  </div>
 
-        <!-- Hidden input to store appointmentId -->
-        <input type="hidden" id="appointmentIdInput" value="{{appointment.appointmentId}}" />
+  <div class="exam-info-card">
+    <div class="exam-info-header">
+      <div>Medical examination information</div>
+      <div>Code: {{appointment.examinationCode}}</div>
+    </div>
 
-        <div class="page-header">
-                <h1 class="page-title">Medical examination form</h1>
-                <div class="page-actions">
-                <button class="test-request-btn">Test Request</button>
-                </div>
-        </div>
-
-        <div class="patient-card">
-          <div class="patient-initials">
-            {{appointment.patientName.[0]}}
-          </div>
-          <div class="patient-info">
-            <h3>{{appointment.patientName}}</h3>
-            <div class="patient-details">
-              <span>{{appointment.patientAge}} years old</span>
-              <span>{{appointment.patientGenderFormatted}}</span>
-              <span class="patient-code">Code: P-{{appointment.patientId}}</span>
-              <span class="badge">{{appointment.patientAppointmentStatus}}</span>
-              {{#if appointment.roomNumber}}
-              <span class="room-info">Room: {{appointment.roomNumber}}</span>
-              {{else}}
-              <span class="room-info">Room: Not assigned</span>
-              {{/if}}
-            </div>
+    <div class="vital-signs">
+      <h2 class="vital-signs-title">Vital signs</h2>
+      
+      <div class="vital-signs-grid">
+        <div class="vital-sign-item">
+          <div class="vital-sign-label">Temperature</div>
+          <div class="vital-sign-value">
+            <input type="text" class="vital-sign-input" value="37.2" />
+            <span class="vital-sign-unit">°C</span>
           </div>
         </div>
 
-        <div class="exam-info-card">
-          <div class="exam-info-header">
-            <div>Medical examination information</div>
-            <div>Code: {{appointment.examinationCode}}</div>
-          </div>
-
-          <div class="vital-signs">
-            <h2 class="vital-signs-title">Vital signs</h2>
-            
-            <div class="vital-signs-grid">
-              <div class="vital-sign-item">
-                <div class="vital-sign-label">Temperature</div>
-                <div class="vital-sign-value">
-                  <input type="text" class="vital-sign-input" value="37.2" />
-                  <span class="vital-sign-unit">°C</span>
-                </div>
-              </div>
-
-              <div class="vital-sign-item">
-                <div class="vital-sign-label">Blood pressure</div>
-                <div class="vital-sign-value">
-                  <input type="text" class="vital-sign-input" value="130/85" />
-                  <span class="vital-sign-unit">mmHg</span>
-                </div>
-              </div>
-
-              <div class="vital-sign-item">
-                <div class="vital-sign-label">Pulse</div>
-                <div class="vital-sign-value">
-                  <input type="text" class="vital-sign-input" value="78" />
-                  <span class="vital-sign-unit">bpm</span>
-                </div>
-              </div>
-
-              <div class="vital-sign-item">
-                <div class="vital-sign-label">Breathing</div>
-                <div class="vital-sign-value">
-                  <input type="text" class="vital-sign-input" value="16" />
-                  <span class="vital-sign-unit">bpm</span>
-                </div>
-              </div>
-
-              <div class="vital-sign-item">
-                <div class="vital-sign-label">SpO2</div>
-                <div class="vital-sign-value">
-                  <input type="text" class="vital-sign-input" value="98" />
-                  <span class="vital-sign-unit">%</span>
-                </div>
-              </div>
-
-              <div class="vital-sign-item">
-                <div class="vital-sign-label">Weight</div>
-                <div class="vital-sign-value">
-                  <input type="text" class="vital-sign-input" value="78" />
-                  <span class="vital-sign-unit">Kg</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="examination-section">
-            <h2 class="examination-title">Examination</h2>
-            <textarea class="examination-textarea">The patient is alert and responsive. Skin and mucous membranes are pink. There are no signs of difficulty breathing.</textarea>
-          </div>
-
-          <div class="form-actions">
-            <button class="btn btn-outline">Print</button>
-            <button class="btn btn-primary">Submit</button>
+        <div class="vital-sign-item">
+          <div class="vital-sign-label">Blood pressure</div>
+          <div class="vital-sign-value">
+            <input type="text" class="vital-sign-input" value="130/85" />
+            <span class="vital-sign-unit">mmHg</span>
           </div>
         </div>
+
+        <div class="vital-sign-item">
+          <div class="vital-sign-label">Pulse</div>
+          <div class="vital-sign-value">
+            <input type="text" class="vital-sign-input" value="78" />
+            <span class="vital-sign-unit">bpm</span>
+          </div>
+        </div>
+
+        <div class="vital-sign-item">
+          <div class="vital-sign-label">Breathing</div>
+          <div class="vital-sign-value">
+            <input type="text" class="vital-sign-input" value="16" />
+            <span class="vital-sign-unit">bpm</span>
+          </div>
+        </div>
+
+        <div class="vital-sign-item">
+          <div class="vital-sign-label">SpO2</div>
+          <div class="vital-sign-value">
+            <input type="text" class="vital-sign-input" value="98" />
+            <span class="vital-sign-unit">%</span>
+          </div>
+        </div>
+
+        <div class="vital-sign-item">
+          <div class="vital-sign-label">Weight</div>
+          <div class="vital-sign-value">
+            <input type="text" class="vital-sign-input" value="78" />
+            <span class="vital-sign-unit">Kg</span>
+          </div>
         </div>
       </div>
-    </main>
+    </div>
+
+    <div class="examination-section">
+      <h2 class="examination-title">Examination</h2>
+      <textarea class="examination-textarea">The patient is alert and responsive. Skin and mucous membranes are pink. There are no signs of difficulty breathing.</textarea>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-outline">Print</button>
+      <button class="btn btn-primary">Submit</button>
+    </div>
   </div>
-  <script>
-    // When page loads, prepare the Test Request button
-    document.addEventListener('DOMContentLoaded', function() {
-      document.querySelector('.test-request-btn').addEventListener('click', function() {
-        // Get the appointmentId from the hidden input
-        const appointmentId = document.getElementById('appointmentIdInput').value;
-        const patientId = '{{appointment.patientId}}';
-        // Navigate to test request form with both patient ID and appointment ID
-        window.location.href = `/doctor/test-request?patientId=${patientId}&appointmentId=${appointmentId}`;
-      });
+</div>
+
+{{#section 'js'}}
+<script>
+  // Function to show popup with optional second button
+  function showPopup(title, message, btnText = "OK", callback = null, type = "default", secondBtnText = null, secondBtnCallback = null) {
+    // Create popup elements
+    const overlay = document.createElement('div');
+    overlay.className = 'popup-overlay';
+    
+    const content = document.createElement('div');
+    content.className = 'popup-content';
+    
+    // Add specific styling based on type
+    if (type === "success") {
+      content.classList.add('success');
+    } else if (type === "error") {
+      content.classList.add('error');
+    }
+    
+    const popupTitle = document.createElement('h2');
+    popupTitle.textContent = title;
+    
+    const popupMessage = document.createElement('p');
+    popupMessage.textContent = message;
+    
+    // Create button container for multiple buttons
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = 'popup-buttons';
+    buttonContainer.style.display = 'flex';
+    buttonContainer.style.justifyContent = 'center';
+    buttonContainer.style.gap = '15px';
+    
+    // Create main button
+    const button = document.createElement('button');
+    button.className = 'popup-btn';
+    button.textContent = btnText;
+    
+    // Add main button
+    buttonContainer.appendChild(button);
+    
+    // Add second button if provided
+    if (secondBtnText) {
+      const secondButton = document.createElement('button');
+      secondButton.className = 'popup-btn popup-btn-secondary';
+      secondButton.textContent = secondBtnText;
+      secondButton.style.background = 'linear-gradient(45deg, #0EA5E9 0%, #38BDF8 100%)';
       
-      // We need to handle if prescription-btn exists because it was added manually
-      const prescriptionBtn = document.querySelector('.prescription-btn');
-      if (prescriptionBtn) {
-        prescriptionBtn.addEventListener('click', function() {
-          // Navigate to the prescription form with patient ID from the current appointment
-          window.location.href = `/doctor/prescription-medicine?patientId={{appointment.patientId}}`;
-        });
+      buttonContainer.appendChild(secondButton);
+      
+      // Add click event for second button
+      secondButton.addEventListener('click', function() {
+        document.body.removeChild(overlay);
+        if (secondBtnCallback) secondBtnCallback();
+      });
+    }
+    
+    // Assemble popup
+    content.appendChild(popupTitle);
+    content.appendChild(popupMessage);
+    content.appendChild(buttonContainer);
+    overlay.appendChild(content);
+    
+    // Add to document
+    document.body.appendChild(overlay);
+    
+    // Add click event for main button
+    button.addEventListener('click', function() {
+      document.body.removeChild(overlay);
+      if (callback) callback();
+    });
+  }
+  
+  // When page loads, prepare the Test Request button
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelector('.test-request-btn').addEventListener('click', function() {
+      // Get the appointmentId from the hidden input
+      const appointmentId = document.getElementById('appointmentIdInput').value;
+      const patientId = '{{appointment.patientId}}';
+      // Navigate to test request form with both patient ID and appointment ID
+      window.location.href = `/doctor/test-request?patientId=${patientId}&appointmentId=${appointmentId}`;
+    });
+    
+    // We need to handle if prescription-btn exists because it was added manually
+    const prescriptionBtn = document.querySelector('.prescription-btn');
+    if (prescriptionBtn) {
+      prescriptionBtn.addEventListener('click', function() {
+        // Navigate to the prescription form with patient ID from the current appointment
+        window.location.href = `/doctor/prescription-medicine?patientId={{appointment.patientId}}`;
+      });
+    }
+    
+    // Form submission handler
+    document.querySelector('.btn-primary').addEventListener('click', function() {
+      // Get appointmentId from hidden input
+      const appointmentId = document.getElementById('appointmentIdInput').value;
+      const appointmentStatus = document.getElementById('appointmentStatusInput').value;
+      const patientId = '{{appointment.patientId}}';
+      
+      // Check if the appointment is already examined
+      if (appointmentStatus === 'examined') {
+        showPopup("Examination Error", "This appointment has already been completed. You cannot submit another examination record.", "Understood", null, "error");
+        return;
       }
       
-      // Form submission handler
-      document.querySelector('.btn-primary').addEventListener('click', function() {
-        // Get appointmentId from hidden input
-        const appointmentId = document.getElementById('appointmentIdInput').value;
-        
-        // Check if appointmentId exists
-        if (!appointmentId) {
-          alert('Error: AppointmentId is missing. Please go back to appointments page.');
-          return;
-        }
-        
-        // Collect vital signs
-        const temperature = document.querySelector('.vital-sign-item:nth-child(1) .vital-sign-input').value;
-        const bloodPressure = document.querySelector('.vital-sign-item:nth-child(2) .vital-sign-input').value;
-        const pulse = document.querySelector('.vital-sign-item:nth-child(3) .vital-sign-input').value;
-        const respiration = document.querySelector('.vital-sign-item:nth-child(4) .vital-sign-input').value;
-        const spO2 = document.querySelector('.vital-sign-item:nth-child(5) .vital-sign-input').value;
-        const weight = document.querySelector('.vital-sign-item:nth-child(6) .vital-sign-input').value;
-        
-        // Collect examination notes
-        const examinationNotes = document.querySelector('.examination-textarea').value;
-        
-        // Create diagnosis text from all collected information
-        const diagnosis = `
+      // Check if appointmentId exists
+      if (!appointmentId) {
+        showPopup("Error", "AppointmentId is missing. Please go back to appointments page.", "OK", null, "error");
+        return;
+      }
+      
+      // Collect vital signs
+      const temperature = document.querySelector('.vital-sign-item:nth-child(1) .vital-sign-input').value;
+      const bloodPressure = document.querySelector('.vital-sign-item:nth-child(2) .vital-sign-input').value;
+      const pulse = document.querySelector('.vital-sign-item:nth-child(3) .vital-sign-input').value;
+      const respiration = document.querySelector('.vital-sign-item:nth-child(4) .vital-sign-input').value;
+      const spO2 = document.querySelector('.vital-sign-item:nth-child(5) .vital-sign-input').value;
+      const weight = document.querySelector('.vital-sign-item:nth-child(6) .vital-sign-input').value;
+      
+      // Collect examination notes
+      const examinationNotes = document.querySelector('.examination-textarea').value;
+      
+      // Create diagnosis text from all collected information
+      const diagnosis = `
 Vital Signs:
 - Temperature: ${temperature}°C
 - Blood Pressure: ${bloodPressure} mmHg
@@ -186,50 +254,63 @@ Vital Signs:
 - SpO2: ${spO2}%
 - Weight: ${weight} kg
 `;
-        
-        // Create treatment recommendations
-        const recommendations = "Regular follow-up in 2 weeks. Continue monitoring vital signs.";
-        
-        // Calculate follow-up date (2 weeks from now)
-        const today = new Date();
-        const followupDate = new Date(today);
-        followupDate.setDate(today.getDate() + 14);
-        const formattedFollowupDate = followupDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
-        
-        // Create the data to send
-        const examinationData = {
-          appointmentId: appointmentId,
-          diagnosis: diagnosis,
-          notes: examinationNotes,
-          recommendations: recommendations,
-          followupDate: formattedFollowupDate
-        };
-        
-        console.log("Sending data with appointmentId:", appointmentId);
-        
-        fetch('/doctor/examination/submit', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(examinationData),
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            alert('Examination submitted successfully.');
-            window.location.href = '/doctor/appointments';
+      
+      // Create treatment recommendations
+      const recommendations = "Regular follow-up in 2 weeks. Continue monitoring vital signs.";
+      
+      // Calculate follow-up date (2 weeks from now)
+      const today = new Date();
+      const followupDate = new Date(today);
+      followupDate.setDate(today.getDate() + 14);
+      const formattedFollowupDate = followupDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+      
+      // Create the data to send
+      const examinationData = {
+        appointmentId: appointmentId,
+        diagnosis: diagnosis,
+        notes: examinationNotes,
+        recommendations: recommendations,
+        followupDate: formattedFollowupDate
+      };
+      
+      console.log("Sending data with appointmentId:", appointmentId);
+      
+      fetch('/doctor/examination/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(examinationData),
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showPopup(
+            "Examination Complete", 
+            "Examination has been submitted successfully. What would you like to do next?", 
+            "Return to Appointments", 
+            function() {
+              window.location.href = '/doctor/appointments';
+            }, 
+            "success",
+            "Prescribe Medicine",
+            function() {
+              window.location.href = `/doctor/prescription-medicine?patientId=${patientId}`;
+            }
+          );
+        } else {
+          if (data.code === 'ALREADY_EXAMINED') {
+            showPopup("Examination Error", "This appointment has already been completed. You cannot submit another examination record.", "OK", null, "error");
           } else {
-            alert('Error: ' + data.message);
+            showPopup("Error", "Error: " + data.message, "OK", null, "error");
           }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          alert('Failed to submit examination data. Please try again.');
-        });
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showPopup("Error", "Failed to submit examination data. Please try again.", "OK", null, "error");
       });
     });
-  </script>
-</body>
-
-</html>
+  });
+</script>
+{{/section}}
