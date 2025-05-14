@@ -29,7 +29,7 @@ router.get('/', async (req, res) => {
             labTechnician.specialtyId
         );
         
-        res.render('vwLabTech/dashboard', {
+        res.render('vwLabtech/dashboard', {
             pendingCount: stats.pendingCount,
             inProgressCount: stats.inProgressCount,
             completedCount: stats.completedCount,
