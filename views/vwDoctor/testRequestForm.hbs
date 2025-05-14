@@ -1,268 +1,267 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Doctor TestRequest</title>
-  <link rel="stylesheet" href="/public/css/doctor-side/testRequestForm.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body>
-  <div class="container">
-      <div class="content-container">
-        <div class="column"> 
-            <a href="/doctor/examination" class="back-link">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="#6c757d"/>
-          </svg>
-          Back to Dashboard
-        </a>
+{{#section 'css'}}
+<link rel="stylesheet" href="/public/css/doctor-side/testRequestForm.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+{{/section}}
 
-        <div class="lab-request-header">
-          <h1>Laboratory Test Request</h1>
-          <div class="action-buttons">
-            <button class="btn-print">Print</button>
-            <button class="btn-save">Save</button>
-          </div>
-        </div>
+{{#section 'title'}}Laboratory Test Request{{/section}}
 
-        <div class="patient-card">
-          <div class="patient-avatar">
-            {{patient.patientName.[0]}}
-          </div>
-          <div class="patient-info">
-            <h3>{{patient.patientName}}</h3>
-            <div class="patient-details">
-              <span>{{patient.patientAge}} years old</span>
-              <span>{{patient.patientGenderFormatted}}</span>
-              <span>Code: P-{{patient.patientId}}</span>
-              {{#if patient.patientAppointmentStatus}}
-                {{#if (eq patient.patientAppointmentStatus "examining")}}
-                  <span class="examining-tag">Examining</span>
-                {{else if (eq patient.patientAppointmentStatus "waiting")}}
-                  <span class="waiting-tag">Waiting</span>
-                {{else if (eq patient.patientAppointmentStatus "examined")}}
-                  <span class="examined-tag">Examined</span>
-                {{else}}
-                  <span class="status-tag">{{patient.patientAppointmentStatus}}</span>
-                {{/if}}
-              {{else}}
-                <span class="examining-tag">Examining</span>
-              {{/if}}
-            </div>
-          </div>
-        </div>
+<div class="column"> 
+  <a href="/doctor/examination" class="back-link">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="#6c757d"/>
+    </svg>
+    Back to Dashboard
+  </a>
 
-        <div class="test-request-card">
-          <div class="card-header">
-            <h2>Test Request Information</h2>
-            <span class="test-code">Code: {{testRequestCode}}</span>
-          </div>
-
-          <div>
-            <h3 style="margin-bottom: 15px; font-size: 14px; font-weight: 600; color: #006eb9;">Test Selection</h3>
-            
-            <div class="test-categories">
-              {{#each testsByCategory}}
-                <div class="category-tab {{#if @first}}active{{/if}}" data-category="{{@key}}">{{@key}}</div>
-              {{/each}}
-            </div>
-
-            {{#each testsByCategory}}
-            <div class="test-options" id="{{@key}}-tests" style="{{#unless @first}}display: none;{{/unless}}">
-              {{#each this}}
-              <div class="test-option">
-                <input type="checkbox" id="test-{{serviceId}}" data-test-name="{{name}}" data-service-id="{{serviceId}}" class="test-checkbox">
-                <label for="test-{{serviceId}}">{{name}}</label>
-              </div>
-              {{/each}}
-            </div>
-            {{/each}}
-
-            <div class="selected-tests">
-              <div class="selected-tests-header">Selected Tests (0)</div>
-              <div id="selected-tests-container"></div>
-            </div>
-          </div>
-
-          <div class="form-actions">
-            <button class="btn-cancel" id="cancelBtn">Cancel</button>
-            <button class="btn-submit" id="submitBtn" type="button">Submit Request</button>
-          </div>
-        </div>
-        </div>
-      </div>
+  <div class="lab-request-header">
+    <h1>Laboratory Test Request</h1>
+    <div class="action-buttons">
+      <button class="btn-print">Print</button>
+      <button class="btn-save">Save</button>
+    </div>
   </div>
 
-  <!-- Hidden form for submitting test request -->
-  <form id="testRequestForm" method="POST" action="/doctor/test-request/submit" style="display: none;">
-    <input type="hidden" name="appointmentId" id="appointmentIdInput">
-    <input type="hidden" name="serviceId" id="serviceIdInput">
-    <input type="hidden" name="testName" id="testNameInput">
-    <input type="hidden" name="status" value="pending">
-  </form>
+  <div class="patient-card">
+    <div class="patient-avatar">
+      {{patient.patientName.[0]}}
+    </div>
+    <div class="patient-info">
+      <h3>{{patient.patientName}}</h3>
+      <div class="patient-details">
+        <span>{{patient.patientAge}} years old</span>
+        <span>{{patient.patientGenderFormatted}}</span>
+        <span>Code: P-{{patient.patientId}}</span>
+        {{#if patient.patientAppointmentStatus}}
+          {{#if (eq patient.patientAppointmentStatus "examining")}}
+            <span class="examining-tag">Examining</span>
+          {{else if (eq patient.patientAppointmentStatus "waiting")}}
+            <span class="waiting-tag">Waiting</span>
+          {{else if (eq patient.patientAppointmentStatus "examined")}}
+            <span class="examined-tag">Examined</span>
+          {{else}}
+            <span class="status-tag">{{patient.patientAppointmentStatus}}</span>
+          {{/if}}
+        {{else}}
+          <span class="examining-tag">Examining</span>
+        {{/if}}
+      </div>
+    </div>
+  </div>
 
-  <script>
-    // Parse the URL query parameters
-    function getQueryParams() {
-      const params = {};
-      const queryString = window.location.search.substring(1);
-      const pairs = queryString.split('&');
+  <div class="test-request-card">
+    <div class="card-header">
+      <h2>Test Request Information</h2>
+      <span class="test-code">Code: {{testRequestCode}}</span>
+    </div>
+
+    <div>
+      <h3 style="margin-bottom: 15px; font-size: 14px; font-weight: 600; color: #006eb9;">Test Selection</h3>
       
-      for (let i = 0; i < pairs.length; i++) {
-        const pair = pairs[i].split('=');
-        params[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
-      }
-      
-      return params;
+      <div class="test-categories">
+        {{#each testsByCategory}}
+          <div class="category-tab {{#if @first}}active{{/if}}" data-category="{{@key}}">{{@key}}</div>
+        {{/each}}
+      </div>
+
+      {{#each testsByCategory}}
+      <div class="test-options" id="{{@key}}-tests" style="{{#unless @first}}display: none;{{/unless}}">
+        {{#each this}}
+        <div class="test-option">
+          <input type="checkbox" id="test-{{serviceId}}" data-test-name="{{name}}" data-service-id="{{serviceId}}" class="test-checkbox">
+          <label for="test-{{serviceId}}">{{name}}</label>
+        </div>
+        {{/each}}
+      </div>
+      {{/each}}
+
+      <div class="selected-tests">
+        <div class="selected-tests-header">Selected Tests (0)</div>
+        <div id="selected-tests-container"></div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-cancel" id="cancelBtn">Cancel</button>
+      <button class="btn-submit" id="submitBtn" type="button">Submit Request</button>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden form for submitting test request -->
+<form id="testRequestForm" method="POST" action="/doctor/test-request/submit" style="display: none;">
+  <input type="hidden" name="appointmentId" id="appointmentIdInput">
+  <input type="hidden" name="patientId" id="patientIdInput" value="{{patient.patientId}}">
+  <input type="hidden" name="serviceId" id="serviceIdInput">
+  <input type="hidden" name="testName" id="testNameInput">
+  <input type="hidden" name="status" value="pending">
+</form>
+
+{{#section 'js'}}
+<script>
+  // Parse the URL query parameters
+  function getQueryParams() {
+    const params = {};
+    const queryString = window.location.search.substring(1);
+    const pairs = queryString.split('&');
+    
+    for (let i = 0; i < pairs.length; i++) {
+      const pair = pairs[i].split('=');
+      params[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
     }
     
-    // When page loads, check for patient ID in URL
-    document.addEventListener('DOMContentLoaded', function() {
-      // Get appointmentId from URL (needed for back link)
-      const params = getQueryParams();
-      const appointmentId = params.appointmentId || '';
-      
-      // Set the appointment ID in the hidden form
-      document.getElementById('appointmentIdInput').value = appointmentId;
-      
-      // Update back link to include appointment ID
-      const backLink = document.querySelector('.back-link');
-      if (backLink && appointmentId) {
+    return params;
+  }
+  
+  // When page loads, check for patient ID in URL
+  document.addEventListener('DOMContentLoaded', function() {
+    // Get query params from URL
+    const params = getQueryParams();
+    const appointmentId = params.appointmentId || '';
+    const patientId = params.patientId || '{{patient.patientId}}';
+    
+    // Set the appointment ID and patient ID in the hidden form
+    document.getElementById('appointmentIdInput').value = appointmentId;
+    document.getElementById('patientIdInput').value = patientId;
+    
+    // Update back link based on context
+    const backLink = document.querySelector('.back-link');
+    if (backLink) {
+      if (appointmentId) {
         backLink.href = `/doctor/examination?appointmentId=${appointmentId}`;
         backLink.textContent = 'Back to Examination';
+      } else if (patientId) {
+        backLink.href = `/doctor/patient-details?patientId=${patientId}`;
+        backLink.textContent = 'Back to Patient Details';
       }
-      
-      // Add event listener for Cancel button
-      document.getElementById('cancelBtn').addEventListener('click', function() {
-        if (appointmentId) {
-          window.location.href = `/doctor/examination?appointmentId=${appointmentId}`;
-        } else {
-          window.location.href = '/doctor/appointments';
-        }
-      });
-      
-      // Add event listener for Submit Request button
-      document.getElementById('submitBtn').addEventListener('click', function() {
-        const selectedTest = document.querySelector('.test-checkbox:checked');
-        
-        if (!selectedTest) {
-          alert('Please select a test to request.');
-          return;
-        }
-        
-        if (!appointmentId) {
-          alert('Missing appointment information. Please return to the examination page and try again.');
-          return;
-        }
-        
-        // Get the test information
-        const serviceId = selectedTest.getAttribute('data-service-id');
-        const testName = selectedTest.getAttribute('data-test-name');
-        
-        if (!serviceId) {
-          alert('Invalid test selection. Please select a different test.');
-          return;
-        }
-        
-        // Set values in the hidden form
-        document.getElementById('serviceIdInput').value = serviceId;
-        document.getElementById('testNameInput').value = testName;
-        
-        // Submit the form
-        document.getElementById('testRequestForm').submit();
+    }
+    
+    // Add event listener for Cancel button
+    document.getElementById('cancelBtn').addEventListener('click', function() {
+      if (appointmentId) {
+        window.location.href = `/doctor/examination?appointmentId=${appointmentId}`;
+      } else if (patientId) {
+        window.location.href = `/doctor/patient-details?patientId=${patientId}`;
+      } else {
+        window.location.href = '/doctor/patients';
+      }
     });
     
+    // Add event listener for Submit Request button
+    document.getElementById('submitBtn').addEventListener('click', function() {
+      const selectedTest = document.querySelector('.test-checkbox:checked');
+      
+      if (!selectedTest) {
+        alert('Please select a test to request.');
+        return;
+      }
+      
+      // We don't require appointmentId anymore since we have patientId as fallback
+      // Get the test information
+      const serviceId = selectedTest.getAttribute('data-service-id');
+      const testName = selectedTest.getAttribute('data-test-name');
+      
+      if (!serviceId) {
+        alert('Invalid test selection. Please select a different test.');
+        return;
+      }
+      
+      // Set values in the hidden form
+      document.getElementById('serviceIdInput').value = serviceId;
+      document.getElementById('testNameInput').value = testName;
+      
+      // Submit the form
+      document.getElementById('testRequestForm').submit();
+    });
+  
     // Add event listeners for tab switching
     const categoryTabs = document.querySelectorAll('.category-tab');
     categoryTabs.forEach(tab => {
       tab.addEventListener('click', function() {
-          // Get the category
-          const category = this.getAttribute('data-category');
-          
+        // Get the category
+        const category = this.getAttribute('data-category');
+        
         // Remove active class from all tabs
         categoryTabs.forEach(t => t.classList.remove('active'));
-          
+        
         // Add active class to clicked tab
         this.classList.add('active');
-          
-          // Hide all test option sections
-          document.querySelectorAll('.test-options').forEach(section => {
-            section.style.display = 'none';
-          });
-          
-          // Show the selected category's tests
-          document.getElementById(`${category}-tests`).style.display = 'grid';
+        
+        // Hide all test option sections
+        document.querySelectorAll('.test-options').forEach(section => {
+          section.style.display = 'none';
         });
-      });
-      
-      // Single selection behavior for checkboxes (similar to radio buttons)
-      const allCheckboxes = document.querySelectorAll('.test-checkbox');
-      allCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-          if (this.checked) {
-            // Uncheck all other checkboxes
-            allCheckboxes.forEach(cb => {
-              if (cb !== this) {
-                cb.checked = false;
-              }
-            });
-            
-            // Add the selected test
-            const testId = this.id;
-            const testName = this.getAttribute('data-test-name');
-            updateSelectedTest(testId, testName);
-          } else {
-            // Clear the selected test if unchecked
-            clearSelectedTests();
-          }
-        });
+        
+        // Show the selected category's tests
+        document.getElementById(`${category}-tests`).style.display = 'grid';
       });
     });
     
-    // Function to update the selected test (only one at a time)
-    function updateSelectedTest(testId, testName) {
-      const selectedTestsContainer = document.getElementById('selected-tests-container');
-      
-      // Clear current selection
-      selectedTestsContainer.innerHTML = '';
-      
-      // Create new test item
-      const testItem = document.createElement('div');
-      testItem.className = 'selected-test-item';
-      testItem.id = `selected-${testId}`;
-      
-      testItem.innerHTML = `
-        <span>${testName}</span>
-        <button class="remove-test" data-test-id="${testId}">✕</button>
-      `;
-      
-      // Add event listener to the remove button
-      testItem.querySelector('.remove-test').addEventListener('click', function() {
-        const testIdToRemove = this.getAttribute('data-test-id');
-        
-        // Uncheck the corresponding checkbox
-        const checkbox = document.getElementById(testIdToRemove);
-        if (checkbox) {
-          checkbox.checked = false;
+    // Single selection behavior for checkboxes (similar to radio buttons)
+    const allCheckboxes = document.querySelectorAll('.test-checkbox');
+    allCheckboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', function() {
+        if (this.checked) {
+          // Uncheck all other checkboxes
+          allCheckboxes.forEach(cb => {
+            if (cb !== this) {
+              cb.checked = false;
+            }
+          });
+          
+          // Add the selected test
+          const testId = this.id;
+          const testName = this.getAttribute('data-test-name');
+          updateSelectedTest(testId, testName);
+        } else {
+          // Clear the selected test if unchecked
+          clearSelectedTests();
         }
-        
-        // Clear the selected tests
-        clearSelectedTests();
       });
-      
-      // Add the test item to the container
-      selectedTestsContainer.appendChild(testItem);
-      
-      // Update counter
-      document.querySelector('.selected-tests-header').textContent = 'Selected Tests (1)';
-    }
+    });
+  });
+  
+  // Function to update the selected test (only one at a time)
+  function updateSelectedTest(testId, testName) {
+    const selectedTestsContainer = document.getElementById('selected-tests-container');
     
-    // Function to clear all selected tests
-    function clearSelectedTests() {
-      document.getElementById('selected-tests-container').innerHTML = '';
-      document.querySelector('.selected-tests-header').textContent = 'Selected Tests (0)';
-    }
-  </script>
-</body>
-</html>
+    // Clear current selection
+    selectedTestsContainer.innerHTML = '';
+    
+    // Create new test item
+    const testItem = document.createElement('div');
+    testItem.className = 'selected-test-item';
+    testItem.id = `selected-${testId}`;
+    
+    testItem.innerHTML = `
+      <span>${testName}</span>
+      <button class="remove-test" data-test-id="${testId}">✕</button>
+    `;
+    
+    // Add event listener to the remove button
+    testItem.querySelector('.remove-test').addEventListener('click', function() {
+      const testIdToRemove = this.getAttribute('data-test-id');
+      
+      // Uncheck the corresponding checkbox
+      const checkbox = document.getElementById(testIdToRemove);
+      if (checkbox) {
+        checkbox.checked = false;
+      }
+      
+      // Clear the selected tests
+      clearSelectedTests();
+    });
+    
+    // Add the test item to the container
+    selectedTestsContainer.appendChild(testItem);
+    
+    // Update counter
+    document.querySelector('.selected-tests-header').textContent = 'Selected Tests (1)';
+  }
+  
+  // Function to clear all selected tests
+  function clearSelectedTests() {
+    document.getElementById('selected-tests-container').innerHTML = '';
+    document.querySelector('.selected-tests-header').textContent = 'Selected Tests (0)';
+  }
+</script>
+{{/section}}
