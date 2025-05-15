@@ -305,5 +305,45 @@ export default {
       console.error('Error inserting test notifications:', error);
       return false;
     }
+  },
+  
+  /**
+   * Send a general notification to any user
+   * @param {number} userId - User ID to send notification to
+   * @param {string} title - Notification title
+   * @param {string} content - Notification content
+   * @returns {Promise<Object>} Result with success status and notificationId if successful
+   */
+  async sendNotification(userId, title, content) {
+    try {
+      if (!userId) {
+        console.error('Error: Cannot send notification without userId');
+        return { success: false, error: 'Missing userId' };
+      }
+
+      const notification = {
+        userId,
+        title,
+        content,
+        isRead: false,
+        createdDate: new Date()
+      };
+      
+      const [notificationId] = await db('Notification').insert(notification);
+      console.log(`Notification sent to user (userId: ${userId})`);
+      
+      return { 
+        success: true, 
+        notificationId, 
+        message: 'Notification sent successfully' 
+      };
+    } catch (error) {
+      console.error(`Error sending notification: ${error.message}`);
+      return { 
+        success: false, 
+        error: error.message,
+        message: 'Failed to send notification'
+      };
+    }
   }
 }; 
