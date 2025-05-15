@@ -94,23 +94,42 @@ export default {
             const startDate = new Date();
             startDate.setMonth(startDate.getMonth() - months);
 
-            const appointments = await db('Appointment')
-                .where('appointmentDate', '>=', startDate.toISOString().split('T')[0])
-                .select(
-                    db.raw('DATE_FORMAT(appointmentDate, "%Y-%m") as month'),
-                    db.raw('COUNT(CASE WHEN status = "completed" THEN 1 END) as completed'),
-                    db.raw('COUNT(CASE WHEN status = "cancelled" THEN 1 END) as cancelled')
-                )
-                .groupBy('month')
-                .orderBy('month');
+            // Use a single raw query to avoid alias issues
+            const result = await db.raw(`
+                SELECT 
+                    DATE_FORMAT(appointmentDate, '%Y-%m') as month,
+                    COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed,
+                    COUNT(CASE WHEN status = 'cancelled' THEN 1 END) as cancelled
+                FROM Appointment
+                WHERE appointmentDate >= ?
+                GROUP BY DATE_FORMAT(appointmentDate, '%Y-%m')
+                ORDER BY month
+            `, [startDate.toISOString().split('T')[0]]);
+            
+            // Extract rows from the raw query result (first element of the result array)
+            const appointments = result[0];
+            
+            // Add some debug logging
+            console.log('Appointment chart data query result:', result);
+            console.log('Appointments array:', appointments);
+            
+            // If we don't have any data, return empty chart data
+            if (!appointments || appointments.length === 0) {
+                return {
+                    labels: [],
+                    completed: [],
+                    cancelled: []
+                };
+            }
 
             // Format data for chart
             const labels = appointments.map(a => {
+                if (!a.month) return '';
                 const [year, month] = a.month.split('-');
                 return new Date(year, month - 1).toLocaleString('default', { month: 'short' });
             });
-            const completed = appointments.map(a => a.completed);
-            const cancelled = appointments.map(a => a.cancelled);
+            const completed = appointments.map(a => a.completed || 0);
+            const cancelled = appointments.map(a => a.cancelled || 0);
 
             return {
                 labels,
@@ -119,6 +138,7 @@ export default {
             };
         } catch (error) {
             console.error('Error fetching appointment chart data:', error);
+            console.error('Error details:', error.stack);
             throw new Error('Unable to load appointment chart data');
         }
     },
@@ -147,29 +167,38 @@ export default {
 
     async getActiveDoctors() {
         try {
-            const doctors = await db('Doctor')
-                .join('User', 'Doctor.userId', '=', 'User.userId')
-                .join('Specialty', 'Doctor.specialtyId', '=', 'Specialty.specialtyId')
-                .leftJoin('Appointment', function() {
-                    this.on('Doctor.doctorId', '=', 'Appointment.doctorId')
-                        .andOn('Appointment.appointmentDate', '>=', db.raw('DATE_FORMAT(NOW(), "%Y-%m-01")'))
-                        .andOn('Appointment.status', '=', db.raw('"completed"'));
-                })
-                .select(
-                    'Doctor.doctorId',
-                    'User.fullName',
-                    'Specialty.name as specialtyName',
-                    db.raw('COUNT(DISTINCT Appointment.appointmentId) as appointmentCount'),
-                )
-                .where('User.accountStatus', '=', 'active')
-                .groupBy('Doctor.doctorId', 'User.fullName', 'Specialty.name')
-                .orderBy('appointmentCount', 'desc')
-                .limit(5);
-
+            // Use raw SQL query to avoid quoting issues
+            const result = await db.raw(`
+                SELECT 
+                    Doctor.doctorId,
+                    User.fullName,
+                    Specialty.name as specialtyName,
+                    COUNT(DISTINCT Appointment.appointmentId) as appointmentCount
+                FROM 
+                    Doctor
+                INNER JOIN 
+                    User ON Doctor.userId = User.userId
+                INNER JOIN 
+                    Specialty ON Doctor.specialtyId = Specialty.specialtyId
+                LEFT JOIN 
+                    Appointment ON Doctor.doctorId = Appointment.doctorId
+                    AND Appointment.appointmentDate >= DATE_FORMAT(NOW(), '%Y-%m-01')
+                    AND Appointment.status = 'completed'
+                WHERE 
+                    User.accountStatus = 'active'
+                GROUP BY 
+                    Doctor.doctorId, User.fullName, Specialty.name
+                ORDER BY 
+                    appointmentCount DESC
+                LIMIT 5
+            `);
+            
+            const doctors = result[0];
             console.log('Active Doctors Data:', doctors);
             return doctors;
         } catch (error) {
             console.error('Error fetching active doctors:', error);
+            console.error('Error details:', error.stack);
             throw new Error('Unable to load active doctors data');
         }
     },
@@ -180,7 +209,7 @@ export default {
                 .join('Service', 'AppointmentServices.serviceId', '=', 'Service.serviceId')
                 .join('Specialty', 'Service.specialtyId', '=', 'Specialty.specialtyId')
                 .join('Appointment', 'AppointmentServices.appointmentId', '=', 'Appointment.appointmentId')
-                .where('Appointment.appointmentDate', '>=', db.raw('DATE_FORMAT(NOW(), "%Y-%m-01")'))
+                .where('Appointment.appointmentDate', '>=', db.raw("DATE_FORMAT(NOW(), '%Y-%m-01')"))
                 .where('Appointment.status', '=', 'completed')
                 .select(
                     'Service.name as serviceName',

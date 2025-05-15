@@ -108,8 +108,11 @@ export default {
                 category: service.category || null,
                 specialtyId: service.specialtyId ? parseInt(service.specialtyId, 10) : null,
                 status: service.status || 'active', // Default status
-                image: specialty.image || '/public/images/services/default-service.jpg'
+                image: service.image || '/public/images/services/default-service.jpg'
             };
+
+            // Add debug logging
+            console.log('Inserting service data into database:', serviceData);
 
             // Basic validation
             if (isNaN(serviceData.price) || serviceData.price < 0) {
@@ -172,10 +175,18 @@ export default {
                  }
                  serviceData.status = service.status;
             }
+            
+            // Handle image path
+            if (service.hasOwnProperty('image')) {
+                console.log('Updating image path:', service.image);
+                serviceData.image = service.image;
+            }
 
             if (Object.keys(serviceData).length === 0) {
                  return true; // Nothing to update
             }
+            
+            console.log('Updating service data in database:', serviceData);
 
             const result = await db('Service')
                 .where('serviceId', serviceId)
