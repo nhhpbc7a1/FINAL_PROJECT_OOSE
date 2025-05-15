@@ -1,21 +1,22 @@
 {{#section 'css'}}
 <link rel="stylesheet" href="/public/css/doctor-side/schedule.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 {{/section}}
 
 {{#section 'title'}}Doctor Schedule{{/section}}
 
 <div class="card">
   <div class="section-header">
-    <h2>My Schedules</h2>
+    <h2><i class="ti ti-calendar"></i> My Schedules</h2>
     <div class="date-selector">
       <input type="date" id="schedule-date" value="{{selectedDate}}">
-      <button id="view-date">View</button>
+      <button id="view-date"><i class="ti ti-search"></i> View</button>
     </div>
   </div>
   
   <div class="view-switcher">
-    <div class="view-option" data-view="calendar">Calendar View</div>
-    <div class="view-option active" data-view="list">List View</div>
+    <div class="view-option" data-view="calendar"><i class="ti ti-calendar"></i> Calendar View</div>
+    <div class="view-option active" data-view="list"><i class="ti ti-list"></i> List View</div>
   </div>
   
   <!-- Calendar View -->
@@ -40,7 +41,7 @@
             <span class="schedule-status {{status}}">{{status}}</span>
           </div>
           <div class="actions">
-            <a href="/doctor/appointments" class="view-btn">View Appointments</a>
+            <a href="/doctor/appointments" class="view-btn"><i class="ti ti-eye"></i> View Appointments</a>
           </div>
         </div>
       {{/each}}
@@ -54,6 +55,44 @@
       </div>
     {{/if}}
   </div>
+
+  <!-- Schedule Summary -->
+  {{#if summary}}
+  <div class="schedule-summary">
+    <div class="summary-header">
+      <h3>Monthly Summary</h3>
+    </div>
+    <div class="summary-cards">
+      <div class="summary-card total">
+        <div class="summary-icon">
+          <i class="ti ti-calendar-stats"></i>
+        </div>
+        <div class="summary-content">
+          <span class="summary-value">{{summary.total}}</span>
+          <span class="summary-label">Total Schedules</span>
+        </div>
+      </div>
+      <div class="summary-card available">
+        <div class="summary-icon">
+          <i class="ti ti-check"></i>
+        </div>
+        <div class="summary-content">
+          <span class="summary-value">{{summary.available}}</span>
+          <span class="summary-label">Available</span>
+        </div>
+      </div>
+      <div class="summary-card fullfilled">
+        <div class="summary-icon">
+          <i class="ti ti-users"></i>
+        </div>
+        <div class="summary-content">
+          <span class="summary-value">{{summary.fullfilled}}</span>
+          <span class="summary-label">Fulfilled</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  {{/if}}
 </div>
 
 {{#section 'js'}}
@@ -75,7 +114,7 @@
         let scheduleEvents = {{{scheduleEvents}}};
         console.log('Schedule events:', scheduleEvents);
         
-        // Initialize calendar
+        // Initialize calendar with modern settings
         calendar = new FullCalendar.Calendar(calendarEl, {
           initialView: 'timeGridWeek',
           headerToolbar: {
@@ -88,6 +127,14 @@
           allDaySlot: false,
           slotMinTime: '07:00:00',
           slotMaxTime: '20:00:00',
+          nowIndicator: true,
+          navLinks: true,
+          dayMaxEvents: true,
+          businessHours: {
+            daysOfWeek: [1, 2, 3, 4, 5, 6, 0], // Monday - Sunday
+            startTime: '07:00',
+            endTime: '20:00',
+          },
           eventTimeFormat: {
             hour: '2-digit',
             minute: '2-digit',
@@ -105,6 +152,18 @@
           },
           eventClassNames: function(arg) {
             return [`event-${arg.event.extendedProps.status || 'default'}`];
+          },
+          eventContent: function(arg) {
+            return {
+              html: `
+                <div class="fc-event-main-frame">
+                  <div class="fc-event-title-container">
+                    <div class="fc-event-title">${arg.event.title}</div>
+                    <div class="fc-event-time">${arg.timeText}</div>
+                  </div>
+                </div>
+              `
+            };
           }
         });
         
@@ -165,6 +224,13 @@
       if (selectedDate) {
         window.location.href = `/doctor/schedule?date=${selectedDate}`;
       }
+    });
+    
+    // Add animation to schedule items
+    const scheduleItems = document.querySelectorAll('.schedule-item');
+    scheduleItems.forEach((item, index) => {
+      item.style.animationDelay = `${index * 0.05}s`;
+      item.classList.add('fade-in');
     });
   });
 </script>

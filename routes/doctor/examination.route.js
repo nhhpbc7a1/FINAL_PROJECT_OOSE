@@ -3,6 +3,7 @@ import moment from 'moment';
 import appointmentService from '../../services/doctor-side-service/appointment.service.js';
 import patientDetailsService from '../../services/doctor-side-service/patientDetails.service.js';
 import doctorMedicalRecordService from '../../services/doctor-side-service/medical-record.service.js';
+import doctorNotificationService from '../../services/doctor-side-service/doctorNotification.service.js';
 
 const router = express.Router();
 
@@ -126,17 +127,18 @@ router.post('/submit', async function (req, res) {
     try {
       const patientData = await patientDetailsService.getPatientBasicInfo(appointmentDetails.patientId);
       if (patientData && patientData.userId) {
-        // Import the notification utility
-        const notificationUtils = (await import('../../ultis/notification.utils.js')).default;
-        
-        // Send notification
-        await notificationUtils.sendNotification(
+        // Use doctorNotification service to send notification
+        const notificationResult = await doctorNotificationService.sendNotification(
           patientData.userId,
           'Medical examination completed',
           `Your examination on ${moment(appointmentDetails.appointmentDate).format('MMMM D, YYYY')} has been completed. Please check your medical records.`
         );
         
-        console.log(`Notification sent to patient (userId: ${patientData.userId})`);
+        if (notificationResult.success) {
+          console.log(`Notification sent to patient (userId: ${patientData.userId})`);
+        } else {
+          console.log(`Failed to send notification: ${notificationResult.message}`);
+        }
       }
     } catch (notificationError) {
       console.error('Error sending notification:', notificationError);

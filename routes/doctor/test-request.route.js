@@ -3,6 +3,7 @@ import moment from 'moment';
 import appointmentService from '../../services/doctor-side-service/appointment.service.js';
 import patientDetailsService from '../../services/doctor-side-service/patientDetails.service.js';
 import testRequestService from '../../services/doctor-side-service/test-request.service.js';
+import doctorNotificationService from '../../services/doctor-side-service/doctorNotification.service.js';
 
 const router = express.Router();
 
@@ -146,7 +147,7 @@ router.post('/submit', async function(req, res) {
         appointmentId: `virtual-${Date.now()}`, // Virtual ID that won't be stored
         patientId: patientId,
         patientName: patient.fullName,
-        doctorId: req.session.authUser?.doctorId || 2, // Use logged in doctor or default
+        doctorId: req.session.authUser?.doctorId, // Use logged in doctor
         doctorName: req.session.authUser?.fullName || 'Doctor'
       };
       
@@ -167,8 +168,13 @@ router.post('/submit', async function(req, res) {
       return res.status(404).send('Appointment not found and could not create virtual appointment');
     }
     
-    // Get the doctorId from the session or the appointment
-    const doctorId = req.session.authUser?.doctorId || appointment.doctorId;
+    // Get the doctorId from the session
+    const doctorId = req.session.authUser?.doctorId;
+    
+    // Check if doctor is logged in
+    if (!doctorId) {
+      return res.status(401).send('You must be logged in as a doctor to create test requests');
+    }
     
     // Create the test request object
     const testRequest = {
@@ -185,14 +191,11 @@ router.post('/submit', async function(req, res) {
     
     // Send notifications
     try {
-      // Import the notification utility
-      const notificationUtils = (await import('../../ultis/notification.utils.js')).default;
-      
       // 1. Send notification to the patient
       if (appointment.patientId) {
         const patientData = await patientDetailsService.getPatientBasicInfo(appointment.patientId);
         if (patientData && patientData.userId) {
-          await notificationUtils.sendNotification(
+          await doctorNotificationService.sendNotification(
             patientData.userId,
             'New lab test requested',
             `Your doctor has requested a ${testName} test. The lab team will process your request shortly.`
@@ -203,7 +206,7 @@ router.post('/submit', async function(req, res) {
       // 2. Send notification to lab technicians
       // For simplicity, we're sending to userId 6 which corresponds to a lab technician
       // In a real application, you would query for all lab technicians or specific ones based on the test type
-      await notificationUtils.sendNotification(
+      await doctorNotificationService.sendNotification(
         6, // Lab technician userId
         'New test request received',
         `Dr. ${appointment.doctorName} has requested a ${testName} test for patient ${appointment.patientName}.`

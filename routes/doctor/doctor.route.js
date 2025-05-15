@@ -16,7 +16,7 @@ const router = express.Router();
 router.use(async (req, res, next) => {
   try {
     // Get the userId from session or use default for testing
-    const userId = req.session.authUser?.userId || 4; // assuming userId for doctorId 2 is 4
+    const userId = req.session.authUser?.userId || ""; 
     
     // Get unread count
     const unreadCount = await notificationService.countUnreadByUser(userId);

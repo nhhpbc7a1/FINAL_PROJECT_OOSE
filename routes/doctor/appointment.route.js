@@ -16,7 +16,7 @@ router.use((req, res, next) => {
 router.get('/', async function (req, res) {
   try {
     // Get the doctorId from the session or use a default for testing
-    const doctorId = req.session.authUser?.doctorId || 2;
+    const doctorId = req.session.authUser?.doctorId || "";
     
     // Debug incoming date parameter
     const rawDate = req.query.date;
