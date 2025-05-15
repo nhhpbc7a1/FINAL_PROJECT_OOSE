@@ -14,8 +14,14 @@ router.use((req, res, next) => {
 
 router.get('/', async function (req, res) {
   try {
-    // Get the doctorId and userId from the session or use defaults for testing
-    const userId = req.session.authUser?.userId || 6;
+    // Get the userId from the session
+    const userId = req.session.authUser?.userId;
+    
+    // Check if user is logged in
+    if (!userId) {
+      return res.redirect('/account/login'); // Redirect to login page if not logged in
+    }
+    
     console.log(userId);
     
     // Fetch notifications for this user
@@ -58,7 +64,14 @@ router.post('/mark-read/:id', async function (req, res) {
 
 router.post('/mark-all-read', async function (req, res) {
   try {
-    const userId = req.session.authUser?.userId || 6;
+    // Get the userId from the session
+    const userId = req.session.authUser?.userId;
+    
+    // Check if user is logged in
+    if (!userId) {
+      return res.redirect('/account/login'); // Redirect to login page if not logged in
+    }
+    
     await doctorNotificationService.markAllAsRead(userId);
     res.redirect('/doctor/messages');
   } catch (error) {

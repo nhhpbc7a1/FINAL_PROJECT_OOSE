@@ -112,7 +112,13 @@ router.get('/medicine', async function (req, res) {
     }
     
     // Get the doctor's information from the session
-    const doctorId = req.session.authUser?.doctorId || 1; // Fallback to ID 1 for testing
+    const doctorId = req.session.authUser?.doctorId;
+    
+    // If not authenticated, redirect to login
+    if (!doctorId) {
+      return res.redirect('/account/login');
+    }
+    
     const doctorProfile = await dashboardService.getDoctorProfile(doctorId);
     
     // Pass data to the template
@@ -298,6 +304,24 @@ router.get('/api/medications', async function (req, res) {
   } catch (error) {
     console.error('Error fetching medications:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch medications' });
+  }
+});
+
+router.post('/:prescriptionId/update-status', async function(req, res) {
+  try {
+    const prescriptionId = req.params.prescriptionId;
+    const { status } = req.body;
+    
+    // Check if the doctor is authenticated
+    const doctorId = req.session.authUser?.doctorId;
+    
+    // If not authenticated, redirect to login
+    if (!doctorId) {
+      return res.redirect('/account/login');
+    }
+  } catch (error) {
+    console.error('Error updating prescription status:', error);
+    res.status(500).json({ error: 'Failed to update prescription status' });
   }
 });
 

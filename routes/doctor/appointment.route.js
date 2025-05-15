@@ -15,8 +15,13 @@ router.use((req, res, next) => {
 
 router.get('/', async function (req, res) {
   try {
-    // Get the doctorId from the session or use a default for testing
-    const doctorId = req.session.authUser?.doctorId || "";
+    // Get the doctorId from the session
+    const doctorId = req.session.authUser?.doctorId;
+    
+    // Check if doctor is logged in
+    if (!doctorId) {
+      return res.redirect('/account/login'); // Redirect to login page if not logged in
+    }
     
     // Debug incoming date parameter
     const rawDate = req.query.date;

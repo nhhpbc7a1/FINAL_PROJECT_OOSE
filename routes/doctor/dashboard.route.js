@@ -12,8 +12,13 @@ router.use((req, res, next) => {
 
 router.get('/', async function (req, res) {
   try {
-    // In production, you would get the doctorId from the session
-    const doctorId = req.session.authUser?.doctorId || 2; // Fallback to ID 1 for testing
+    // Get the doctorId from the session
+    const doctorId = req.session.authUser?.doctorId;
+    
+    // Check if doctor is logged in
+    if (!doctorId) {
+      return res.redirect('/account/login'); // Redirect to login page if not logged in
+    }
     
     // Fetch dashboard data and doctor profile
     const [dashboardData, doctorProfile] = await Promise.all([

@@ -19,9 +19,14 @@ router.get('/', async function (req, res) {
       delete req.session.flashMessage;
     }
 
-    // Get the doctorId from the session or use a default for testing
-    const doctorId = req.session.authUser?.doctorId || 2; // Fallback to ID 2 for testing
+    // Get doctor ID from session
+    const doctorId = req.session.authUser?.doctorId;
     
+    // Check if doctor is logged in
+    if (!doctorId) {
+      return res.redirect('/account/login'); // Redirect to login page if not logged in
+    }
+
     // Pass doctorId to service to get only this doctor's patients
     const patients = await patientListService.findAll(doctorId);
 

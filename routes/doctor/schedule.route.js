@@ -38,9 +38,14 @@ router.use((req, res, next) => {
 
 router.get('/', async (req, res) => {
   try {
-    // Get doctor ID from session (with fallback for testing)
-    const doctorId = req.session.authUser?.doctorId || 2;
+    // Get doctor ID from session
+    const doctorId = req.session.authUser?.doctorId;
     console.log('Doctor ID from session:', doctorId);
+    
+    // Check if doctor is logged in
+    if (!doctorId) {
+      return res.redirect('/account/login'); // Redirect to login page if not logged in
+    }
     
     // Get date from query params or use current date
     const selectedDate = req.query.date || moment().format('YYYY-MM-DD');
