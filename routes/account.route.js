@@ -1,9 +1,7 @@
 import express from 'express';
-import check from '../middlewares/auth.route.js'
-import userService from '../services/user.service.js';
+import check from '../middlewares/auth.middleware.js'
+import User from '../models/User.js';
 import accountService from '../services/account.service.js';
-import bcrypt from 'bcryptjs';
-import axios from 'axios'
 import moment from 'moment';
 
 
@@ -29,7 +27,7 @@ router.get('/is-available-email', async function (req, res) {
 
 
     try {
-        const user = await userService.findByEmail(email.trim()); // Trim whitespace
+        const user = await User.findByEmail(email.trim()); // Trim whitespace
 
         if (user) {
             // Email exists in the database
@@ -61,7 +59,7 @@ router.get('/login', async function (req, res) {
 });
 
 router.post('/login', async function (req, res) {
-    const user = await userService.findByEmail(req.body.username);
+    const user = await User.findByEmail(req.body.username);
 
     if (!user) {
         return res.render('login', {
@@ -70,7 +68,7 @@ router.post('/login', async function (req, res) {
         });
     }
     
-    if (!bcrypt.compareSync(req.body.raw_password, user.password)) {
+    if (!(await user.comparePassword(req.body.raw_password))) {
         return res.render('login', {
             layout: 'patient',
             showErrors: true
@@ -118,32 +116,30 @@ router.post('/signup', async function (req, res) {
 
     try {
         const { name, email, phone, birthday, gender, address, password } = req.body;
-        // 3. Mã hóa mật khẩu
-        const hashedPassword = bcrypt.hashSync(password, 8);
-        const ymd_dob = moment(birthday, 'DD/MM/YYYY').format('YYYY-MM-DD');
-                // 4. Tạo đối tượng user
-        const user = {
+        
+        // Create a new User instance
+        const user = new User({
             fullName: name,
             email,
             phoneNumber: phone,
-            dob: ymd_dob,
+            dob: moment(birthday, 'DD/MM/YYYY').format('YYYY-MM-DD'),
             gender,
             address,
-            password: hashedPassword,
+            password, // Password will be hashed in the save() method
             roleId: 3,
-        };
-        // 5. Lưu vào CSDL
-        const new_user = await userService.add(user);
+        });
         
-        // 6. Tạo session
+        // Save the user to the database
+        await user.save();
+        
+        // Create session
         req.session.auth = true;
-        req.session.authUser = new_user;
+        req.session.authUser = user;
         req.session.authUser.roleName = "patient";
 
-
-        // 7. Chuyển hướng về trang chủ
+        // Redirect to home page
         return res.redirect('/');
-    }catch (error) {
+    } catch (error) {
         console.error('Fail to sign up:', error);
         return res.render('signup', {
             error: 'An error occurred while signing up. Please try again later.'

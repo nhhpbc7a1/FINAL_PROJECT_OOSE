@@ -2,7 +2,7 @@ import express from 'express';
 import dashboardRouter from './dashboard.route.js';
 import testRequestsRouter from './test_requests.route.js';
 import testResultsRouter from './test_results.route.js';
-import labtechService from '../../services/lab-technician.service.js';
+import LabTechnician from '../../models/LabTechnician.js';
 import testResultsService from '../../services/labtech/test_results.service.js';
 
 const router = express.Router();
@@ -12,34 +12,64 @@ router.use((req, res, next) => {
     next();
 });
 
-// Add route to check if lab technician has active schedule
-router.get('/active-schedule-status', async (req, res) => {
-    try {
-        // Get logged in lab technician
-        const userId = req.session.authUser.userId;
-        const labTechnician = await labtechService.findByUserId(userId);
-        
-        if (!labTechnician) {
-            return res.status(401).json({ hasActiveSchedule: false });
-        }
-        
-        // Check if lab technician has an active schedule
-        const hasActiveSchedule = await testResultsService.hasActiveSchedule(labTechnician.technicianId);
-        
-        return res.json({ hasActiveSchedule });
-    } catch (error) {
-        console.error('Error checking active schedule status:', error);
-        return res.status(500).json({ hasActiveSchedule: false, error: 'Failed to check active schedule status' });
-    }
-});
-
-// Use the imported routers
+// Sub-routes
 router.use('/dashboard', dashboardRouter);
 router.use('/test-requests', testRequestsRouter);
 router.use('/test-results', testResultsRouter);
 
-// Default route redirects to dashboard
-router.get('/', async function (req, res) {
+// Middleware to attach current lab technician to the request
+router.use(async (req, res, next) => {
+    try {
+        if (req.session.user && req.session.user.roleId === 4) { // Role ID 4 for lab technicians
+            const userId = req.session.user.userId;
+            const labTechnician = await LabTechnician.findByUserId(userId);
+            
+            if (labTechnician) {
+                req.labTechnician = labTechnician;
+                res.locals.labTechnician = labTechnician;
+            }
+        }
+        next();
+    } catch (error) {
+        console.error('Error loading lab technician data:', error);
+        next();
+    }
+});
+
+// GET: Lab technician profile
+router.get('/profile', async (req, res) => {
+    try {
+        if (!req.labTechnician) {
+            return res.redirect('/login');
+        }
+        
+        // Get full lab technician details
+        const technicianId = req.labTechnician.technicianId;
+        const technician = await LabTechnician.findById(technicianId);
+        
+        if (!technician) {
+            return res.status(404).render('vwLabTech/error', {
+                message: 'Lab technician profile not found'
+            });
+        }
+        
+        // Get recent test results
+        const recentResults = await testResultsService.getRecentTestResultsByTechnician(technicianId, 5);
+        
+        res.render('vwLabTech/profile', {
+            technician,
+            recentResults
+        });
+    } catch (error) {
+        console.error('Error loading lab technician profile:', error);
+        res.status(500).render('vwLabTech/error', {
+            message: 'Failed to load profile: ' + error.message
+        });
+    }
+});
+
+// Default route
+router.get('/', (req, res) => {
     res.redirect('/labtech/dashboard');
 });
 

@@ -1,5 +1,5 @@
 import express from 'express';
-import { authPatient } from '../../middlewares/auth.route.js';
+import { authPatient } from '../../middlewares/auth.middleware.js';
 const router = express.Router();
 
 router.use((req, res, next) => {

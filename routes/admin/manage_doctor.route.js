@@ -1,7 +1,7 @@
 import express from 'express';
-import doctorService from '../../services/doctor.service.js';
-import specialtyService from '../../services/specialty.service.js';
-import userService from '../../services/user.service.js';
+import Doctor from '../../models/Doctor.js';
+import Specialty from '../../models/Specialty.js';
+import User from '../../models/User.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -47,8 +47,8 @@ router.get('/', async function (req, res) {
       delete req.session.flashMessage;
     }
 
-    let doctors = await doctorService.findAll(); // Assuming this gets combined user/doctor data
-    const specialties = await specialtyService.findAll();
+    let doctors = await Doctor.findAll(); // Use Doctor model
+    const specialties = await Specialty.findAll();
 
     doctors = doctors.map(doctor => ({
       ...doctor,
@@ -72,7 +72,7 @@ router.get('/', async function (req, res) {
 router.get('/add', async function (req, res) {
   try {
     res.locals.pageTitle = 'Add New Doctor';
-    const specialties = await specialtyService.findAll();
+    const specialties = await Specialty.findAll();
     
     // Kiểm tra xem có dữ liệu form đã lưu từ lần submit trước không
     let formData = {};
@@ -148,7 +148,7 @@ router.post('/add', async function (req, res, next) {
     // 1. Create User
     // Generate a default password (you might want to implement a more secure way to handle this)
     const defaultPassword = 'password123'; // In a real app, consider generating a random password
-    const hashedPassword = await userService.hashPassword(defaultPassword);
+    const hashedPassword = await User.hashPassword(defaultPassword);
 
     const userData = {
         email,
@@ -162,7 +162,9 @@ router.post('/add', async function (req, res, next) {
         roleId: 2, // Role ID for doctor
         accountStatus: accountStatus || 'active'
     };
-    const newUser = await userService.add(userData); // Assume add returns the created user with ID
+    
+    const newUser = new User(userData);
+    await newUser.save();
 
     if (!newUser || !newUser.userId) {
         throw new Error('Không thể tạo tài khoản người dùng.');
@@ -178,7 +180,10 @@ router.post('/add', async function (req, res, next) {
         certifications,
         bio
     };
-    await doctorService.add(doctorData);
+    
+    // Create a new Doctor instance and save it
+    const doctor = new Doctor(doctorData);
+    await doctor.save();
 
     // --- Success Response ---
     req.session.flashMessage = { type: 'success', message: 'Thêm bác sĩ thành công!' };
@@ -216,8 +221,8 @@ router.get('/edit/:doctorId', async function (req, res) {
         throw new Error('Invalid Doctor ID.');
     }
 
-    // Fetch the combined doctor + user data using the doctorId
-    const doctor = await doctorService.findById(doctorId);
+    // Fetch the doctor by ID using the Doctor model
+    const doctor = await Doctor.findById(doctorId);
 
     if (!doctor) {
       req.session.flashMessage = { type: 'danger', message: 'Doctor not found.' };
@@ -232,7 +237,7 @@ router.get('/edit/:doctorId', async function (req, res) {
       return res.redirect('/admin/manage_doctor');
     }
 
-    const specialties = await specialtyService.findAll();
+    const specialties = await Specialty.findAll();
 
     // Format date for input type="date" (YYYY-MM-DD)
     let formattedDob = '';
@@ -309,7 +314,7 @@ router.post('/update/:doctorId', async function (req, res) {
   const doctorId = parseInt(req.params.doctorId, 10);
   let profileImagePath = null; // To store new image path if uploaded
   let oldImagePath = null; // To store old image path for potential deletion
-  const specialties = await specialtyService.findAll(); // Fetch upfront for error case
+  const specialties = await Specialty.findAll(); // Fetch upfront for error case
 
   if (isNaN(doctorId)) {
       req.session.flashMessage = { type: 'danger', message: 'Invalid Doctor ID.' };
@@ -325,11 +330,11 @@ router.post('/update/:doctorId', async function (req, res) {
   }
 
   try {
-    const { fullName, email, phoneNumber, address, gender, dob, specialty,
+    const { fullName, phoneNumber, address, gender, dob, specialty,
             experience, education, certifications, licenseNumber, bio, accountStatus } = req.body;
 
     // 1. Fetch current user data to get existing image path
-    const currentUser = await userService.findById(userId);
+    const currentUser = await User.findById(userId);
     if (!currentUser) {
         throw new Error('Doctor user account not found for update.');
     }
@@ -339,7 +344,7 @@ router.post('/update/:doctorId', async function (req, res) {
     if (req.files && req.files.profilePhoto) {
         const profilePhoto = req.files.profilePhoto;
         const timestamp = Date.now();
-        const safeEmailPrefix = email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '_');
+        const safeEmailPrefix = currentUser.email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '_');
         const fileExtension = path.extname(profilePhoto.name);
         const filename = `${safeEmailPrefix}_${timestamp}${fileExtension}`;
         const uploadPath = path.join(UPLOAD_DIR, filename);
@@ -382,40 +387,31 @@ router.post('/update/:doctorId', async function (req, res) {
 
     // --- Database Operations ---
     // 2. Update User Record
-    const userData = {
-        // email, // Generally avoid updating email easily, or add verification
-        fullName,
-        phoneNumber,
-        address,
-        profileImage: profileImagePath, // Use new path or preserved old path
-        gender,
-        dob: dob ? new Date(dob) : null,
-        accountStatus: accountStatus || 'active'
-        // DO NOT update password here without a specific password change mechanism
-    };
-    await userService.update(userId, userData);
+    currentUser.fullName = fullName;
+    currentUser.phoneNumber = phoneNumber;
+    currentUser.address = address;
+    currentUser.profileImage = profileImagePath;
+    currentUser.gender = gender;
+    currentUser.dob = dob ? new Date(dob) : null;
+    currentUser.accountStatus = accountStatus || 'active';
+    await currentUser.save();
 
-    // 3. Update Doctor Record
-    const doctorData = {
-        specialtyId: parseInt(specialty, 10),
-        licenseNumber,
-        experience: parseInt(experience, 10),
-        education,
-        certifications,
-        bio
-    };
-
-    try {
-        // Use the updateByUserId method we just added to the doctor service
-        const updated = await doctorService.updateByUserId(userId, doctorData);
-        if (!updated) {
-            throw new Error('Failed to update doctor-specific details.');
-        }
-    } catch (doctorUpdateError) {
-        console.error('Error updating doctor record:', doctorUpdateError);
-        throw new Error('Failed to update doctor details: ' + doctorUpdateError.message);
+    // 3. Get existing doctor and update it
+    const doctor = await Doctor.findById(doctorId);
+    if (!doctor) {
+        throw new Error('Doctor record not found.');
     }
-
+    
+    // Update doctor properties
+    doctor.specialtyId = parseInt(specialty, 10);
+    doctor.licenseNumber = licenseNumber;
+    doctor.experience = parseInt(experience, 10);
+    doctor.education = education;
+    doctor.certifications = certifications;
+    doctor.bio = bio;
+    
+    // Save the updated doctor
+    await doctor.save();
 
     // --- Success Response ---
     req.session.flashMessage = { type: 'success', message: 'Doctor updated successfully!' };
@@ -433,7 +429,7 @@ router.post('/update/:doctorId', async function (req, res) {
      let doctorForForm = null;
      try {
          // Get the doctor data directly using doctorId
-         doctorForForm = await doctorService.findById(doctorId);
+         doctorForForm = await Doctor.findById(doctorId);
 
          if (!doctorForForm) {
              // If not found, handle the error
@@ -485,77 +481,44 @@ router.delete('/delete/:doctorId', async function (req, res) {
     }
 
     // First, get the doctor to find the associated userId
-    const doctor = await doctorService.findById(doctorId);
+    const doctor = await Doctor.findById(doctorId);
 
     if (!doctor) {
       return res.status(404).json({ success: false, message: 'Doctor not found' });
     }
-
-    // Store the userId for later use
+    
     const userId = doctor.userId;
 
-    // Check if the doctor has any appointments
-    const hasAppointments = await db('Appointment')
-      .where('doctorId', doctorId)
-      .first();
-
-    if (hasAppointments) {
+    // Check if the doctor has any appointments or dependencies
+    const hasDependencies = await doctor.checkDependencies();
+    if (hasDependencies) {
       return res.status(400).json({
         success: false,
         message: 'Cannot delete doctor with existing appointments. Please reassign or cancel appointments first.'
       });
     }
 
-    // Bắt đầu transaction để đảm bảo tính nhất quán dữ liệu
-    const trx = await db.transaction();
-
-    try {
-      // 1. Xóa lịch làm việc của bác sĩ
-      await trx('Schedule')
-        .where('doctorId', doctorId)
-        .delete();
-
-      // 2. Kiểm tra xem bác sĩ có phải là trưởng khoa không
-      const isHeadDoctor = await trx('Specialty')
-        .where('headDoctorId', doctorId)
-        .first();
-
-      if (isHeadDoctor) {
-        // Cập nhật trưởng khoa thành NULL
-        await trx('Specialty')
-          .where('headDoctorId', doctorId)
-          .update({ headDoctorId: null });
+    // Update specialty if doctor is head doctor
+    const specialties = await Specialty.findAll();
+    for (const specialty of specialties) {
+      if (specialty.headDoctorId === doctorId) {
+        specialty.headDoctorId = null;
+        await specialty.save();
       }
+    }
 
-      // 3. Xóa bản ghi trong bảng Doctor
-      const deleted = await trx('Doctor')
-        .where('doctorId', doctorId)
-        .delete();
+    // Delete schedules for this doctor
+    await doctor.deleteSchedules();
 
-      if (!deleted) {
-        await trx.rollback();
-        return res.status(500).json({ success: false, message: 'Không thể xóa bác sĩ' });
-      }
+    // Delete the doctor record
+    await doctor.delete();
 
-      // 4. Cập nhật trạng thái tài khoản User thành "inactive"
-      const userUpdated = await trx('User')
-        .where('userId', userId)
-        .update({
-          accountStatus: 'inactive',
-          email: trx.raw(`CONCAT(email, '_deleted_', ?)`, [Date.now()]) // Thêm hậu tố để tránh trùng lặp email
-        });
-
-      if (!userUpdated) {
-        await trx.rollback();
-        return res.status(500).json({ success: false, message: 'Không thể cập nhật trạng thái tài khoản người dùng' });
-      }
-
-      // Commit transaction nếu tất cả thành công
-      await trx.commit();
-    } catch (error) {
-      // Rollback transaction nếu có lỗi
-      await trx.rollback();
-      throw error;
+    // Update user account status to inactive
+    const user = await User.findById(userId);
+    if (user) {
+      user.accountStatus = 'inactive';
+      user.email = `${user.email}_deleted_${Date.now()}`;
+      await user.save();
     }
 
     // Return success response
@@ -596,9 +559,8 @@ router.get('/api', async function (req, res) {
     const status = req.query.status || '';
     const search = req.query.search || '';
 
-    // Get all doctors (Consider optimizing this to fetch filtered/paginated data directly from DB)
-    let doctors = await doctorService.findAll(); // This might become inefficient with many doctors
-
+    // Get all doctors using the Doctor model
+    let doctors = await Doctor.findAll();
 
     // Apply filters if provided
     let filteredDoctors = doctors; // Start with all doctors
