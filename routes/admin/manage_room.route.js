@@ -1,6 +1,6 @@
 import express from 'express';
-import roomService from '../../services/room.service.js';
-import specialtyService from '../../services/specialty.service.js'; // Needed for dropdown
+import Room from '../../models/Room.js';
+import Specialty from '../../models/Specialty.js';
 
 const router = express.Router();
 
@@ -20,18 +20,14 @@ router.get('/', async function (req, res) {
       delete req.session.flashMessage;
     }
 
-    const searchQuery = req.query.search || '';
-    let rooms;
-    if (searchQuery) {
-        rooms = await roomService.search(searchQuery);
-    } else {
-        rooms = await roomService.findAll(true); // Include all statuses
-    }
+    // Get all rooms using the Room model
+    const rooms = await Room.findAll();
+    const specialties = await Specialty.findAll();
 
     res.render('vwAdmin/manage_room/room_list', {
       rooms,
-      totalRooms: rooms.length,
-      searchQuery
+      specialties,
+      totalRooms: rooms.length
     });
   } catch (error) {
     console.error('Error loading rooms:', error);
@@ -43,14 +39,15 @@ router.get('/', async function (req, res) {
 router.get('/add', async function (req, res) {
   try {
     res.locals.pageTitle = 'Add New Room';
-    const specialties = await specialtyService.findAll(); // For dropdown
-
+    const specialties = await Specialty.findAll();
+    
+    // Check for form data or flash message
     let formData = {};
     if (req.session.formData) {
       formData = req.session.formData;
       delete req.session.formData;
     }
-
+    
     let error = null;
     if (req.session.flashMessage && req.session.flashMessage.type === 'danger') {
       error = req.session.flashMessage.message;
@@ -59,7 +56,7 @@ router.get('/add', async function (req, res) {
 
     res.render('vwAdmin/manage_room/add_room', {
       specialties,
-      room: formData, // Repopulate form on error
+      room: formData,
       error
     });
   } catch (error) {
@@ -70,134 +67,130 @@ router.get('/add', async function (req, res) {
 });
 
 // POST: Handle adding a new room
-router.post('/add', async function (req, res, next) {
+router.post('/add', async function (req, res) {
   req.session.returnTo = '/admin/manage_room/add';
-
+  
   try {
-    const { roomNumber, specialtyId, capacity, roomType, status, description } = req.body;
+    const { roomNumber, specialtyId, floor, description, status } = req.body;
 
-    // --- Validation ---
-    if (!roomNumber || roomNumber.trim() === '') throw new Error('Please enter the room number.');
-    if (!roomType) throw new Error('Please select a room type.');
-    // Further validation happens in the service (ENUMs, capacity format)
-
-    // Check uniqueness
-    const isUnique = await roomService.isRoomNumberUnique(roomNumber.trim());
-    if (!isUnique) {
-        throw new Error(`Room number "${roomNumber.trim()}" already exists.`);
+    // Validation
+    if (!roomNumber || !specialtyId) {
+      throw new Error('Room number and specialty are required');
     }
 
-    // --- Prepare Data (Service will handle parsing/defaults) ---
-    const roomData = {
-        roomNumber: roomNumber.trim(),
-        specialtyId: specialtyId || null,
-        capacity: capacity || null,
-        roomType: roomType,
-        status: status || 'available',
-        description: description ? description.trim() : null
-    };
+    // Check if room number already exists
+    const isUnique = await Room.isRoomNumberUnique(roomNumber);
+    if (!isUnique) {
+      throw new Error(`Room ${roomNumber} already exists`);
+    }
 
-    // --- Database Operation ---
-    await roomService.add(roomData);
+    // Create a new Room instance
+    const room = new Room({
+      roomNumber,
+      specialtyId: parseInt(specialtyId, 10),
+      floor: floor || null,
+      description: description || null,
+      status: status || 'available'
+    });
 
-    // --- Success Response ---
+    // Save the room
+    await room.save();
+
+    // Success response
     req.session.flashMessage = { type: 'success', message: 'Room added successfully!' };
     res.redirect('/admin/manage_room');
 
   } catch (error) {
     console.error('Error adding room:', error);
-    req.session.formData = req.body; // Save form data
-    req.session.flashMessage = { type: 'danger', message: error.message || 'Could not add room.' };
+    req.session.formData = req.body;
+    req.session.flashMessage = { type: 'danger', message: error.message || 'Could not add room' };
     res.redirect(req.session.returnTo);
   }
 });
 
-// GET: Display form to edit an existing room
+// GET: Display form to edit a room
 router.get('/edit/:roomId', async function (req, res) {
   try {
     res.locals.pageTitle = 'Edit Room';
     const roomId = parseInt(req.params.roomId, 10);
 
-    if (isNaN(roomId)) throw new Error('Invalid Room ID.');
+    if (isNaN(roomId)) {
+      throw new Error('Invalid Room ID');
+    }
 
-    const room = await roomService.findById(roomId);
+    // Get the room using the Room model
+    const room = await Room.findById(roomId);
+
     if (!room) {
-      req.session.flashMessage = { type: 'danger', message: 'Room not found.' };
+      req.session.flashMessage = { type: 'danger', message: 'Room not found' };
       return res.redirect('/admin/manage_room');
     }
 
-    const specialties = await specialtyService.findAll(); // For dropdown
-
-    let error = null;
-    if (req.session.flashMessage && req.session.flashMessage.type === 'danger') {
-      error = req.session.flashMessage.message;
-      delete req.session.flashMessage;
-    }
+    const specialties = await Specialty.findAll();
 
     res.render('vwAdmin/manage_room/edit_room', {
-      room,
       specialties,
-      error
+      room
     });
 
   } catch (error) {
     console.error('Error loading edit room form:', error);
-    req.session.flashMessage = { type: 'danger', message: 'Could not load the edit form. ' + error.message };
+    req.session.flashMessage = { type: 'danger', message: error.message || 'Could not load the edit form' };
     res.redirect('/admin/manage_room');
   }
 });
 
-// POST: Handle updating an existing room
-router.post('/update/:roomId', async function (req, res, next) {
+// POST: Handle updating a room
+router.post('/update/:roomId', async function (req, res) {
   const roomId = parseInt(req.params.roomId, 10);
-  req.session.returnTo = `/admin/manage_room/edit/${roomId}`;
 
   if (isNaN(roomId)) {
-      req.session.flashMessage = { type: 'danger', message: 'Invalid Room ID.' };
-      return res.redirect('/admin/manage_room');
+    req.session.flashMessage = { type: 'danger', message: 'Invalid Room ID' };
+    return res.redirect('/admin/manage_room');
   }
 
   try {
-     const { roomNumber, specialtyId, capacity, roomType, status, description } = req.body;
+    const { roomNumber, specialtyId, floor, description, status } = req.body;
 
-    // --- Validation ---
-    if (!roomNumber || roomNumber.trim() === '') throw new Error('Please enter the room number.');
-    if (!roomType) throw new Error('Please select a room type.');
-    if (!status) throw new Error('Please select a status.');
-     // Further validation in service (ENUMs, capacity format)
-
-
-    // Check uniqueness (excluding current ID)
-    const isUnique = await roomService.isRoomNumberUnique(roomNumber.trim(), roomId);
-    if (!isUnique) {
-        throw new Error(`Room number "${roomNumber.trim()}" already exists.`);
+    // Validation
+    if (!roomNumber || !specialtyId) {
+      throw new Error('Room number and specialty are required');
     }
 
-    // --- Prepare Data ---
-    const roomData = {
-        roomNumber: roomNumber.trim(),
-        specialtyId: specialtyId || null, // Send null if empty string
-        capacity: capacity || null,
-        roomType: roomType,
-        status: status,
-        description: description ? description.trim() : null
-    };
+    // Get the room from the database
+    const room = await Room.findById(roomId);
+    if (!room) {
+      throw new Error('Room not found');
+    }
 
-    // --- Database Operation ---
-    const updated = await roomService.update(roomId, roomData);
+    // Check if room number is being changed and if it would conflict with an existing room
+    if (room.roomNumber !== roomNumber) {
+      const isUnique = await Room.isRoomNumberUnique(roomNumber, roomId);
+      if (!isUnique) {
+        throw new Error(`Room ${roomNumber} already exists`);
+      }
+    }
 
-    // --- Success Response ---
+    // Update room properties
+    room.roomNumber = roomNumber;
+    room.specialtyId = parseInt(specialtyId, 10);
+    room.floor = floor || null;
+    room.description = description || null;
+    room.status = status || 'available';
+
+    // Save the updated room
+    await room.save();
+
+    // Success response
     req.session.flashMessage = { type: 'success', message: 'Room updated successfully!' };
     res.redirect('/admin/manage_room');
 
   } catch (error) {
-    console.error(`Error updating room ID ${roomId}:`, error);
-    req.session.formData = req.body; // Save potentially incorrect data
-    req.session.flashMessage = { type: 'danger', message: error.message || 'Could not update room.' };
-    res.redirect(req.session.returnTo); // Redirect back to edit form
+    console.error(`Error updating room (roomId: ${roomId}):`, error);
+    req.session.flashMessage = { type: 'danger', message: error.message || 'Failed to update room' };
+    res.redirect(`/admin/manage_room/edit/${roomId}`);
   }
 });
-
 
 // DELETE: Handle room deletion
 router.delete('/delete/:roomId', async function (req, res) {
@@ -208,56 +201,58 @@ router.delete('/delete/:roomId', async function (req, res) {
       return res.status(400).json({ success: false, message: 'Invalid Room ID' });
     }
 
-    // *** CRUCIAL: Dependency Check ***
-    const hasDependencies = await roomService.checkDependencies(roomId);
-
-    if (hasDependencies) {
-        return res.status(400).json({
-            success: false,
-            message: 'Cannot delete room. It is currently associated with schedules, appointments, or test results. Please clear these associations first.'
-        });
+    // Get the room first to check if it exists
+    const room = await Room.findById(roomId);
+    if (!room) {
+      return res.status(404).json({ success: false, message: 'Room not found' });
     }
 
-    // If checks pass, proceed with deletion
-    const deleted = await roomService.delete(roomId);
+    // Check if the room is in use in any appointments
+    const isInUse = await Room.checkDependencies(roomId);
+    if (isInUse) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Cannot delete room because it is in use in appointments or schedules'
+      });
+    }
+
+    // Delete the room
+    const deleted = await room.delete();
 
     if (!deleted) {
-        return res.status(404).json({ success: false, message: 'Room not found or already deleted.' });
+      return res.status(500).json({ success: false, message: 'Failed to delete room' });
     }
 
-    // Return success response
     return res.json({
       success: true,
-      message: 'Room deleted successfully',
-      roomId: roomId
+      message: 'Room deleted successfully'
     });
 
   } catch (error) {
     console.error(`Error deleting room:`, error);
     return res.status(500).json({
       success: false,
-      message: error.message || 'An error occurred while deleting the room.'
+      message: error.message || 'An error occurred while deleting the room'
     });
   }
 });
 
-// API endpoint for AJAX room number uniqueness check
-router.get('/api/check-number', async (req, res) => {
-     const roomNumber = req.query.roomNumber;
-     const excludeId = req.query.excludeId ? parseInt(req.query.excludeId, 10) : null;
+// API: Check if room number is unique
+router.get('/check-room-number', async function (req, res) {
+  const roomNumber = req.query.roomNumber;
+  const excludeId = req.query.excludeId ? parseInt(req.query.excludeId, 10) : null;
 
-     if (!roomNumber) {
-         return res.status(400).json({ isUnique: false, message: 'Room Number parameter is required.' });
-     }
+  if (!roomNumber) {
+    return res.status(400).json({ error: 'Room number parameter is required' });
+  }
 
-     try {
-         const isUnique = await roomService.isRoomNumberUnique(roomNumber, excludeId);
-         res.json({ isUnique });
-     } catch (error) {
-         console.error("API Check Room Number Error:", error);
-         res.status(500).json({ isUnique: false, message: 'Server error checking room number.' });
-     }
- });
-
+  try {
+    const isUnique = await Room.isRoomNumberUnique(roomNumber, excludeId);
+    res.json({ isUnique });
+  } catch (error) {
+    console.error('Error checking room number uniqueness:', error);
+    res.status(500).json({ error: 'Failed to check room number uniqueness' });
+  }
+});
 
 export default router;

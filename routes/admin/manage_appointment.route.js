@@ -1,5 +1,5 @@
 import express from 'express';
-import appointmentService from '../../services/doctor-side-service/appointment.service.js';
+import Appointment from '../../models/Appointment.js';
 
 const router = express.Router();
 
@@ -17,7 +17,7 @@ router.get('/', async function (req, res) {
     const statusFilter = req.query.status || '';
     
     // Get all appointments
-    let appointments = await appointmentService.findAll();
+    let appointments = await Appointment.findAll();
     
     // Apply status filter if provided
     if (statusFilter) {
@@ -45,7 +45,7 @@ router.get('/', async function (req, res) {
     }));
 
     // Get status counts for filters
-    const statusCounts = await appointmentService.countByStatus();
+    const statusCounts = await Appointment.countByStatus();
 
     res.render('vwAdmin/manage_appointment/appointment_list', {
       appointments,
@@ -74,7 +74,7 @@ router.get('/view/:appointmentId', async function (req, res) {
         }
 
         // Get appointment with services
-        const appointment = await appointmentService.getAppointmentWithServices(appointmentId);
+        const appointment = await Appointment.getWithServices(appointmentId);
 
         if (!appointment) {
             return res.redirect('/admin/manage_appointment');

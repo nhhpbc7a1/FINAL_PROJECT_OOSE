@@ -1,5 +1,5 @@
 import express from 'express';
-import medicationService from '../../services/medication.service.js';
+import Medication from '../../models/Medication.js';
 
 const router = express.Router();
 
@@ -23,11 +23,10 @@ router.get('/', async function (req, res) {
     const searchQuery = req.query.search || '';
     let medications;
     if (searchQuery) {
-        medications = await medicationService.search(searchQuery);
+        medications = await Medication.search(searchQuery);
     } else {
-        medications = await medicationService.findAll();
+        medications = await Medication.findAll();
     }
-
 
     res.render('vwAdmin/manage_medication/medication_list', {
       medications,
@@ -89,13 +88,13 @@ router.post('/add', async function (req, res, next) {
      }
 
     // Check uniqueness
-    const isUnique = await medicationService.isNameUnique(name.trim());
+    const isUnique = await Medication.isNameUnique(name.trim());
     if (!isUnique) {
         throw new Error(`Medication name "${name.trim()}" already exists.`);
     }
 
-    // --- Prepare Data ---
-    const medicationData = {
+    // --- Prepare Data and Save ---
+    const medication = new Medication({
         name: name.trim(),
         description: description ? description.trim() : null,
         dosage: dosage ? dosage.trim() : null,
@@ -103,10 +102,9 @@ router.post('/add', async function (req, res, next) {
         category: category ? category.trim() : null,
         manufacturer: manufacturer ? manufacturer.trim() : null,
         sideEffects: sideEffects ? sideEffects.trim() : null
-    };
+    });
 
-    // --- Database Operation ---
-    await medicationService.add(medicationData);
+    await medication.save();
 
     // --- Success Response ---
     req.session.flashMessage = { type: 'success', message: 'Medication added successfully!' };
@@ -130,7 +128,7 @@ router.get('/edit/:medicationId', async function (req, res) {
         throw new Error('Invalid Medication ID.');
     }
 
-    const medication = await medicationService.findById(medicationId);
+    const medication = await Medication.findById(medicationId);
 
     if (!medication) {
       req.session.flashMessage = { type: 'danger', message: 'Medication not found.' };
@@ -180,27 +178,29 @@ router.post('/update/:medicationId', async function (req, res, next) {
           throw new Error('Price must be a non-negative number.');
      }
 
-
     // Check uniqueness (excluding current ID)
-    const isUnique = await medicationService.isNameUnique(name.trim(), medicationId);
+    const isUnique = await Medication.isNameUnique(name.trim(), medicationId);
     if (!isUnique) {
         throw new Error(`Medication name "${name.trim()}" already exists.`);
     }
 
-    // --- Prepare Data ---
-    // Service handles which fields to update based on input object properties
-    const medicationData = {
-        name: name.trim(),
-        description: description ? description.trim() : null,
-        dosage: dosage ? dosage.trim() : null,
-        price: numericPrice,
-        category: category ? category.trim() : null,
-        manufacturer: manufacturer ? manufacturer.trim() : null,
-        sideEffects: sideEffects ? sideEffects.trim() : null
-    };
+    // --- Get existing medication and update it ---
+    const medication = await Medication.findById(medicationId);
+    if (!medication) {
+        throw new Error('Medication not found.');
+    }
 
-    // --- Database Operation ---
-    const updated = await medicationService.update(medicationId, medicationData);
+    // Update medication properties
+    medication.name = name.trim();
+    medication.description = description ? description.trim() : null;
+    medication.dosage = dosage ? dosage.trim() : null;
+    medication.price = numericPrice;
+    medication.category = category ? category.trim() : null;
+    medication.manufacturer = manufacturer ? manufacturer.trim() : null;
+    medication.sideEffects = sideEffects ? sideEffects.trim() : null;
+
+    // Save the updated medication
+    await medication.save();
 
     // --- Success Response ---
     req.session.flashMessage = { type: 'success', message: 'Medication updated successfully!' };
@@ -214,7 +214,6 @@ router.post('/update/:medicationId', async function (req, res, next) {
   }
 });
 
-
 // DELETE: Handle medication deletion
 router.delete('/delete/:medicationId', async function (req, res) {
   try {
@@ -225,7 +224,12 @@ router.delete('/delete/:medicationId', async function (req, res) {
     }
 
     // *** CRUCIAL: Dependency Check ***
-    const hasDependencies = await medicationService.checkDependencies(medicationId);
+    const medication = await Medication.findById(medicationId);
+    if (!medication) {
+        return res.status(404).json({ success: false, message: 'Medication not found or already deleted.' });
+    }
+    
+    const hasDependencies = await medication.checkDependencies();
 
     if (hasDependencies) {
         return res.status(400).json({
@@ -235,7 +239,7 @@ router.delete('/delete/:medicationId', async function (req, res) {
     }
 
     // If checks pass, proceed with deletion
-    const deleted = await medicationService.delete(medicationId);
+    const deleted = await medication.delete();
 
     if (!deleted) {
         // This might mean the medication was already deleted
@@ -268,13 +272,12 @@ router.get('/api/check-name', async (req, res) => {
      }
 
      try {
-         const isUnique = await medicationService.isNameUnique(name, excludeId);
+         const isUnique = await Medication.isNameUnique(name, excludeId);
          res.json({ isUnique });
      } catch (error) {
          console.error("API Check Medication Name Error:", error);
          res.status(500).json({ isUnique: false, message: 'Server error checking name.' });
      }
  });
-
 
 export default router;

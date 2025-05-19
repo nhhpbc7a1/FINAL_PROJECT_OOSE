@@ -9,7 +9,7 @@ import moment from 'moment';
 import session from 'express-session';
 import hbs from 'express-handlebars';
 import handlebars from 'handlebars';
-import { authAdmin, authDoctor, authLabtech, redirectStaffFromPatientViews} from './middlewares/auth.route.js';
+import { authAdmin, authDoctor, authLabtech, redirectStaffFromPatientViews} from './middlewares/auth.middleware.js';
 
 import { formatDate, formatDay, times, arrayFind, removeFilterUrl, eq, lte, subtract, or } from './views/helpers/hbs_helpers.js';
 import homepageService from './services/patient/homepage.service.js';

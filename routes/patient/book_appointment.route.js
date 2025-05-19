@@ -1,9 +1,10 @@
 import express from 'express';
 import bookAppointmentService from '../../services/patient/book_appointment.service.js';
 import { isValidEmail, isValidPhoneNumber, calculateTotalAmount } from '../../ultis/helpers.js';
-import specialtyService from '../../services/specialty.service.js';
-import doctorService from '../../services/doctor.service.js';
-import serviceService from '../../services/service.service.js';
+import Specialty from '../../models/Specialty.js';
+import Doctor from '../../models/Doctor.js';
+import Service from '../../models/Service.js';
+import Appointment from '../../models/Appointment.js';
 
 const router = express.Router();
 
@@ -55,12 +56,12 @@ router.get('/input-form', async function (req, res) {
         // Get all active specialties
         let specialties = [];
         try {
-            specialties = await specialtyService.getAllActive();
+            specialties = await Specialty.getAllActive();
         } catch (error) {
             console.error('Error loading specialties:', error);
             // Fall back to getting all specialties if getAllActive fails
             try {
-                specialties = await specialtyService.findAll();
+                specialties = await Specialty.findAll();
             } catch (fallbackErr) {
                 console.error('Error loading all specialties:', fallbackErr);
                 // Continue with empty specialties array
@@ -75,7 +76,7 @@ router.get('/input-form', async function (req, res) {
         if (selectedSpecialtyId) {
             // Get doctors for selected specialty
             try {
-                doctors = await doctorService.findBySpecialty(selectedSpecialtyId);
+                doctors = await Doctor.findBySpecialty(selectedSpecialtyId);
             } catch (error) {
                 console.error('Error loading doctors:', error);
                 // Continue with empty doctors array
@@ -83,12 +84,12 @@ router.get('/input-form', async function (req, res) {
             
             // Get services for selected specialty
             try {
-                services = await serviceService.findBySpecialty(selectedSpecialtyId);
+                services = await Service.findBySpecialty(selectedSpecialtyId);
             } catch (error) {
                 console.error('Error loading specialty services:', error);
                 // Fall back to loading all services
                 try {
-                    services = await serviceService.getAllActive();
+                    services = await Service.getAllActive();
                 } catch (fallbackErr) {
                     console.error('Error loading all services:', fallbackErr);
                     // Continue with empty services array
@@ -398,11 +399,11 @@ router.get('/get-services', async function (req, res) {
         // Get services for selected specialty
         let services = [];
         try {
-            services = await serviceService.findBySpecialty(specialtyId);
+            services = await Service.findBySpecialty(specialtyId);
             
             // If no specialty-specific services found, get all active services
             if (!services || services.length === 0) {
-                services = await serviceService.getAllActive();
+                services = await Service.getAllActive();
             }
             
             // Filter services by type if needed

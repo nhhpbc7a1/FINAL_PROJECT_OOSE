@@ -1,11 +1,11 @@
 import express from 'express';
 import moment from 'moment';
 import db from '../../ultis/db.js';
-import scheduleService from '../../services/schedule.service.js';
-import doctorService from '../../services/doctor.service.js';
-import specialtyService from '../../services/specialty.service.js';
-import roomService from '../../services/room.service.js';
-import labtechService from '../../services/lab-technician.service.js';
+import Room from '../../models/Room.js';
+import Doctor from '../../models/Doctor.js';
+import Specialty from '../../models/Specialty.js';
+import Schedule from '../../models/Schedule.js';
+import LabTechnician from '../../models/LabTechnician.js';
 
 const router = express.Router();
 
@@ -41,11 +41,13 @@ router.get('/', async function (req, res) {
         });
         
         // Get all specialties for filter dropdown
-        const specialties = await specialtyService.findAll();
+        const specialties = await Specialty.findAll();
         
         // Get all schedules for the selected date range (unfiltered)
-        let schedules = await scheduleService.findByDateRange(startDate, endDate);
+        let schedules = await Schedule.findByDateRange(startDate, endDate);
+            
         console.log(`Total schedules: ${schedules.length}`);
+        
         console.log('Schedule types:', schedules.map(s => s.staffType).filter((v, i, a) => a.indexOf(v) === i));
         
         // Debug: log some sample schedules to see their structure
@@ -98,29 +100,29 @@ router.get('/', async function (req, res) {
         // Get doctors (filtered by specialty if selected)
         let doctors = [];
         if (specialtyId) {
-            doctors = await doctorService.findBySpecialty(specialtyId);
+            doctors = await Doctor.findBySpecialty(specialtyId);
             console.log(`Doctors for specialty ${specialtyId}: ${doctors.length}`);
         } else {
-            doctors = await doctorService.findAll();
+            doctors = await Doctor.findAll();
             console.log(`All doctors: ${doctors.length}`);
         }
         
         // Get lab technicians (filtered by specialty if selected)
         let labTechnicians = [];
         if (specialtyId) {
-            labTechnicians = await labtechService.findBySpecialty(specialtyId);
+            labTechnicians = await LabTechnician.findBySpecialty(specialtyId);
             console.log(`Lab techs for specialty ${specialtyId}: ${labTechnicians.length}`);
         } else {
-            labTechnicians = await labtechService.findAll();
+            labTechnicians = await LabTechnician.findAll();
             console.log(`All lab techs: ${labTechnicians.length}`);
         }
         
         // Get rooms (filtered by specialty if selected)
         let rooms = [];
         if (specialtyId) {
-            rooms = await roomService.findBySpecialty(specialtyId);
+            rooms = await Room.findBySpecialty(specialtyId);
         } else {
-            rooms = await roomService.findAll();
+            rooms = await Room.findAll();
         }
         
         // Generate calendar days
@@ -159,8 +161,8 @@ router.get('/', async function (req, res) {
 // GET: Form to add a new schedule
 router.get('/add', async function (req, res) {
     try {
-        const specialties = await specialtyService.findAll();
-        const rooms = await roomService.findAll();
+        const specialties = await Specialty.findAll();
+        const rooms = await Room.findAll();
         
         res.render('vwAdmin/schedule/add', {
             specialties,
@@ -226,8 +228,8 @@ router.post('/add', async function (req, res) {
             console.log("Validation failed:", { staffId, startDate, schedulePattern, workingDays });
             
             // Re-render form with error
-            const specialties = await specialtyService.findAll();
-            const rooms = await roomService.findAll();
+            const specialties = await Specialty.findAll();
+            const rooms = await Room.findAll();
             
             return res.render('vwAdmin/schedule/add', {
                 specialties,
@@ -262,6 +264,7 @@ router.post('/add', async function (req, res) {
             // Create a single schedule entry
             const scheduleData = {
                 doctorId: isDoctor ? staffId : null,
+                labTechnicianId: (!isDoctor && hasLabTechnicianId) ? staffId : null,
                 workDate: startDate,
                 startTime,
                 endTime,
@@ -269,14 +272,10 @@ router.post('/add', async function (req, res) {
                 status: status || 'available'
             };
             
-            // Add labTechnicianId only if the column exists
-            if (hasLabTechnicianId && !isDoctor) {
-                scheduleData.labTechnicianId = staffId;
-            }
-            
             console.log("Creating single schedule:", scheduleData);
-            const result = await scheduleService.add(scheduleData);
-            console.log("Single schedule created:", result);
+            const schedule = new Schedule(scheduleData);
+            await schedule.save();
+            console.log("Single schedule created with ID:", schedule.scheduleId);
         } else {
             // For recurring schedules
             // Generate dates between start and end dates
@@ -305,8 +304,8 @@ router.post('/add', async function (req, res) {
             
             if (dates.length === 0) {
                 return res.render('vwAdmin/schedule/add', {
-                    specialties: await specialtyService.findAll(),
-                    rooms: await roomService.findAll(),
+                    specialties: await Specialty.findAll(),
+                    rooms: await Room.findAll(),
                     error: 'No valid dates were generated with the selected working days',
                     formData: req.body
                 });
@@ -314,27 +313,81 @@ router.post('/add', async function (req, res) {
             
             // Create schedule entries for all dates
             const schedules = dates.map(date => {
-                const scheduleData = {
+                // Ensure the date is properly formatted for MySQL (YYYY-MM-DD)
+                const formattedDate = moment(date).format('YYYY-MM-DD');
+                return {
                     doctorId: isDoctor ? staffId : null,
-                    workDate: date,
+                    labTechnicianId: (!isDoctor && hasLabTechnicianId) ? staffId : null,
+                    workDate: formattedDate,
                     startTime,
                     endTime,
                     roomId: roomId || null,
                     status: status || 'available'
                 };
-                
-                // Add labTechnicianId only if the column exists
-                if (hasLabTechnicianId && !isDoctor) {
-                    scheduleData.labTechnicianId = staffId;
-                }
-                
-                return scheduleData;
             });
             
             if (schedules.length > 0) {
                 console.log(`Adding ${schedules.length} schedules.`);
-                const result = await scheduleService.bulkAdd(schedules);
-                console.log("Bulk schedules created:", result);
+                try {
+                    // Log each schedule being added for debugging
+                    schedules.forEach((schedule, index) => {
+                        console.log(`Schedule ${index + 1}:`, schedule);
+                    });
+                    
+                    // Check for potential duplicate schedules in the database
+                    const duplicateCheckPromises = schedules.map(async schedule => {
+                        let duplicateCheckQuery = db('Schedule').where('workDate', schedule.workDate);
+                        
+                        if (schedule.doctorId) {
+                            duplicateCheckQuery = duplicateCheckQuery.where('doctorId', schedule.doctorId)
+                                .where('startTime', schedule.startTime);
+                        } else if (schedule.labTechnicianId) {
+                            duplicateCheckQuery = duplicateCheckQuery.where('labTechnicianId', schedule.labTechnicianId)
+                                .where('startTime', schedule.startTime);
+                        }
+                        
+                        if (schedule.roomId) {
+                            duplicateCheckQuery = duplicateCheckQuery.where('roomId', schedule.roomId)
+                                .where('startTime', schedule.startTime);
+                        }
+                        
+                        const duplicates = await duplicateCheckQuery.select('scheduleId');
+                        return duplicates.length > 0 ? { 
+                            isDuplicate: true, 
+                            schedule, 
+                            existingId: duplicates[0]?.scheduleId
+                        } : { 
+                            isDuplicate: false, 
+                            schedule 
+                        };
+                    });
+                    
+                    const duplicateCheckResults = await Promise.all(duplicateCheckPromises);
+                    const duplicates = duplicateCheckResults.filter(result => result.isDuplicate);
+                    
+                    if (duplicates.length > 0) {
+                        console.warn(`Found ${duplicates.length} potentially duplicate schedules:`, duplicates);
+                        // Filter out duplicates
+                        const uniqueSchedules = schedules.filter((schedule, index) => 
+                            !duplicateCheckResults[index].isDuplicate
+                        );
+                        
+                        if (uniqueSchedules.length === 0) {
+                            throw new Error('All scheduled entries would be duplicates. No schedules were added.');
+                        }
+                        
+                        console.log(`Proceeding with ${uniqueSchedules.length} unique schedules after filtering out duplicates.`);
+                        await Schedule.bulkAdd(uniqueSchedules);
+                    } else {
+                        // No duplicates found, proceed with all schedules
+                        await Schedule.bulkAdd(schedules);
+                    }
+                    
+                    console.log("Bulk schedules created");
+                } catch (error) {
+                    console.error("Error adding schedules in bulk:", error);
+                    throw new Error('Failed to add schedules in bulk: ' + error.message);
+                }
             } else {
                 console.warn("No schedules were created!");
             }
@@ -349,8 +402,8 @@ router.post('/add', async function (req, res) {
     } catch (error) {
         console.error('Error adding schedule:', error);
         // Re-render form with error
-        const specialties = await specialtyService.findAll();
-        const rooms = await roomService.findAll();
+        const specialties = await Specialty.findAll();
+        const rooms = await Room.findAll();
         
         res.render('vwAdmin/schedule/add', {
             specialties,
@@ -370,12 +423,17 @@ router.post('/delete/:scheduleId', async function (req, res) {
             return res.status(400).json({ success: false, message: 'Invalid schedule ID' });
         }
         
-        const success = await scheduleService.delete(scheduleId);
+        const schedule = await Schedule.findById(scheduleId);
+        if (!schedule) {
+            return res.status(404).json({ success: false, message: 'Schedule not found' });
+        }
+        
+        const success = await schedule.delete();
         
         if (success) {
             return res.json({ success: true, message: 'Schedule deleted successfully' });
         } else {
-            return res.status(404).json({ success: false, message: 'Schedule not found' });
+            return res.status(500).json({ success: false, message: 'Failed to delete schedule' });
         }
     } catch (error) {
         console.error(`Error deleting schedule ${req.params.scheduleId}:`, error);
@@ -393,13 +451,14 @@ router.post('/update-status/:scheduleId', async function (req, res) {
             return res.status(400).json({ success: false, message: 'Invalid schedule ID or status' });
         }
         
-        const success = await scheduleService.updateStatus(scheduleId, status);
-        
-        if (success) {
-            return res.json({ success: true, message: 'Schedule status updated successfully' });
-        } else {
+        const schedule = await Schedule.findById(scheduleId);
+        if (!schedule) {
             return res.status(404).json({ success: false, message: 'Schedule not found' });
         }
+        
+        await schedule.updateStatus(status);
+        
+        return res.json({ success: true, message: 'Schedule status updated successfully' });
     } catch (error) {
         console.error(`Error updating schedule status ${req.params.scheduleId}:`, error);
         return res.status(500).json({ success: false, message: 'Failed to update schedule status' });
@@ -415,7 +474,7 @@ router.get('/detail/:scheduleId', async function (req, res) {
             return res.status(400).json({ success: false, message: 'Invalid schedule ID' });
         }
         
-        const schedule = await scheduleService.findById(scheduleId);
+        const schedule = await Schedule.findById(scheduleId);
         
         if (!schedule) {
             return res.status(404).json({ success: false, message: 'Schedule not found' });
@@ -437,7 +496,7 @@ router.get('/api/doctors-by-specialty/:specialtyId', async function (req, res) {
             return res.status(400).json({ success: false, message: 'Invalid specialty ID' });
         }
         
-        const doctors = await doctorService.findBySpecialty(specialtyId);
+        const doctors = await Doctor.findBySpecialty(specialtyId);
         
         return res.json({ success: true, doctors });
     } catch (error) {
@@ -455,7 +514,7 @@ router.get('/api/labtechs-by-specialty/:specialtyId', async function (req, res) 
             return res.status(400).json({ success: false, message: 'Invalid specialty ID' });
         }
         
-        const labTechnicians = await labtechService.findBySpecialty(specialtyId);
+        const labTechnicians = await LabTechnician.findBySpecialty(specialtyId);
         
         return res.json({ success: true, labTechnicians });
     } catch (error) {
@@ -473,7 +532,7 @@ router.get('/api/rooms-by-specialty/:specialtyId', async function (req, res) {
             return res.status(400).json({ success: false, message: 'Invalid specialty ID' });
         }
         
-        const rooms = await roomService.findBySpecialty(specialtyId);
+        const rooms = await Room.findBySpecialty(specialtyId);
         console.log(`Fetched ${rooms.length} rooms for specialty ID ${specialtyId}`);
         
         return res.json({ success: true, rooms });
@@ -577,13 +636,13 @@ router.get('/create-test-schedules', async function (req, res) {
     try {
         const startDate = moment().startOf('week').format('YYYY-MM-DD');
         const endDate = moment().add(14, 'days').format('YYYY-MM-DD');
-        const doctors = await doctorService.findAll();
+        const doctors = await Doctor.findAll();
         
         if (doctors.length === 0) {
             return res.json({ success: false, message: 'No doctors found to create schedules' });
         }
         
-        const rooms = await roomService.findAll();
+        const rooms = await Room.findAll();
         if (rooms.length === 0) {
             return res.json({ success: false, message: 'No rooms found to create schedules' });
         }
@@ -701,7 +760,7 @@ router.get('/create-test-schedules', async function (req, res) {
         console.log(`Created ${schedules.length} doctor schedules`);
         
         if (schedules.length > 0) {
-            await scheduleService.bulkAdd(schedules);
+            await Schedule.bulkAdd(schedules);
             return res.json({ 
                 success: true, 
                 message: `Successfully created ${schedules.length} test doctor schedules`, 

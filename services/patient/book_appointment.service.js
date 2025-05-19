@@ -26,15 +26,15 @@ const bookAppointmentService = {
             }
 
             // Tính toán thời gian dự kiến: startTime + (queueNumber - 1) * 20 phút
-            const startTime = new Date(`${appointmentDate}T${doctorSchedule.startTime}`);
+            const appointmentTimeBase = new Date(`${appointmentDate}T${doctorSchedule.startTime}`);
             const estimatedMinutes = (queueNumber - 1) * 20; // Mỗi bệnh nhân mất 20 phút
             
-            startTime.setMinutes(startTime.getMinutes() + estimatedMinutes);
+            appointmentTimeBase.setMinutes(appointmentTimeBase.getMinutes() + estimatedMinutes);
             
             // Format thời gian để lưu vào database
-            const hours = startTime.getHours().toString().padStart(2, '0');
-            const minutes = startTime.getMinutes().toString().padStart(2, '0');
-            const seconds = startTime.getSeconds().toString().padStart(2, '0');
+            const hours = appointmentTimeBase.getHours().toString().padStart(2, '0');
+            const minutes = appointmentTimeBase.getMinutes().toString().padStart(2, '0');
+            const seconds = appointmentTimeBase.getSeconds().toString().padStart(2, '0');
             
             return `${hours}:${minutes}:${seconds}`;
         } catch (error) {
@@ -251,7 +251,7 @@ const bookAppointmentService = {
                     patientId: patientId,
                     specialtyId: appointmentData.specialtyId,
                     appointmentDate: formattedAppointmentDate,
-                    appointmentTime: formattedAppointmentDate, // Using same date for time as per schema requirement
+                    appointmentTime: estimatedTime,
                     reason: appointmentData.symptom,
                     doctorId: doctorId,
                     status: 'pending',

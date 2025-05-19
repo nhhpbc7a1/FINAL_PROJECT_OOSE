@@ -1,5 +1,5 @@
 import express from 'express';
-import dashboardService from '../../services/admin/dashboard.service.js';
+import AdminDashboard from '../../models/AdminDashboard.js';
 
 const router = express.Router();
 
@@ -24,29 +24,24 @@ router.get('/dashboard', async function (req, res) {
         // Set current route as dashboard
         res.locals.currentRoute = 'dashboard';
         
-        // Get dashboard statistics
-        const stats = await dashboardService.getDashboardStats();
-        //console.log('Dashboard stats:', stats);
+        // Get dashboard statistics using the AdminDashboard model
+        const dashboardModel = await AdminDashboard.getDashboardStats();
         
         // Get appointment chart data
-        const appointmentData = await dashboardService.getAppointmentChartData();
-        //console.log('Appointment chart data:', appointmentData);
+        const appointmentData = await AdminDashboard.getAppointmentChartData();
         
         // Get specialty distribution data
-        const specialtyData = await dashboardService.getSpecialtyDistribution();
-        //console.log('Specialty distribution data:', specialtyData);
+        const specialtyData = await AdminDashboard.getSpecialtyDistribution();
 
         // Get active doctors data
-        const activeDoctors = await dashboardService.getActiveDoctors();
-        //console.log('Active doctors data:', activeDoctors);
+        const activeDoctors = await AdminDashboard.getActiveDoctors();
 
         // Get popular services data
-        const popularServices = await dashboardService.getPopularServices();
-        //console.log('Popular services data:', popularServices);
+        const popularServices = await AdminDashboard.getPopularServices();
         
-        // Log the data being passed to the template
+        // Prepare data for template
         const templateData = {
-            ...stats,
+            ...dashboardModel, // spread all properties from the dashboard model
             appointmentLabels: appointmentData.labels,
             completedAppointments: appointmentData.completed,
             cancelledAppointments: appointmentData.cancelled,
@@ -55,7 +50,6 @@ router.get('/dashboard', async function (req, res) {
             activeDoctors,
             popularServices
         };
-        //console.log('Data being passed to template:', templateData);
         
         // Render the dashboard page with data
         res.render('vwAdmin/dashboard', templateData);
@@ -73,7 +67,7 @@ router.get('/dashboard', async function (req, res) {
 router.get('/dashboard/appointments', async function (req, res) {
     try {
         const months = parseInt(req.query.months) || 6;
-        const data = await dashboardService.getAppointmentChartData(months);
+        const data = await AdminDashboard.getAppointmentChartData(months);
         res.json(data);
     } catch (error) {
         console.error('Error fetching appointment chart data:', error);

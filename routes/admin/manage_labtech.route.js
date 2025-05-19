@@ -1,7 +1,7 @@
 import express from 'express';
-import labTechnicianService from '../../services/lab-technician.service.js'; // <--- Changed service
-import specialtyService from '../../services/specialty.service.js';
-import userService from '../../services/user.service.js';
+import LabTechnician from '../../models/LabTechnician.js';
+import Specialty from '../../models/Specialty.js';
+import User from '../../models/User.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -48,32 +48,31 @@ router.get('/', async function (req, res) {
       delete req.session.flashMessage;
     }
 
-    let labTechnicians = await labTechnicianService.findAll(); // <--- Changed service call
+    let labTechnicians = await LabTechnician.findAll();
+    const specialties = await Specialty.findAll();
 
-    const specialties = await specialtyService.findAll();
-
-    labTechnicians = labTechnicians.map(tech => ({ // <--- Changed variable name
+    labTechnicians = labTechnicians.map(tech => ({
       ...tech,
       initials: tech.fullName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase(),
       profilePictureUrl: tech.profileImage || '/public/images/default-avatar.png'
     }));
 
-    res.render('vwAdmin/manage_labtech/labtech_list', { // <--- Changed view path
-      labTechnicians, // <--- Changed variable name
+    res.render('vwAdmin/manage_labtech/labtech_list', {
+      labTechnicians,
       specialties,
-      totalLabTechnicians: labTechnicians.length // <--- Changed variable name
+      totalLabTechnicians: labTechnicians.length
     });
   } catch (error) {
-    console.error('Error loading lab technicians:', error); // <--- Changed error message
-    res.render('vwAdmin/manage_labtech/labtech_list', { error: 'Failed to load lab technicians' }); // <--- Changed view path and message
+    console.error('Error loading lab technicians:', error);
+    res.render('vwAdmin/manage_labtech/labtech_list', { error: 'Failed to load lab technicians' });
   }
 });
 
 // GET: Display form to add a new lab technician
 router.get('/add', async function (req, res) {
   try {
-    res.locals.pageTitle = 'Add New Lab Technician'; // <--- Changed title
-    const specialties = await specialtyService.findAll();
+    res.locals.pageTitle = 'Add New Lab Technician';
+    const specialties = await Specialty.findAll();
 
     let formData = {};
     if (req.session.formData) {
@@ -87,15 +86,15 @@ router.get('/add', async function (req, res) {
       delete req.session.flashMessage;
     }
 
-    res.render('vwAdmin/manage_labtech/add_labtech', { // <--- Changed view path
+    res.render('vwAdmin/manage_labtech/add_labtech', {
       specialties,
-      labTechnician: formData, // <--- Changed variable name (used in form)
+      labTechnician: formData,
       error
     });
   } catch (error) {
-    console.error('Error loading add technician form:', error); // <--- Changed error message
-    req.session.flashMessage = { type: 'danger', message: 'Không thể tải form thêm kỹ thuật viên.' }; // <--- Changed message
-    res.redirect('/admin/manage_labtech'); // <--- Changed redirect path
+    console.error('Error loading add technician form:', error);
+    req.session.flashMessage = { type: 'danger', message: 'Không thể tải form thêm kỹ thuật viên.' };
+    res.redirect('/admin/manage_labtech');
   }
 });
 
@@ -103,13 +102,13 @@ router.get('/add', async function (req, res) {
 router.post('/add', async function (req, res, next) {
   let profileImagePath = null;
 
-  req.session.returnTo = '/admin/manage_labtech/add'; // <--- Changed return path
+  req.session.returnTo = '/admin/manage_labtech/add';
 
   try {
     // Destructure fields relevant to User and LabTechnician
-    const { fullName, email, phoneNumber, address, gender, dob, specialtyId, // Note: name changed from specialty to specialtyId based on add form
-            specialization, // Technician specific field
-            password, confirmPassword, // Assuming password fields are used
+    const { fullName, email, phoneNumber, address, gender, dob, specialtyId,
+            specialization,
+            password, confirmPassword,
             accountStatus } = req.body;
 
     // --- Basic Validation ---
@@ -121,7 +120,6 @@ router.post('/add', async function (req, res, next) {
     }
 
     // --- File Upload Handling ---
-    // Check using the name from the add_labtech.hbs form: 'profileImage'
     if (req.files && req.files.profileImage) {
       const profilePhoto = req.files.profileImage;
 
@@ -145,7 +143,7 @@ router.post('/add', async function (req, res, next) {
 
     // --- Database Operations ---
     // 1. Create User
-    const hashedPassword = await userService.hashPassword(password);
+    const hashedPassword = await User.hashPassword(password);
 
     const userData = {
         email,
@@ -156,29 +154,33 @@ router.post('/add', async function (req, res, next) {
         profileImage: profileImagePath,
         gender,
         dob: dob ? new Date(dob) : null,
-        roleId: 4, // Role ID for Lab Technician <--- IMPORTANT CHANGE
+        roleId: 4, // Role ID for Lab Technician
         accountStatus: accountStatus || 'active' // Default to active if not provided
     };
-    const newUser = await userService.add(userData);
+    
+    const newUser = new User(userData);
+    await newUser.save();
 
     if (!newUser || !newUser.userId) {
         throw new Error('Không thể tạo tài khoản người dùng.');
     }
 
     // 2. Create LabTechnician Record
-    const labTechnicianData = { // <--- Changed variable name
+    const labTechnicianData = {
         userId: newUser.userId,
         specialtyId: parseInt(specialtyId, 10),
-        specialization: specialization || null // Technician specific field
+        specialization: specialization || null
     };
-    await labTechnicianService.add(labTechnicianData); // <--- Changed service call
+    
+    const labTechnician = new LabTechnician(labTechnicianData);
+    await labTechnician.save();
 
     // --- Success Response ---
-    req.session.flashMessage = { type: 'success', message: 'Thêm kỹ thuật viên thành công!' }; // <--- Changed message
-    res.redirect('/admin/manage_labtech'); // <--- Changed redirect path
+    req.session.flashMessage = { type: 'success', message: 'Thêm kỹ thuật viên thành công!' };
+    res.redirect('/admin/manage_labtech');
 
   } catch (error) {
-    console.error('Error adding lab technician:', error); // <--- Changed message
+    console.error('Error adding lab technician:', error);
 
     // Clean up uploaded file if DB insert fails
     if (profileImagePath) {
@@ -200,30 +202,30 @@ router.post('/add', async function (req, res, next) {
 });
 
 // GET: Display form to edit an existing lab technician
-router.get('/edit/:technicianId', async function (req, res) { // <--- Changed param name
+router.get('/edit/:technicianId', async function (req, res) {
   try {
-    res.locals.pageTitle = 'Edit Lab Technician'; // <--- Changed title
-    const technicianId = parseInt(req.params.technicianId, 10); // <--- Changed param name
+    res.locals.pageTitle = 'Edit Lab Technician';
+    const technicianId = parseInt(req.params.technicianId, 10);
 
     if (isNaN(technicianId)) {
-        throw new Error('Invalid Technician ID.'); // <--- Changed message
+        throw new Error('Invalid Technician ID.');
     }
 
     // Fetch the combined technician + user data using the technicianId
-    const labTechnician = await labTechnicianService.findById(technicianId); // <--- Changed service call and var name
+    const labTechnician = await LabTechnician.findById(technicianId);
 
     if (!labTechnician) {
-      req.session.flashMessage = { type: 'danger', message: 'Lab Technician not found.' }; // <--- Changed message
-      return res.redirect('/admin/manage_labtech'); // <--- Changed redirect path
+      req.session.flashMessage = { type: 'danger', message: 'Lab Technician not found.' };
+      return res.redirect('/admin/manage_labtech');
     }
 
     const userId = labTechnician.userId;
     if (!userId) {
-      req.session.flashMessage = { type: 'danger', message: 'User ID not found for this technician.' }; // <--- Changed message
-      return res.redirect('/admin/manage_labtech'); // <--- Changed redirect path
+      req.session.flashMessage = { type: 'danger', message: 'User ID not found for this technician.' };
+      return res.redirect('/admin/manage_labtech');
     }
 
-    const specialties = await specialtyService.findAll();
+    const specialties = await Specialty.findAll();
 
     // Format date for input type="date" (YYYY-MM-DD)
     let formattedDob = '';
@@ -241,9 +243,9 @@ router.get('/edit/:technicianId', async function (req, res) { // <--- Changed pa
         }
     }
 
-    res.render('vwAdmin/manage_labtech/edit_labtech', { // <--- Changed view path
+    res.render('vwAdmin/manage_labtech/edit_labtech', {
       specialties,
-      labTechnician: { // <--- Changed variable name
+      labTechnician: {
           ...labTechnician,
           dob: formattedDob, // Pass formatted date
           specialty: labTechnician.specialtyId, // Ensure field matches select name if needed
@@ -252,45 +254,45 @@ router.get('/edit/:technicianId', async function (req, res) { // <--- Changed pa
     });
 
   } catch (error) {
-    console.error('Error loading edit technician form:', error); // <--- Changed message
+    console.error('Error loading edit technician form:', error);
     req.session.flashMessage = { type: 'danger', message: 'Could not load the edit form. ' + error.message };
-    res.redirect('/admin/manage_labtech'); // <--- Changed redirect path
+    res.redirect('/admin/manage_labtech');
   }
 });
 
 // POST: Handle updating an existing lab technician
-router.post('/update/:technicianId', async function (req, res) { // <--- Changed param name
-  const technicianId = parseInt(req.params.technicianId, 10); // <--- Changed param name
+router.post('/update/:technicianId', async function (req, res) {
+  const technicianId = parseInt(req.params.technicianId, 10);
   let profileImagePath = null;
   let oldImagePath = null;
-  const specialties = await specialtyService.findAll(); // Fetch for error case
+  const specialties = await Specialty.findAll(); // Fetch for error case
 
   if (isNaN(technicianId)) {
-      req.session.flashMessage = { type: 'danger', message: 'Invalid Technician ID.' }; // <--- Changed message
-      return res.redirect('/admin/manage_labtech'); // <--- Changed redirect path
+      req.session.flashMessage = { type: 'danger', message: 'Invalid Technician ID.' };
+      return res.redirect('/admin/manage_labtech');
   }
 
   const userId = parseInt(req.body.userId, 10);
   if (isNaN(userId)) {
       req.session.flashMessage = { type: 'danger', message: 'Invalid User ID in form submission.' };
-      return res.redirect('/admin/manage_labtech'); // <--- Changed redirect path
+      return res.redirect('/admin/manage_labtech');
   }
 
   try {
     // Destructure fields relevant to User and LabTechnician
-    const { fullName, email, phoneNumber, address, gender, dob, specialtyId, // Using specialtyId based on form
-            specialization, // Technician specific
+    const { fullName, email, phoneNumber, address, gender, dob, specialtyId,
+            specialization,
             accountStatus } = req.body;
 
     // 1. Fetch current user data for old image path
-    const currentUser = await userService.findById(userId);
+    const currentUser = await User.findById(userId);
     if (!currentUser) {
-        throw new Error('Technician user account not found for update.'); // <--- Changed message
+        throw new Error('Technician user account not found for update.');
     }
     oldImagePath = currentUser.profileImage;
 
     // --- File Upload Handling (if new file provided - 'profileImage') ---
-    if (req.files && req.files.profileImage) { // <--- Check form field name
+    if (req.files && req.files.profileImage) {
         const profilePhoto = req.files.profileImage;
         const timestamp = Date.now();
         // Use current email (or potentially submitted email if allowed to change)
@@ -336,7 +338,6 @@ router.post('/update/:technicianId', async function (req, res) { // <--- Changed
     // --- Database Operations ---
     // 2. Update User Record
     const userData = {
-        // email, // Avoid updating email easily unless intended
         fullName,
         phoneNumber,
         address,
@@ -346,45 +347,51 @@ router.post('/update/:technicianId', async function (req, res) { // <--- Changed
         accountStatus: accountStatus || 'active'
         // DO NOT update roleId or password here
     };
-    await userService.update(userId, userData);
+    
+    // Get the user and update it
+    const userToUpdate = await User.findById(userId);
+    Object.assign(userToUpdate, userData);
+    await userToUpdate.save();
 
     // 3. Update LabTechnician Record
-    const labTechnicianData = { // <--- Changed variable name
+    const labTechnicianData = {
         specialtyId: parseInt(specialtyId, 10),
         specialization: specialization || null // Technician specific
     };
 
-    try {
-        // Use updateByUserId method from labTechnicianService
-        const updated = await labTechnicianService.updateByUserId(userId, labTechnicianData); // <--- Changed service call
-        if (!updated) {
-            throw new Error('Failed to update technician-specific details.'); // <--- Changed message
-        }
-    } catch (techUpdateError) {
-        console.error('Error updating technician record:', techUpdateError); // <--- Changed message
-        throw new Error('Failed to update technician details: ' + techUpdateError.message); // <--- Changed message
+    // Get the lab technician and update it
+    const labTechnician = await LabTechnician.findById(technicianId);
+    if (!labTechnician) {
+        throw new Error('Failed to find lab technician to update.');
+    }
+    
+    Object.assign(labTechnician, labTechnicianData);
+    const updated = await labTechnician.save();
+    
+    if (!updated) {
+        throw new Error('Failed to update technician-specific details.');
     }
 
     // --- Success Response ---
-    req.session.flashMessage = { type: 'success', message: 'Technician updated successfully!' }; // <--- Changed message
-    res.redirect('/admin/manage_labtech'); // <--- Changed redirect path
+    req.session.flashMessage = { type: 'success', message: 'Technician updated successfully!' };
+    res.redirect('/admin/manage_labtech');
 
   } catch (error) {
-    console.error(`Error updating technician (technicianId: ${technicianId}, userId: ${userId}):`, error); // <--- Changed message
+    console.error(`Error updating technician (technicianId: ${technicianId}, userId: ${userId}):`, error);
 
     // --- Error Response ---
     // Re-render edit form with submitted data and error message
      let technicianForForm = null;
      try {
-         technicianForForm = await labTechnicianService.findById(technicianId); // <--- Changed service call
+         technicianForForm = await LabTechnician.findById(technicianId);
          if (!technicianForForm) {
-             req.session.flashMessage = { type: 'danger', message: 'Technician not found after update attempt.' }; // <--- Changed message
-             return res.redirect('/admin/manage_labtech'); // <--- Changed redirect path
+             req.session.flashMessage = { type: 'danger', message: 'Technician not found after update attempt.' };
+             return res.redirect('/admin/manage_labtech');
          }
      } catch(fetchErr) {
-         console.error('Error fetching technician data after update attempt:', fetchErr); // <--- Changed message
-         req.session.flashMessage = { type: 'danger', message: 'Error updating technician and reloading data.' }; // <--- Changed message
-         return res.redirect('/admin/manage_labtech'); // <--- Changed redirect path
+         console.error('Error fetching technician data after update attempt:', fetchErr);
+         req.session.flashMessage = { type: 'danger', message: 'Error updating technician and reloading data.' };
+         return res.redirect('/admin/manage_labtech');
      }
 
      let formattedDob = '';
@@ -395,10 +402,10 @@ router.post('/update/:technicianId', async function (req, res) { // <--- Changed
          } catch (e) { /* ignore */ }
      }
 
-    res.locals.pageTitle = 'Edit Lab Technician'; // <--- Changed title
-    res.render('vwAdmin/manage_labtech/edit_labtech', { // <--- Changed view path
+    res.locals.pageTitle = 'Edit Lab Technician';
+    res.render('vwAdmin/manage_labtech/edit_labtech', {
       specialties,
-      labTechnician: { // <--- Changed variable name
+      labTechnician: {
           ...technicianForForm, // Base fetched data
           ...req.body,         // Override with submitted values
           technicianId: technicianId, // Ensure ID is present
@@ -406,106 +413,76 @@ router.post('/update/:technicianId', async function (req, res) { // <--- Changed
           dob: req.body.dob || formattedDob,
           profilePictureUrl: profileImagePath || oldImagePath || '/public/images/default-avatar.png'
       },
-      error: 'Failed to update technician. ' + error.message // <--- Changed message
+      error: 'Failed to update technician. ' + error.message
     });
   }
 });
 
-
 // DELETE: Handle lab technician deletion
-router.delete('/delete/:technicianId', async function (req, res) { // <--- Changed param name
+router.delete('/delete/:technicianId', async function (req, res) {
   try {
-    const technicianId = parseInt(req.params.technicianId, 10); // <--- Changed param name
+    const technicianId = parseInt(req.params.technicianId, 10);
 
     if (isNaN(technicianId)) {
-      return res.status(400).json({ success: false, message: 'Invalid Technician ID' }); // <--- Changed message
+      return res.status(400).json({ success: false, message: 'Invalid Technician ID' });
     }
 
     // Get the technician to find the associated userId
-    const labTechnician = await labTechnicianService.findById(technicianId); // <--- Changed service call and var name
+    const labTechnician = await LabTechnician.findById(technicianId);
 
     if (!labTechnician) {
-      return res.status(404).json({ success: false, message: 'Lab Technician not found' }); // <--- Changed message
+      return res.status(404).json({ success: false, message: 'Lab Technician not found' });
     }
 
     const userId = labTechnician.userId;
 
-    // Check if the technician has any related TestResults
-    const hasTestResults = await db('TestResult') // <--- Check different dependency
-      .where('technicianId', technicianId)
-      .first();
+    // Check if the technician has dependencies
+    const hasDependencies = await labTechnician.checkDependencies();
 
-    if (hasTestResults) {
+    if (hasDependencies) {
       return res.status(400).json({
         success: false,
-        message: 'Cannot delete technician with existing test results. Please reassign or manage results first.' // <--- Changed message
+        message: 'Cannot delete technician with existing test results. Please reassign or manage results first.'
       });
     }
 
-    // Start transaction
-    const trx = await db.transaction();
-
-    try {
-      // 1. Delete related records (if any others, e.g., specific permissions - none obvious in schema)
-      // No schedule or head-of-department equivalent to remove here
-
-      // 2. Delete the LabTechnician record
-      const deleted = await trx('LabTechnician') // <--- Delete from LabTechnician table
-        .where('technicianId', technicianId)
-        .delete();
-
-      if (!deleted) {
-        await trx.rollback();
-        return res.status(500).json({ success: false, message: 'Không thể xóa kỹ thuật viên' }); // <--- Changed message
-      }
-
-      // 3. Update User account status to "inactive" and modify email
-      const userUpdated = await trx('User')
-        .where('userId', userId)
-        .update({
-          accountStatus: 'inactive',
-          // Append suffix to email to allow reuse of the original email
-          email: trx.raw(`CONCAT(email, '_deleted_', ?)`, [Date.now()])
-        });
-
-      if (!userUpdated) {
-        await trx.rollback();
-        return res.status(500).json({ success: false, message: 'Không thể cập nhật trạng thái tài khoản người dùng' });
-      }
-
-      // Commit transaction
-      await trx.commit();
-    } catch (error) {
-      await trx.rollback();
-      throw error; // Re-throw error to be caught by outer catch
+    // Delete the lab technician
+    await labTechnician.delete();
+    
+    // Update user account status to inactive
+    const user = await User.findById(userId);
+    if (user) {
+      user.accountStatus = 'inactive';
+      user.email = `${user.email}_deleted_${Date.now()}`;
+      await user.save();
     }
 
     // Return success response
     return res.json({
       success: true,
-      message: 'Technician deleted successfully', // <--- Changed message
-      technicianId: technicianId // <--- Changed id name
+      message: 'Technician deleted successfully',
+      technicianId: technicianId
     });
 
   } catch (error) {
-    console.error(`Error deleting technician:`, error); // <--- Changed message
+    console.error(`Error deleting technician:`, error);
 
     // Check for foreign key constraint errors specifically
     if (error.code === 'ER_ROW_IS_REFERENCED_2') {
       return res.status(400).json({
         success: false,
-        message: 'Không thể xóa kỹ thuật viên vì còn dữ liệu liên quan (vd: Kết quả xét nghiệm).' // <--- Changed message context
+        message: 'Không thể xóa kỹ thuật viên vì còn dữ liệu liên quan (vd: Kết quả xét nghiệm).'
       });
     }
 
     return res.status(500).json({
       success: false,
-      message: 'Đã xảy ra lỗi khi xóa kỹ thuật viên. Vui lòng thử lại sau.' // <--- Changed message
+      message: 'Đã xảy ra lỗi khi xóa kỹ thuật viên. Vui lòng thử lại sau.'
     });
   }
 });
 
-// API endpoint for AJAX filtering/search (Optional - Adapt if needed)
+// API endpoint for AJAX filtering/search
 router.get('/api', async function (req, res) {
   try {
     // Pagination
@@ -518,11 +495,11 @@ router.get('/api', async function (req, res) {
     const status = req.query.status || '';
     const search = req.query.search || '';
 
-    // Fetch data (Consider optimizing with direct DB query + filters)
-    let labTechnicians = await labTechnicianService.findAll(); // <--- Changed service call
+    // Fetch all lab technicians
+    let labTechnicians = await LabTechnician.findAll();
 
     // Apply filters
-    let filteredLabTechnicians = labTechnicians; // <--- Changed variable name
+    let filteredLabTechnicians = labTechnicians;
     if (specialty) {
       filteredLabTechnicians = filteredLabTechnicians.filter(tech => tech.specialtyId == specialty);
     }
@@ -530,19 +507,19 @@ router.get('/api', async function (req, res) {
       filteredLabTechnicians = filteredLabTechnicians.filter(tech => tech.accountStatus && tech.accountStatus.toLowerCase() === status.toLowerCase());
     }
     if (search) {
-        const searchTerm = search.toLowerCase();
-        filteredLabTechnicians = filteredLabTechnicians.filter(tech =>
-            (tech.fullName && tech.fullName.toLowerCase().includes(searchTerm)) ||
-            (tech.email && tech.email.toLowerCase().includes(searchTerm)) ||
-            (tech.specialization && tech.specialization.toLowerCase().includes(searchTerm)) || // <--- Search specialization
-            (tech.specialtyName && tech.specialtyName.toLowerCase().includes(searchTerm))
+      const searchTerm = search.toLowerCase();
+      filteredLabTechnicians = filteredLabTechnicians.filter(tech =>
+          (tech.fullName && tech.fullName.toLowerCase().includes(searchTerm)) ||
+          (tech.email && tech.email.toLowerCase().includes(searchTerm)) ||
+          (tech.specialization && tech.specialization.toLowerCase().includes(searchTerm)) ||
+          (tech.specialtyName && tech.specialtyName.toLowerCase().includes(searchTerm))
       );
     }
 
     const filteredTotal = filteredLabTechnicians.length;
 
     // Apply pagination *after* filtering
-    const paginatedLabTechnicians = filteredLabTechnicians.slice(offset, offset + limit); // <--- Changed variable name
+    const paginatedLabTechnicians = filteredLabTechnicians.slice(offset, offset + limit);
 
     // Add initials or other derived data
     const results = paginatedLabTechnicians.map(tech => ({
@@ -553,8 +530,8 @@ router.get('/api', async function (req, res) {
 
     // Return JSON response
     res.json({
-      labTechnicians: results, // <--- Changed key name
-      totalLabTechnicians: filteredTotal, // <--- Changed key name & value
+      labTechnicians: results,
+      totalLabTechnicians: filteredTotal,
       pagination: {
         page,
         limit,
@@ -563,8 +540,8 @@ router.get('/api', async function (req, res) {
       }
     });
   } catch (error) {
-    console.error('Error loading technicians via API:', error); // <--- Changed message
-    res.status(500).json({ error: 'Failed to load technicians' }); // <--- Changed message
+    console.error('Error loading technicians via API:', error);
+    res.status(500).json({ error: 'Failed to load technicians' });
   }
 });
 
