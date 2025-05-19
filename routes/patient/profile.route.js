@@ -34,28 +34,28 @@ router.post('/personalInfo', async (req, res) => {
         email: email,
         gender,
         address
-        };
-        try {
+    };
+    try {
         const success = await userService.update(userId, updatedUser);
 
         if (success) {
             // Cập nhật lại session
             req.session.authUser = {
-            ...req.session.authUser,
-            ...updatedUser
+                ...req.session.authUser,
+                ...updatedUser
             };
 
             res.render('vwPatient/individualPage/personalInfo', {
-            user: req.session.authUser,
-            updateSuccess: true
+                user: req.session.authUser,
+                updateSuccess: true
             });
         } else {
             res.render('vwPatient/individualPage/personalInfo', {
-            user: req.session.authUser,
-            updateError: true
+                user: req.session.authUser,
+                updateError: true
             });
         }
-        } catch (error) {
+    } catch (error) {
         console.error('Error updating profile:', error);
         res.render('vwPatient/individualPage/personalInfo', {
             user: req.session.authUser,

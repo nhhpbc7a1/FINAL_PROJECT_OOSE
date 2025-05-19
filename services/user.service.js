@@ -85,19 +85,6 @@ export default {
     async add(user) {
         try {
             // Validation
-            if (!user.email) {
-                throw new Error('Email is required');
-            }
-            if (!user.password) {
-                throw new Error('Password is required');
-            }
-            if (!user.fullName) {
-                throw new Error('Full name is required');
-            }
-            if (!user.phoneNumber) {
-                throw new Error('Phone number is required');
-            }
-
             // Insert user using knex
             const [userId] = await db('User').insert({
                 email: user.email,
