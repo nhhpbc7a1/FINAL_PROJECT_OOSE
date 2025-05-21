@@ -1,154 +1,125 @@
-import db from '../../ultis/db.js';
+import Doctor from '../../models/Doctor.js';
+import TestRequestDAO from '../../dao/TestRequestDAO.js';
+import ServiceDAO from '../../dao/ServiceDAO.js';
+import TestResultDAO from '../../dao/TestResultDAO.js';
+import PatientDAO from '../../dao/PatientDAO.js';
 
 export default {
     async findAll() {
         try {
-            return await db('TestRequest')
-                .join('Appointment', 'TestRequest.appointmentId', '=', 'Appointment.appointmentId')
-                .join('Service', 'TestRequest.serviceId', '=', 'Service.serviceId')
-                .join('Patient', 'Appointment.patientId', '=', 'Patient.patientId')
-                .join('User', 'Patient.userId', '=', 'User.userId')
-                .leftJoin('Doctor', 'TestRequest.requestedByDoctorId', '=', 'Doctor.doctorId')
-                .leftJoin('User as DoctorUser', 'Doctor.userId', '=', 'DoctorUser.userId')
-                .select(
-                    'TestRequest.*',
-                    'Service.name as serviceName',
-                    'Service.type as serviceType',
-                    'User.fullName as patientName',
-                    'DoctorUser.fullName as doctorName',
-                    'Appointment.appointmentDate'
-                )
-                .orderBy('TestRequest.requestDate', 'desc');
+            return await TestRequestDAO.findAll();
         } catch (error) {
             console.error('Error fetching test requests:', error);
-            throw new Error('Unable to load test requests');
+            throw new Error('Unable to load test requests: ' + error.message);
         }
     },
 
     async findById(requestId) {
         try {
-            const result = await db('TestRequest')
-                .join('Appointment', 'TestRequest.appointmentId', '=', 'Appointment.appointmentId')
-                .join('Service', 'TestRequest.serviceId', '=', 'Service.serviceId')
-                .join('Patient', 'Appointment.patientId', '=', 'Patient.patientId')
-                .join('User', 'Patient.userId', '=', 'User.userId')
-                .leftJoin('Doctor', 'TestRequest.requestedByDoctorId', '=', 'Doctor.doctorId')
-                .leftJoin('User as DoctorUser', 'Doctor.userId', '=', 'DoctorUser.userId')
-                .select(
-                    'TestRequest.*',
-                    'Service.name as serviceName',
-                    'Service.type as serviceType',
-                    'Service.description as serviceDescription',
-                    'User.fullName as patientName',
-                    'DoctorUser.fullName as doctorName',
-                    'Appointment.appointmentDate',
-                    'Patient.patientId'
-                )
-                .where('TestRequest.requestId', requestId)
-                .first();
+            const result = await TestRequestDAO.findById(requestId);
             return result || null;
         } catch (error) {
             console.error(`Error fetching test request with ID ${requestId}:`, error);
-            throw new Error('Unable to find test request');
+            throw new Error('Unable to find test request: ' + error.message);
         }
     },
 
     async findByAppointment(appointmentId) {
         try {
-            return await db('TestRequest')
-                .join('Service', 'TestRequest.serviceId', '=', 'Service.serviceId')
-                .leftJoin('Doctor', 'TestRequest.requestedByDoctorId', '=', 'Doctor.doctorId')
-                .leftJoin('User', 'Doctor.userId', '=', 'User.userId')
-                .select(
-                    'TestRequest.*',
-                    'Service.name as serviceName',
-                    'Service.type as serviceType',
-                    'User.fullName as doctorName'
-                )
-                .where('TestRequest.appointmentId', appointmentId)
-                .orderBy('TestRequest.requestDate', 'desc');
+            return await TestRequestDAO.findByAppointment(appointmentId);
         } catch (error) {
             console.error(`Error fetching test requests for appointment ID ${appointmentId}:`, error);
-            throw new Error('Unable to find test requests by appointment');
+            throw new Error('Unable to find test requests by appointment: ' + error.message);
         }
     },
 
     async findByStatus(status) {
         try {
-            return await db('TestRequest')
-                .join('Appointment', 'TestRequest.appointmentId', '=', 'Appointment.appointmentId')
-                .join('Service', 'TestRequest.serviceId', '=', 'Service.serviceId')
-                .join('Patient', 'Appointment.patientId', '=', 'Patient.patientId')
-                .join('User', 'Patient.userId', '=', 'User.userId')
-                .leftJoin('Doctor', 'TestRequest.requestedByDoctorId', '=', 'Doctor.doctorId')
-                .leftJoin('User as DoctorUser', 'Doctor.userId', '=', 'DoctorUser.userId')
-                .select(
-                    'TestRequest.*',
-                    'Service.name as serviceName',
-                    'Service.type as serviceType',
-                    'User.fullName as patientName',
-                    'DoctorUser.fullName as doctorName',
-                    'Appointment.appointmentDate',
-                    'Patient.patientId'
-                )
-                .where('TestRequest.status', status)
-                .orderBy('TestRequest.requestDate', 'desc');
+            return await TestRequestDAO.findByStatus(status);
         } catch (error) {
             console.error(`Error fetching test requests with status ${status}:`, error);
-            throw new Error('Unable to find test requests by status');
+            throw new Error('Unable to find test requests by status: ' + error.message);
         }
     },
 
     async add(testRequest) {
         try {
-            const [requestId] = await db('TestRequest').insert(testRequest);
-            return requestId;
+            // Validate doctor if provided
+            if (testRequest.requestedByDoctorId) {
+                const doctor = await Doctor.findById(testRequest.requestedByDoctorId);
+                if (!doctor) {
+                    throw new Error(`Doctor with ID ${testRequest.requestedByDoctorId} not found`);
+                }
+            }
+            
+            // Convert testServiceId to serviceId if needed
+            if (testRequest.testServiceId && !testRequest.serviceId) {
+                testRequest.serviceId = testRequest.testServiceId;
+                delete testRequest.testServiceId;
+            }
+            
+            return await TestRequestDAO.add(testRequest);
         } catch (error) {
             console.error('Error adding test request:', error);
-            throw new Error('Unable to add test request');
+            throw new Error('Unable to add test request: ' + error.message);
         }
     },
 
     async update(requestId, testRequest) {
         try {
-            const result = await db('TestRequest')
-                .where('requestId', requestId)
-                .update(testRequest);
-            return result > 0;
+            // Validate test request exists
+            const existingRequest = await TestRequestDAO.findById(requestId);
+            if (!existingRequest) {
+                throw new Error(`Test request with ID ${requestId} not found`);
+            }
+            
+            // Validate doctor if changed
+            if (testRequest.requestedByDoctorId && 
+                testRequest.requestedByDoctorId !== existingRequest.requestedByDoctorId) {
+                const doctor = await Doctor.findById(testRequest.requestedByDoctorId);
+                if (!doctor) {
+                    throw new Error(`Doctor with ID ${testRequest.requestedByDoctorId} not found`);
+                }
+            }
+            
+            // Convert testServiceId to serviceId if needed
+            if (testRequest.testServiceId && !testRequest.serviceId) {
+                testRequest.serviceId = testRequest.testServiceId;
+                delete testRequest.testServiceId;
+            }
+            
+            return await TestRequestDAO.update(requestId, testRequest);
         } catch (error) {
             console.error(`Error updating test request with ID ${requestId}:`, error);
-            throw new Error('Unable to update test request');
+            throw new Error('Unable to update test request: ' + error.message);
         }
     },
 
     async updateStatus(requestId, status) {
         try {
-            const result = await db('TestRequest')
-                .where('requestId', requestId)
-                .update({ status });
-            return result > 0;
+            // Validate test request exists
+            const existingRequest = await TestRequestDAO.findById(requestId);
+            if (!existingRequest) {
+                throw new Error(`Test request with ID ${requestId} not found`);
+            }
+            
+            return await TestRequestDAO.updateStatus(requestId, status);
         } catch (error) {
             console.error(`Error updating status for test request with ID ${requestId}:`, error);
-            throw new Error('Unable to update test request status');
+            throw new Error('Unable to update test request status: ' + error.message);
         }
     },
 
     async delete(requestId) {
         try {
             // First check if there are any test results linked to this request
-            const testResults = await db('TestResult')
-                .where('requestId', requestId)
-                .count('resultId as count')
-                .first();
+            const testResults = await TestResultDAO.countByRequestId(requestId);
             
-            if (testResults && testResults.count > 0) {
+            if (testResults > 0) {
                 throw new Error('Cannot delete request with linked test results. Please delete the results first.');
             }
             
-            const result = await db('TestRequest')
-                .where('requestId', requestId)
-                .delete();
-            return result > 0;
+            return await TestRequestDAO.delete(requestId);
         } catch (error) {
             console.error(`Error deleting test request with ID ${requestId}:`, error);
             throw new Error(error.message || 'Unable to delete test request');
@@ -157,43 +128,28 @@ export default {
 
     async countByStatus() {
         try {
-            return await db('TestRequest')
-                .select('status')
-                .count('requestId as count')
-                .groupBy('status');
+            return await TestRequestDAO.countByStatus();
         } catch (error) {
             console.error('Error counting test requests by status:', error);
-            throw new Error('Unable to count test requests by status');
+            throw new Error('Unable to count test requests by status: ' + error.message);
         }
     },
 
     async countByDoctor() {
         try {
-            return await db('TestRequest')
-                .join('Doctor', 'TestRequest.requestedByDoctorId', '=', 'Doctor.doctorId')
-                .join('User', 'Doctor.userId', '=', 'User.userId')
-                .select('User.fullName as doctorName', 'Doctor.doctorId')
-                .count('TestRequest.requestId as count')
-                .groupBy('TestRequest.requestedByDoctorId')
-                .orderBy('count', 'desc');
+            return await TestRequestDAO.countByDoctor();
         } catch (error) {
             console.error('Error counting test requests by doctor:', error);
-            throw new Error('Unable to count test requests by doctor');
+            throw new Error('Unable to count test requests by doctor: ' + error.message);
         }
     },
 
     async getPendingRequestsByService() {
         try {
-            return await db('TestRequest')
-                .join('Service', 'TestRequest.serviceId', '=', 'Service.serviceId')
-                .select('Service.name', 'Service.serviceId')
-                .count('TestRequest.requestId as pendingCount')
-                .where('TestRequest.status', 'pending')
-                .groupBy('TestRequest.serviceId')
-                .orderBy('pendingCount', 'desc');
+            return await TestRequestDAO.countPendingByService();
         } catch (error) {
             console.error('Error counting pending requests by service:', error);
-            throw new Error('Unable to count pending requests by service');
+            throw new Error('Unable to count pending requests by service: ' + error.message);
         }
     },
 
@@ -203,9 +159,9 @@ export default {
      */
     async getAllActiveTestsByCategory() {
         try {
-            const tests = await db('Service')
-                .select('serviceId', 'name', 'description', 'category', 'price', 'duration')
-                .where({ type: 'test', status: 'active' });
+            // Get all active services of type 'test'
+            const tests = await ServiceDAO.findActiveByType('test');
+            
             // Nhóm theo category
             const grouped = {};
             for (const test of tests) {
@@ -215,7 +171,7 @@ export default {
             return grouped;
         } catch (error) {
             console.error('Error fetching active tests by category:', error);
-            throw new Error('Unable to load active tests');
+            throw new Error('Unable to load active tests: ' + error.message);
         }
     }
 }; 

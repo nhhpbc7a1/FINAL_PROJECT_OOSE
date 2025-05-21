@@ -290,6 +290,174 @@ class AppointmentDAO {
             throw new Error('Unable to load appointments by status');
         }
     }
+
+    /**
+     * Count unique patients for a specific doctor
+     * @param {number} doctorId - ID of doctor
+     * @returns {Promise<number>} Count of unique patients
+     */
+    static async countUniquePatientsByDoctor(doctorId) {
+        try {
+            const result = await db('Appointment')
+                .where('doctorId', doctorId)
+                .countDistinct('patientId as count')
+                .first();
+            
+            return result ? result.count : 0;
+        } catch (error) {
+            console.error(`Error counting unique patients for doctor ID ${doctorId}:`, error);
+            throw new Error('Unable to count unique patients');
+        }
+    }
+    
+    /**
+     * Get appointments for a specific doctor on a specific date
+     * @param {number} doctorId - ID of doctor
+     * @param {string} date - Date in YYYY-MM-DD format
+     * @returns {Promise<Array>} Array of appointments
+     */
+    static async findByDoctorAndDate(doctorId, date) {
+        try {
+            return await db('Appointment')
+                .join('Patient', 'Appointment.patientId', '=', 'Patient.patientId')
+                .join('User AS PatientUser', 'Patient.userId', '=', 'PatientUser.userId')
+                .leftJoin('Room', 'Appointment.roomId', '=', 'Room.roomId')
+                .select(
+                    'Appointment.*',
+                    'PatientUser.fullName as patientName',
+                    'PatientUser.email as patientEmail',
+                    'PatientUser.phoneNumber as patientPhone',
+                    'Room.roomNumber as roomNumber'
+                )
+                .where('Appointment.doctorId', doctorId)
+                .where('Appointment.appointmentDate', date)
+                .orderBy('Appointment.estimatedTime', 'asc');
+        } catch (error) {
+            console.error(`Error fetching appointments for doctor ID ${doctorId} on date ${date}:`, error);
+            throw new Error('Unable to load doctor appointments for the specified date');
+        }
+    }
+    
+    /**
+     * Get doctor's schedule with patient and specialty details for a specific date
+     * @param {number} doctorId - ID of doctor
+     * @param {string} date - Date in YYYY-MM-DD format
+     * @returns {Promise<Array>} Array of schedule items with patient details
+     */
+    static async getDoctorScheduleForDate(doctorId, date) {
+        try {
+            return await db('Appointment')
+                .join('Patient', 'Appointment.patientId', '=', 'Patient.patientId')
+                .join('User AS PatientUser', 'Patient.userId', '=', 'PatientUser.userId')
+                .leftJoin('Doctor', 'Appointment.doctorId', '=', 'Doctor.doctorId')
+                .leftJoin('Specialty', 'Doctor.specialtyId', '=', 'Specialty.specialtyId')
+                .leftJoin('Room', 'Appointment.roomId', '=', 'Room.roomId')
+                .select(
+                    'Appointment.*',
+                    'PatientUser.fullName as patientName',
+                    'PatientUser.gender as patientGender',
+                    'PatientUser.phoneNumber as patientPhone',
+                    'PatientUser.email as patientEmail',
+                    'Patient.dob as patientDob',
+                    'Specialty.name as specialtyName',
+                    'Room.roomNumber as roomNumber'
+                )
+                .where('Appointment.doctorId', doctorId)
+                .where('Appointment.appointmentDate', date)
+                .orderBy('Appointment.estimatedTime', 'asc');
+        } catch (error) {
+            console.error(`Error fetching schedule for doctor ID ${doctorId} on date ${date}:`, error);
+            throw new Error('Unable to load doctor schedule for the specified date');
+        }
+    }
+    
+    /**
+     * Get all appointments for a doctor for calendar view
+     * @param {number} doctorId - ID of doctor
+     * @returns {Promise<Array>} Array of appointments for calendar
+     */
+    static async getDoctorAppointmentsForCalendar(doctorId) {
+        try {
+            return await db('Appointment')
+                .join('Patient', 'Appointment.patientId', '=', 'Patient.patientId')
+                .join('User AS PatientUser', 'Patient.userId', '=', 'PatientUser.userId')
+                .select(
+                    'Appointment.appointmentId',
+                    'Appointment.appointmentDate',
+                    'Appointment.estimatedTime',
+                    'Appointment.status',
+                    'Appointment.patientAppointmentStatus',
+                    'PatientUser.fullName as patientName'
+                )
+                .where('Appointment.doctorId', doctorId)
+                .orderBy('Appointment.appointmentDate', 'asc')
+                .orderBy('Appointment.estimatedTime', 'asc');
+        } catch (error) {
+            console.error(`Error fetching calendar appointments for doctor ID ${doctorId}:`, error);
+            throw new Error('Unable to load doctor calendar appointments');
+        }
+    }
+
+    /**
+     * Get appointments within a date range
+     * @param {string} startDate - Start date in YYYY-MM-DD format
+     * @param {string} endDate - End date in YYYY-MM-DD format
+     * @returns {Promise<Array>} Array of appointments
+     */
+    static async findByDateRange(startDate, endDate) {
+        try {
+            return await db('Appointment')
+                .join('Patient', 'Appointment.patientId', '=', 'Patient.patientId')
+                .join('User AS PatientUser', 'Patient.userId', '=', 'PatientUser.userId')
+                .join('Doctor', 'Appointment.doctorId', '=', 'Doctor.doctorId')
+                .join('User AS DoctorUser', 'Doctor.userId', '=', 'DoctorUser.userId')
+                .join('Specialty', 'Doctor.specialtyId', '=', 'Specialty.specialtyId')
+                .leftJoin('Room', 'Appointment.roomId', '=', 'Room.roomId')
+                .select(
+                    'Appointment.*',
+                    'PatientUser.fullName as patientName',
+                    'DoctorUser.fullName as doctorName',
+                    'Specialty.name as specialtyName',
+                    'Room.roomNumber as roomNumber'
+                )
+                .whereBetween('Appointment.appointmentDate', [startDate, endDate])
+                .orderBy('Appointment.appointmentDate', 'asc')
+                .orderBy('Appointment.appointmentTime', 'asc');
+        } catch (error) {
+            console.error(`Error fetching appointments between ${startDate} and ${endDate}:`, error);
+            throw new Error('Unable to load appointments for the specified date range');
+        }
+    }
+    
+    /**
+     * Get appointments by patient appointment status
+     * @param {string} status - Patient appointment status
+     * @returns {Promise<Array>} Array of appointments
+     */
+    static async findByPatientAppointmentStatus(status) {
+        try {
+            return await db('Appointment')
+                .join('Patient', 'Appointment.patientId', '=', 'Patient.patientId')
+                .join('User AS PatientUser', 'Patient.userId', '=', 'PatientUser.userId')
+                .join('Doctor', 'Appointment.doctorId', '=', 'Doctor.doctorId')
+                .join('User AS DoctorUser', 'Doctor.userId', '=', 'DoctorUser.userId')
+                .join('Specialty', 'Doctor.specialtyId', '=', 'Specialty.specialtyId')
+                .leftJoin('Room', 'Appointment.roomId', '=', 'Room.roomId')
+                .select(
+                    'Appointment.*',
+                    'PatientUser.fullName as patientName',
+                    'DoctorUser.fullName as doctorName',
+                    'Specialty.name as specialtyName',
+                    'Room.roomNumber as roomNumber'
+                )
+                .where('Appointment.patientAppointmentStatus', status)
+                .orderBy('Appointment.appointmentDate', 'desc')
+                .orderBy('Appointment.appointmentTime', 'asc');
+        } catch (error) {
+            console.error(`Error fetching appointments with patient appointment status ${status}:`, error);
+            throw new Error('Unable to load appointments by patient appointment status');
+        }
+    }
 }
 
 export default AppointmentDAO; 

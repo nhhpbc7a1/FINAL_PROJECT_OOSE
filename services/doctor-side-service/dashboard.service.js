@@ -1,4 +1,7 @@
-import db from '../../ultis/db.js';
+import Doctor from '../../models/Doctor.js';
+import AppointmentDAO from '../../dao/AppointmentDAO.js';
+import TestResultDAO from '../../dao/TestResultDAO.js';
+import RoomDAO from '../../dao/RoomDAO.js';
 import moment from 'moment';
 
 export default {
@@ -12,113 +15,39 @@ export default {
             const today = moment().format('YYYY-MM-DD');
             console.log("Today's date for query:", today);
             
+            // Validate that doctor exists
+            const doctor = await Doctor.findById(doctorId);
+            if (!doctor) {
+                throw new Error(`Doctor with ID ${doctorId} not found`);
+            }
+            
             // Check if we're in test/development mode with future dates in the database
             const isTestMode = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test';
             
-            // For tests or development, we might use data with future dates
-            // So we'll include these appointments in our dashboard
-            const dateFilter = isTestMode 
-                ? appointment => true  // Accept all appointments in test mode
-                : appointment => moment(appointment.appointmentDate).format('YYYY-MM-DD') === today; // Only same-day in production
-            
-            // Get total patients count for this doctor
-            const totalPatientsQuery = db('Appointment')
-                .countDistinct('patientId as count')
-                .where('doctorId', doctorId);
+            // Get total unique patients count for this doctor
+            const totalPatients = await AppointmentDAO.countUniquePatientsByDoctor(doctorId);
             
             // Get all appointments for this doctor
-            const allAppointmentsQuery = db('Appointment')
-                .select('appointmentId', 'patientAppointmentStatus', 'appointmentDate')
-                .where('doctorId', doctorId);
+            const allAppointments = await AppointmentDAO.findByDoctor(doctorId);
             
             // Get today's appointments specifically
-            const todayAppointmentsQuery = db('Appointment')
-                .select('appointmentId', 'patientAppointmentStatus', 'appointmentDate', 'estimatedTime')
-                .where('doctorId', doctorId)
-                .where('appointmentDate', today);
+            const todayAppointments = await AppointmentDAO.findByDoctorAndDate(doctorId, today);
             
-            // Get pending test results count
-            const pendingTestResultsQuery = db('TestResult')
-                .join('MedicalRecord', 'TestResult.recordId', '=', 'MedicalRecord.recordId')
-                .join('Appointment', 'MedicalRecord.appointmentId', '=', 'Appointment.appointmentId')
-                .count('TestResult.resultId as count')
-                .where('Appointment.doctorId', doctorId)
-                .where('TestResult.status', 'completed')
-                .whereRaw('TestResult.performedDate >= NOW() - INTERVAL 7 DAY');
+            // Get pending test results count for the last 7 days
+            const pendingTestResults = await TestResultDAO.countCompletedByDoctor(doctorId, 7);
             
-            // First, let's debug the Room data
-            const roomsCheckQuery = db('Room')
-                .select('roomId', 'roomNumber', 'specialtyId')
-                .limit(5);
-
-            // And check appointments with roomId
-            const appointmentsWithRoomQuery = db('Appointment')
-                .select('appointmentId', 'roomId')
-                .where('doctorId', doctorId)
-                .where('appointmentDate', today);
-       
-            const scheduleQuery = db('Appointment')
-                .join('Patient', 'Appointment.patientId', '=', 'Patient.patientId')
-                .join('User', 'Patient.userId', '=', 'User.userId')
-                .join('Specialty', 'Appointment.specialtyId', '=', 'Specialty.specialtyId')
-                .leftJoin('Room', 'Appointment.roomId', '=', 'Room.roomId')
-                .select(
-                    'Appointment.appointmentId',
-                    'Appointment.appointmentDate',
-                    'Appointment.estimatedTime',
-                    'Appointment.reason',
-                    'Appointment.patientAppointmentStatus',
-                    'Appointment.roomId', // Add roomId for debugging
-                    'User.fullName as patientName',
-                    'Specialty.name as specialtyName',
-                    'Room.roomNumber'
-                )
-                .where('Appointment.doctorId', doctorId)
-                .where('Appointment.appointmentDate', today) // Only show today's schedule
-                .orderBy('Appointment.appointmentDate')
-                .orderBy('Appointment.estimatedTime');
+            // Get rooms for debugging if needed
+            const rooms = await RoomDAO.findAll(5);
             
-            // Get all appointments for calendar view (no date restriction)
-            const allAppointmentsForCalendarQuery = db('Appointment')
-                .select(
-                    'Appointment.appointmentId',
-                    'Appointment.appointmentDate',
-                    'Appointment.estimatedTime',
-                    'Appointment.patientAppointmentStatus',
-                    'User.fullName as patientName'
-                )
-                .join('Patient', 'Appointment.patientId', '=', 'Patient.patientId')
-                .join('User', 'Patient.userId', '=', 'User.userId')
-                .where('Appointment.doctorId', doctorId)
-                .orderBy('Appointment.appointmentDate')
-                .orderBy('Appointment.estimatedTime');
+            // Get today's schedule with patient and specialty details
+            const schedule = await AppointmentDAO.getDoctorScheduleForDate(doctorId, today);
             
-            // Execute all queries in parallel
-            const [
-                totalPatientsResult,
-                allAppointments,
-                todayAppointments,
-                pendingTestResultsResult,
-                roomsCheck,
-                appointmentsWithRoom,
-                scheduleResults,
-                allAppointmentsForCalendar
-            ] = await Promise.all([
-                totalPatientsQuery,
-                allAppointmentsQuery,
-                todayAppointmentsQuery,
-                pendingTestResultsQuery,
-                roomsCheckQuery,
-                appointmentsWithRoomQuery,
-                scheduleQuery,
-                allAppointmentsForCalendarQuery
-            ]);
-
+            // Get all appointments for calendar view
+            const allAppointmentsForCalendar = await AppointmentDAO.getDoctorAppointmentsForCalendar(doctorId);
+            
             console.log("Today's appointments count:", todayAppointments.length);
-            console.log("Sample rooms in database:", roomsCheck);
-            console.log("Appointments with roomId:", appointmentsWithRoom);
             
-            // Process appointment status counts with today's appointments
+            // Process appointment status counts
             const appointmentCounts = {
                 total: todayAppointments.length,
                 completed: 0,
@@ -138,7 +67,7 @@ export default {
             });
             
             // Format the schedule items
-            const formattedSchedule = scheduleResults.map(appointment => {
+            const formattedSchedule = schedule.map(appointment => {
                 const timeFormatted = appointment.estimatedTime 
                     ? moment(appointment.estimatedTime, 'HH:mm:ss').format('HH:mm')
                     : 'N/A';
@@ -152,11 +81,6 @@ export default {
                     statusClass = 'examining';
                 }
                 
-                // Debug line for tracking room number
-                console.log(`Appointment ${appointment.appointmentId} room data:`, 
-                    appointment.roomNumber ? `Room ${appointment.roomNumber}` : 'No room assigned',
-                    `(roomId: ${appointment.roomId || 'null'})`);
-                
                 return {
                     ...appointment,
                     timeFormatted,
@@ -166,7 +90,7 @@ export default {
                 };
             });
             
-            // Format calendar events with all appointments, not just upcoming ones
+            // Format calendar events with all appointments
             const calendarEvents = allAppointmentsForCalendar.map(appointment => {
                 // Format the date properly to ISO format first before concatenating with time
                 const formattedDate = moment(appointment.appointmentDate).format('YYYY-MM-DD');
@@ -199,16 +123,16 @@ export default {
             });
             
             return {
-                totalPatients: totalPatientsResult[0].count,
+                totalPatients,
                 appointments: appointmentCounts,
-                pendingTestResults: pendingTestResultsResult[0].count,
+                pendingTestResults,
                 todaySchedule: formattedSchedule,
                 calendarEvents,
                 todayFormatted: moment().format('dddd, MMMM D, YYYY')
             };
         } catch (error) {
             console.error('Error fetching dashboard data:', error);
-            throw new Error('Unable to load doctor dashboard data');
+            throw new Error('Unable to load doctor dashboard data: ' + error.message);
         }
     },
     
@@ -219,26 +143,27 @@ export default {
      */
     async getDoctorProfile(doctorId) {
         try {
-            const doctor = await db('Doctor')
-                .join('User', 'Doctor.userId', '=', 'User.userId')
-                .join('Specialty', 'Doctor.specialtyId', '=', 'Specialty.specialtyId')
-                .select(
-                    'Doctor.doctorId',
-                    'User.fullName',
-                    'User.email',
-                    'User.gender',
-                    'User.phoneNumber',
-                    'User.profileImage',
-                    'Doctor.experience',
-                    'Specialty.name as specialtyName'
-                )
-                .where('Doctor.doctorId', doctorId)
-                .first();
-                
-            return doctor;
+            // Use the Doctor model to retrieve profile information
+            const doctor = await Doctor.findById(doctorId);
+            
+            if (!doctor) {
+                throw new Error(`Doctor with ID ${doctorId} not found`);
+            }
+            
+            // Return only the profile-related fields
+            return {
+                doctorId: doctor.doctorId,
+                fullName: doctor.fullName,
+                email: doctor.email,
+                gender: doctor.gender,
+                phoneNumber: doctor.phoneNumber,
+                profileImage: doctor.profileImage,
+                experience: doctor.experience,
+                specialtyName: doctor.specialtyName
+            };
         } catch (error) {
             console.error('Error fetching doctor profile:', error);
-            throw new Error('Unable to load doctor profile');
+            throw new Error('Unable to load doctor profile: ' + error.message);
         }
     }
 }; 

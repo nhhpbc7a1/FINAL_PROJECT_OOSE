@@ -1,83 +1,25 @@
-import db from '../../ultis/db.js';
+import Doctor from '../../models/Doctor.js';
+import PatientDAO from '../../dao/PatientDAO.js';
+import AppointmentDAO from '../../dao/AppointmentDAO.js';
+import TestResultDAO from '../../dao/TestResultDAO.js';
+import PrescriptionDAO from '../../dao/PrescriptionDAO.js';
 
 export default {
     async getPatientDetails(patientId) {
         try {
             // Lấy thông tin chi tiết bệnh nhân
-            const patient = await db('Patient')
-                .join('User', 'Patient.userId', '=', 'User.userId')
-                .select(
-                    'Patient.*',
-                    'User.email',
-                    'User.fullName',
-                    'User.phoneNumber',
-                    'User.address',
-                    'User.accountStatus',
-                    'User.gender as userGender',
-                    'User.dob as userDob'
-                )
-                .where('Patient.patientId', patientId)
-                .first();
+            const patient = await PatientDAO.findDetailedById(patientId);
                 
             if (!patient) return null;
             
             // Lấy lịch sử cuộc hẹn của bệnh nhân
-            const appointments = await db('Appointment')
-                .join('Specialty', 'Appointment.specialtyId', '=', 'Specialty.specialtyId')
-                .leftJoin('Doctor', 'Appointment.doctorId', '=', 'Doctor.doctorId')
-                .leftJoin('User as DoctorUser', 'Doctor.userId', '=', 'DoctorUser.userId')
-                .leftJoin('Room', 'Appointment.roomId', '=', 'Room.roomId')
-                .select(
-                    'Appointment.*',
-                    'Specialty.name as specialtyName',
-                    'DoctorUser.fullName as doctorName',
-                    'Room.roomNumber',
-                    'Appointment.patientAppointmentStatus'
-                )
-                .where('Appointment.patientId', patientId)
-                .orderBy('Appointment.appointmentDate', 'desc')
-                .orderBy('Appointment.estimatedTime', 'desc');
+            const appointments = await AppointmentDAO.findByPatient(patientId);
                 
             // Lấy kết quả xét nghiệm của bệnh nhân
-            const labResults = await db('TestResult')
-                .join('MedicalRecord', 'TestResult.recordId', '=', 'MedicalRecord.recordId')
-                .join('Appointment', 'MedicalRecord.appointmentId', '=', 'Appointment.appointmentId')
-                .join('Service', 'TestResult.serviceId', '=', 'Service.serviceId')
-                .leftJoin('LabTechnician', 'TestResult.technicianId', '=', 'LabTechnician.technicianId')
-                .leftJoin('User as TechUser', 'LabTechnician.userId', '=', 'TechUser.userId')
-                .leftJoin('File', 'TestResult.resultFileId', '=', 'File.fileId')
-                .select(
-                    'TestResult.*',
-                    'Service.name as serviceName',
-                    'TechUser.fullName as technicianName',
-                    'File.filePath',
-                    'MedicalRecord.appointmentId',
-                    'Appointment.appointmentDate'
-                )
-                .where('Appointment.patientId', patientId)
-                .orderBy('TestResult.performedDate', 'desc');
+            const labResults = await TestResultDAO.findByPatientId(patientId);
                 
             // Lấy đơn thuốc của bệnh nhân
-            const prescriptions = await db('Prescription')
-                .join('MedicalRecord', 'Prescription.recordId', '=', 'MedicalRecord.recordId')
-                .join('Appointment', 'MedicalRecord.appointmentId', '=', 'Appointment.appointmentId')
-                .join('Doctor', 'Prescription.doctorId', '=', 'Doctor.doctorId')
-                .join('User as DoctorUser', 'Doctor.userId', '=', 'DoctorUser.userId')
-                .leftJoin('PrescriptionDetail', 'Prescription.prescriptionId', '=', 'PrescriptionDetail.prescriptionId')
-                .leftJoin('Medication', 'PrescriptionDetail.medicationId', '=', 'Medication.medicationId')
-                .select(
-                    'Prescription.*',
-                    'MedicalRecord.diagnosis',
-                    'DoctorUser.fullName as doctorName',
-                    db.raw('GROUP_CONCAT(Medication.name) as medications')
-                )
-                .where('Appointment.patientId', patientId)
-                .groupBy(
-                    'Prescription.prescriptionId',
-                    'MedicalRecord.diagnosis',
-                    'DoctorUser.fullName'
-                )
-                .orderBy('Prescription.prescriptionDate', 'desc');
+            const prescriptions = await PrescriptionDAO.findByPatientId(patientId);
                 
             // Tính tuổi từ ngày sinh
             const dob = new Date(patient.dob || patient.userDob);
@@ -104,7 +46,7 @@ export default {
             };
         } catch (error) {
             console.error(`Error fetching patient details for ID ${patientId}:`, error);
-            throw new Error('Unable to get patient details');
+            throw new Error('Unable to get patient details: ' + error.message);
         }
     },
 
@@ -115,16 +57,7 @@ export default {
      */
     async getPatientBasicInfo(patientId) {
         try {
-            return await db('Patient')
-                .join('User', 'Patient.userId', '=', 'User.userId')
-                .select(
-                    'Patient.patientId',
-                    'Patient.userId',
-                    'User.fullName',
-                    'User.email'
-                )
-                .where('Patient.patientId', patientId)
-                .first();
+            return await PatientDAO.findBasicInfoById(patientId);
         } catch (error) {
             console.error(`Error fetching basic info for patient ${patientId}:`, error);
             return null;

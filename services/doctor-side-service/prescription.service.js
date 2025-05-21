@@ -1,4 +1,6 @@
-import db from '../../ultis/db.js';
+import Doctor from '../../models/Doctor.js';
+import PrescriptionDAO from '../../dao/PrescriptionDAO.js';
+import MedicalRecordDAO from '../../dao/MedicalRecordDAO.js';
 import moment from 'moment';
 
 export default {
@@ -11,27 +13,33 @@ export default {
    * @returns {Promise<number>} - The new prescription ID
    */
   async add(prescription) {
-    const trx = await db.transaction();
-    
     try {
-      // Insert into Prescription table
-      const [prescriptionId] = await trx('Prescription').insert({
+      // Validate doctor exists
+      const doctor = await Doctor.findById(prescription.doctorId);
+      if (!doctor) {
+        throw new Error(`Doctor with ID ${prescription.doctorId} not found`);
+      }
+      
+      // Validate medical record exists
+      const record = await MedicalRecordDAO.findById(prescription.recordId);
+      if (!record) {
+        throw new Error(`Medical record with ID ${prescription.recordId} not found`);
+      }
+      
+      // Prepare prescription data
+      const prescriptionData = {
         recordId: prescription.recordId,
         doctorId: prescription.doctorId,
         prescriptionDate: moment().format('YYYY-MM-DD HH:mm:ss'),
         notes: prescription.notes || '',
         status: 'active'
-      });
+      };
       
-      // Commit the transaction
-      await trx.commit();
-      
-      return prescriptionId;
+      // Use DAO to add prescription
+      return await PrescriptionDAO.add(prescriptionData);
     } catch (error) {
-      // Rollback on error
-      await trx.rollback();
       console.error('Error adding prescription:', error);
-      throw new Error('Failed to add prescription');
+      throw new Error('Failed to add prescription: ' + error.message);
     }
   },
   
@@ -46,10 +54,14 @@ export default {
       throw new Error('No medications provided');
     }
     
-    const trx = await db.transaction();
-    
     try {
-      // Prepare the prescription details for bulk insert
+      // Validate prescription exists
+      const prescription = await PrescriptionDAO.getById(prescriptionId);
+      if (!prescription) {
+        throw new Error(`Prescription with ID ${prescriptionId} not found`);
+      }
+      
+      // Prepare the prescription details
       const details = medications.map(med => ({
         prescriptionId,
         medicationId: med.medicationId,
@@ -59,18 +71,11 @@ export default {
         instructions: med.instructions || null
       }));
       
-      // Insert into PrescriptionDetail table
-      await trx('PrescriptionDetail').insert(details);
-      
-      // Commit the transaction
-      await trx.commit();
-      
-      return true;
+      // Use DAO to add prescription details
+      return await PrescriptionDAO.addDetails(prescriptionId, details);
     } catch (error) {
-      // Rollback on error
-      await trx.rollback();
       console.error('Error adding prescription details:', error);
-      throw new Error('Failed to add prescription medications');
+      throw new Error('Failed to add prescription medications: ' + error.message);
     }
   },
   
@@ -81,35 +86,11 @@ export default {
    */
   async getById(prescriptionId) {
     try {
-      // Get the prescription
-      const prescription = await db('Prescription')
-        .where('prescriptionId', prescriptionId)
-        .first();
-      
-      if (!prescription) {
-        return null;
-      }
-      
-      // Get the prescription details
-      const details = await db('PrescriptionDetail')
-        .join('Medication', 'PrescriptionDetail.medicationId', '=', 'Medication.medicationId')
-        .where('prescriptionId', prescriptionId)
-        .select(
-          'PrescriptionDetail.*',
-          'Medication.name as medicationName',
-          'Medication.dosage as medicationDosage',
-          'Medication.category as medicationCategory',
-          'Medication.manufacturer',
-          'Medication.sideEffects'
-        );
-      
-      return {
-        ...prescription,
-        medications: details
-      };
+      // Use DAO to get prescription with details
+      return await PrescriptionDAO.getById(prescriptionId);
     } catch (error) {
       console.error(`Error getting prescription ${prescriptionId}:`, error);
-      throw new Error('Failed to get prescription');
+      throw new Error('Failed to get prescription: ' + error.message);
     }
   },
   
@@ -120,24 +101,11 @@ export default {
    */
   async getByPatientId(patientId) {
     try {
-      // Join through MedicalRecord to find prescriptions for the patient's appointments
-      const prescriptions = await db('Prescription')
-        .join('MedicalRecord', 'Prescription.recordId', '=', 'MedicalRecord.recordId')
-        .join('Appointment', 'MedicalRecord.appointmentId', '=', 'Appointment.appointmentId')
-        .join('Doctor', 'Prescription.doctorId', '=', 'Doctor.doctorId')
-        .join('User', 'Doctor.userId', '=', 'User.userId')
-        .where('Appointment.patientId', patientId)
-        .select(
-          'Prescription.*',
-          'User.fullName as doctorName',
-          'Appointment.appointmentDate'
-        )
-        .orderBy('Prescription.prescriptionDate', 'desc');
-      
-      return prescriptions;
+      // Use DAO to get patient's prescriptions
+      return await PrescriptionDAO.findByPatientId(patientId);
     } catch (error) {
       console.error(`Error getting prescriptions for patient ${patientId}:`, error);
-      throw new Error('Failed to get patient prescriptions');
+      throw new Error('Failed to get patient prescriptions: ' + error.message);
     }
   },
   
@@ -147,49 +115,37 @@ export default {
    * @returns {Promise<Object>} - The created record and prescription IDs
    */
   async createWithMedicalRecord(data) {
-    const trx = await db.transaction();
-    
     try {
-      // First, create the medical record
-      const [recordId] = await trx('MedicalRecord').insert({
+      // Validate doctor exists
+      const doctor = await Doctor.findById(data.doctorId);
+      if (!doctor) {
+        throw new Error(`Doctor with ID ${data.doctorId} not found`);
+      }
+      
+      // Prepare medical record data
+      const recordData = {
         appointmentId: data.appointmentId,
         diagnosis: data.diagnosis || '',
         notes: data.notes || '',
         recommendations: data.recommendations || '',
         followupDate: data.followupDate || null
-      });
+      };
       
-      // Then create the prescription
-      const [prescriptionId] = await trx('Prescription').insert({
-        recordId,
+      // Prepare prescription data
+      const prescriptionData = {
         doctorId: data.doctorId,
         notes: data.prescriptionNotes || '',
         status: 'active'
-      });
+      };
       
-      // Finally, add prescription details if provided
-      if (data.medications && data.medications.length > 0) {
-        const details = data.medications.map(med => ({
-          prescriptionId,
-          medicationId: med.medicationId,
-          dosage: med.dosage || null,
-          frequency: med.frequency || null,
-          duration: med.duration ? `${med.duration} days` : null,
-          instructions: med.instructions || null
-        }));
-        
-        await trx('PrescriptionDetail').insert(details);
-      }
+      // Prepare medications if available
+      const medications = data.medications || [];
       
-      // Commit the transaction
-      await trx.commit();
-      
-      return { recordId, prescriptionId };
+      // Use DAO to create medical record with prescription in transaction
+      return await PrescriptionDAO.createWithMedicalRecord(recordData, prescriptionData, medications);
     } catch (error) {
-      // Rollback on error
-      await trx.rollback();
       console.error('Error creating medical record and prescription:', error);
-      throw new Error('Failed to create prescription');
+      throw new Error('Failed to create prescription: ' + error.message);
     }
   }
 }; 

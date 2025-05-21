@@ -1,27 +1,13 @@
+import Doctor from '../../models/Doctor.js';
+import AppointmentDAO from '../../dao/AppointmentDAO.js';
+import PatientDAO from '../../dao/PatientDAO.js';
 import db from '../../ultis/db.js';
 import moment from 'moment';
 
 export default {
     async findAll() {
         try {
-            return await db('Appointment')
-                .join('Patient', 'Appointment.patientId', '=', 'Patient.patientId')
-                .join('User as PatientUser', 'Patient.userId', '=', 'PatientUser.userId')
-                .join('Specialty', 'Appointment.specialtyId', '=', 'Specialty.specialtyId')
-                .leftJoin('Doctor', 'Appointment.doctorId', '=', 'Doctor.doctorId')
-                .leftJoin('User as DoctorUser', 'Doctor.userId', '=', 'DoctorUser.userId')
-                .leftJoin('Room', 'Appointment.roomId', '=', 'Room.roomId')
-                .select(
-                    'Appointment.*',
-                    'PatientUser.fullName as patientName',
-                    'PatientUser.phoneNumber as patientPhone',
-                    'PatientUser.email',
-                    'Specialty.name as specialtyName',
-                    'DoctorUser.fullName as doctorName',
-                    'Room.roomNumber'
-                )
-                .orderBy('Appointment.appointmentDate', 'desc')
-                .orderBy('Appointment.estimatedTime', 'desc');
+            return await AppointmentDAO.findAll();
         } catch (error) {
             console.error('Error fetching appointments:', error);
             throw new Error('Unable to load appointments');
@@ -30,27 +16,7 @@ export default {
 
     async findById(appointmentId) {
         try {
-            const appointment = await db('Appointment')
-                .join('Patient', 'Appointment.patientId', '=', 'Patient.patientId')
-                .join('User as PatientUser', 'Patient.userId', '=', 'PatientUser.userId')
-                .join('Specialty', 'Appointment.specialtyId', '=', 'Specialty.specialtyId')
-                .leftJoin('Doctor', 'Appointment.doctorId', '=', 'Doctor.doctorId')
-                .leftJoin('User as DoctorUser', 'Doctor.userId', '=', 'DoctorUser.userId')
-                .leftJoin('Room', 'Appointment.roomId', '=', 'Room.roomId')
-                .select(
-                    'Appointment.*',
-                    'PatientUser.fullName as patientName',
-                    'PatientUser.phoneNumber as patientPhone',
-                    'PatientUser.email',
-                    'Patient.gender as patientGender',
-                    'Patient.dob as patientDob',
-                    'Specialty.name as specialtyName',
-                    'DoctorUser.fullName as doctorName',
-                    'Room.roomNumber'
-                )
-                .where('Appointment.appointmentId', appointmentId)
-                .first();
-            return appointment || null;
+            return await AppointmentDAO.findById(appointmentId);
         } catch (error) {
             console.error(`Error fetching appointment with ID ${appointmentId}:`, error);
             throw new Error('Unable to find appointment');
@@ -59,20 +25,7 @@ export default {
 
     async findByPatient(patientId) {
         try {
-            return await db('Appointment')
-                .join('Specialty', 'Appointment.specialtyId', '=', 'Specialty.specialtyId')
-                .leftJoin('Doctor', 'Appointment.doctorId', '=', 'Doctor.doctorId')
-                .leftJoin('User as DoctorUser', 'Doctor.userId', '=', 'DoctorUser.userId')
-                .leftJoin('Room', 'Appointment.roomId', '=', 'Room.roomId')
-                .select(
-                    'Appointment.*',
-                    'Specialty.name as specialtyName',
-                    'DoctorUser.fullName as doctorName',
-                    'Room.roomNumber'
-                )
-                .where('Appointment.patientId', patientId)
-                .orderBy('Appointment.appointmentDate', 'desc')
-                .orderBy('Appointment.estimatedTime', 'desc');
+            return await AppointmentDAO.findByPatient(patientId);
         } catch (error) {
             console.error(`Error fetching appointments for patient ${patientId}:`, error);
             throw new Error('Unable to find appointments by patient');
@@ -81,23 +34,13 @@ export default {
 
     async findByDoctor(doctorId) {
         try {
-            return await db('Appointment')
-                .join('Patient', 'Appointment.patientId', '=', 'Patient.patientId')
-                .join('User as PatientUser', 'Patient.userId', '=', 'PatientUser.userId')
-                .join('Specialty', 'Appointment.specialtyId', '=', 'Specialty.specialtyId')
-                .leftJoin('Room', 'Appointment.roomId', '=', 'Room.roomId')
-                .select(
-                    'Appointment.*',
-                    'PatientUser.fullName as patientName',
-                    'PatientUser.phoneNumber as patientPhone',
-                    'PatientUser.email',
-                    'Patient.gender as patientGender',
-                    'Specialty.name as specialtyName',
-                    'Room.roomNumber'
-                )
-                .where('Appointment.doctorId', doctorId)
-                .orderBy('Appointment.appointmentDate', 'desc')
-                .orderBy('Appointment.estimatedTime', 'desc');
+            // Validate doctor exists
+            const doctor = await Doctor.findById(doctorId);
+            if (!doctor) {
+                throw new Error(`Doctor with ID ${doctorId} not found`);
+            }
+            
+            return await AppointmentDAO.findByDoctor(doctorId);
         } catch (error) {
             console.error(`Error fetching appointments for doctor ${doctorId}:`, error);
             throw new Error('Unable to find appointments by doctor');
@@ -108,8 +51,8 @@ export default {
         try {
             console.log(`[Service] Finding appointments between ${startDate} and ${endDate}`);
             
+            // Format dates properly
             if (typeof startDate === 'string' && startDate.includes('/')) {
-                // Convert DD/MM/YYYY to YYYY-MM-DD
                 const parts = startDate.split('/');
                 if (parts.length === 3) {
                     startDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
@@ -126,60 +69,15 @@ export default {
                 }
             }
             
-            // Final date check - make sure we have a valid date format
+            // Format dates with moment
             const formattedStartDate = moment(startDate).format('YYYY-MM-DD');
             const formattedEndDate = endDate ? moment(endDate).format('YYYY-MM-DD') : formattedStartDate;
             
-            console.log(`[Service] Using dates for SQL query: ${formattedStartDate} to ${formattedEndDate}`);
+            console.log(`[Service] Using dates for query: ${formattedStartDate} to ${formattedEndDate}`);
             
-            // First, let's check the available rooms
-            const roomsCheck = await db('Room')
-                .select('roomId', 'roomNumber', 'specialtyId')
-                .limit(5);
-            console.log('[Service] Sample rooms in database:', roomsCheck);
-            
-            // Then check appointments with rooms for this date
-            const appointmentsWithRoomCheck = await db('Appointment')
-                .select('appointmentId', 'roomId')
-                .whereRaw('DATE(appointmentDate) = ?', [formattedStartDate])
-                .limit(10);
-            console.log('[Service] Sample appointments with roomId for this date:', appointmentsWithRoomCheck);
-            
-            // Construct and execute the query with safe date format
-            const query = db('Appointment')
-                .join('Patient', 'Appointment.patientId', '=', 'Patient.patientId')
-                .join('User as PatientUser', 'Patient.userId', '=', 'PatientUser.userId')
-                .join('Specialty', 'Appointment.specialtyId', '=', 'Specialty.specialtyId')
-                .leftJoin('Doctor', 'Appointment.doctorId', '=', 'Doctor.doctorId')
-                .leftJoin('User as DoctorUser', 'Doctor.userId', '=', 'DoctorUser.userId')
-                .leftJoin('Room', 'Appointment.roomId', '=', 'Room.roomId')
-                .select(
-                    'Appointment.*',
-                    'PatientUser.fullName as patientName',
-                    'PatientUser.phoneNumber as patientPhone',
-                    'PatientUser.email',
-                    'Specialty.name as specialtyName',
-                    'DoctorUser.fullName as doctorName',
-                    'Room.roomNumber'
-                )
-                .whereRaw('DATE(Appointment.appointmentDate) = ?', [formattedStartDate])
-                .orderBy('Appointment.appointmentDate')
-                .orderBy('Appointment.estimatedTime');
-            
-            // Log the actual SQL for debugging
-            const sqlString = query.toString();
-            console.log(`[Service] SQL Query: ${sqlString}`);
-            
-            // Execute the query
-            const result = await query;
+            // Use DAO to get data
+            const result = await AppointmentDAO.findByDateRange(formattedStartDate, formattedEndDate);
             console.log(`[Service] Found ${result.length} appointments for date: ${formattedStartDate}`);
-            
-            // Debug room information for each appointment
-            result.forEach(appointment => {
-                console.log(`[Service] Appointment ${appointment.appointmentId} room data:`, 
-                    appointment.roomNumber ? `Room ${appointment.roomNumber}` : 'No room assigned',
-                    `(roomId: ${appointment.roomId || 'null'})`);
-            });
             
             return result;
         } catch (error) {
@@ -190,25 +88,7 @@ export default {
 
     async findByStatus(status) {
         try {
-            return await db('Appointment')
-                .join('Patient', 'Appointment.patientId', '=', 'Patient.patientId')
-                .join('User as PatientUser', 'Patient.userId', '=', 'PatientUser.userId')
-                .join('Specialty', 'Appointment.specialtyId', '=', 'Specialty.specialtyId')
-                .leftJoin('Doctor', 'Appointment.doctorId', '=', 'Doctor.doctorId')
-                .leftJoin('User as DoctorUser', 'Doctor.userId', '=', 'DoctorUser.userId')
-                .leftJoin('Room', 'Appointment.roomId', '=', 'Room.roomId')
-                .select(
-                    'Appointment.*',
-                    'PatientUser.fullName as patientName',
-                    'PatientUser.phoneNumber as patientPhone',
-                    'PatientUser.email',
-                    'Specialty.name as specialtyName',
-                    'DoctorUser.fullName as doctorName',
-                    'Room.roomNumber'
-                )
-                .where('Appointment.status', status)
-                .orderBy('Appointment.appointmentDate')
-                .orderBy('Appointment.estimatedTime');
+            return await AppointmentDAO.findByStatus(status);
         } catch (error) {
             console.error(`Error fetching appointments with status ${status}:`, error);
             throw new Error('Unable to find appointments by status');
@@ -217,25 +97,7 @@ export default {
 
     async findByPatientAppointmentStatus(status) {
         try {
-            return await db('Appointment')
-                .join('Patient', 'Appointment.patientId', '=', 'Patient.patientId')
-                .join('User as PatientUser', 'Patient.userId', '=', 'PatientUser.userId')
-                .join('Specialty', 'Appointment.specialtyId', '=', 'Specialty.specialtyId')
-                .leftJoin('Doctor', 'Appointment.doctorId', '=', 'Doctor.doctorId')
-                .leftJoin('User as DoctorUser', 'Doctor.userId', '=', 'DoctorUser.userId')
-                .leftJoin('Room', 'Appointment.roomId', '=', 'Room.roomId')
-                .select(
-                    'Appointment.*',
-                    'PatientUser.fullName as patientName',
-                    'PatientUser.phoneNumber as patientPhone',
-                    'PatientUser.email',
-                    'Specialty.name as specialtyName',
-                    'DoctorUser.fullName as doctorName',
-                    'Room.roomNumber'
-                )
-                .where('Appointment.patientAppointmentStatus', status)
-                .orderBy('Appointment.appointmentDate')
-                .orderBy('Appointment.estimatedTime');
+            return await AppointmentDAO.findByPatientAppointmentStatus(status);
         } catch (error) {
             console.error(`Error fetching appointments with patient appointment status ${status}:`, error);
             throw new Error('Unable to find appointments by patient appointment status');
@@ -244,20 +106,32 @@ export default {
 
     async add(appointment) {
         try {
-            const [appointmentId] = await db('Appointment').insert(appointment);
-            return appointmentId;
+            // Validate doctor if doctorId is provided
+            if (appointment.doctorId) {
+                const doctor = await Doctor.findById(appointment.doctorId);
+                if (!doctor) {
+                    throw new Error('Selected doctor not found');
+                }
+            }
+            
+            // Validate patient if patientId is provided
+            if (appointment.patientId) {
+                const patient = await PatientDAO.findById(appointment.patientId);
+                if (!patient) {
+                    throw new Error('Selected patient not found');
+                }
+            }
+            
+            return await AppointmentDAO.add(appointment);
         } catch (error) {
             console.error('Error adding appointment:', error);
-            throw new Error('Unable to add appointment');
+            throw new Error('Unable to add appointment: ' + error.message);
         }
     },
 
     async update(appointmentId, appointment) {
         try {
-            const result = await db('Appointment')
-                .where('appointmentId', appointmentId)
-                .update(appointment);
-            return result > 0;
+            return await AppointmentDAO.update(appointmentId, appointment);
         } catch (error) {
             console.error(`Error updating appointment with ID ${appointmentId}:`, error);
             throw new Error('Unable to update appointment');
@@ -406,57 +280,10 @@ export default {
 
     async getAppointmentWithServices(appointmentId) {
         try {
-            // Get appointment details
-            const appointment = await this.findById(appointmentId);
-            
-            if (!appointment) return null;
-            
-            // Debug room information
-            console.log(`[Service] getAppointmentWithServices: Appointment ${appointmentId} room data:`, 
-                appointment.roomNumber ? `Room ${appointment.roomNumber}` : 'No room assigned',
-                `(roomId: ${appointment.roomId || 'null'})`);
-            
-            // Verify Room exists if roomId is set
-            if (appointment.roomId) {
-                const room = await db('Room')
-                    .select('roomId', 'roomNumber')
-                    .where('roomId', appointment.roomId)
-                    .first();
-                    
-                console.log('[Service] Room lookup for appointment:', room);
-                
-                // Update appointment with room number directly from Room table
-                if (room && room.roomNumber) {
-                    appointment.roomNumber = room.roomNumber;
-                }
-            }
-            
-            // Get services associated with this appointment
-            const services = await db('AppointmentServices')
-                .join('Service', 'AppointmentServices.serviceId', '=', 'Service.serviceId')
-                .select(
-                    'AppointmentServices.*',
-                    'Service.name',
-                    'Service.description',
-                    'Service.duration',
-                    'Service.type'
-                )
-                .where('AppointmentServices.appointmentId', appointmentId);
-            
-            // Get medical record if exists
-            const medicalRecord = await db('MedicalRecord')
-                .where('appointmentId', appointmentId)
-                .first();
-            
-            // Return appointment with services and medical record
-            return {
-                ...appointment,
-                services,
-                medicalRecord
-            };
+            return await AppointmentDAO.getAppointmentWithServices(appointmentId);
         } catch (error) {
             console.error(`Error fetching appointment with services for ID ${appointmentId}:`, error);
-            throw new Error('Unable to get appointment with services');
+            throw new Error('Unable to fetch appointment details');
         }
     },
 

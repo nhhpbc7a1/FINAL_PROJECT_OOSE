@@ -1,4 +1,5 @@
-import db from '../../ultis/db.js';
+import Doctor from '../../models/Doctor.js';
+import NotificationDAO from '../../dao/NotificationDAO.js';
 import moment from 'moment';
 
 /**
@@ -13,12 +14,18 @@ export default {
    */
   async getNotificationsForDoctor(userId) {
     try {
-      return await db('Notification')
-        .where('userId', userId)
-        .orderBy('createdDate', 'desc');
+      // Validate that the doctor exists if possible (if we have doctorId)
+      if (userId) {
+        const doctor = await Doctor.findByUserId(userId);
+        if (doctor) {
+          console.log(`Found doctor with ID ${doctor.doctorId} for user ${userId}`);
+        }
+      }
+      
+      return await NotificationDAO.findByUserId(userId);
     } catch (error) {
       console.error('Error getting doctor notifications:', error);
-      throw new Error('Failed to get notifications');
+      throw new Error('Failed to get notifications: ' + error.message);
     }
   },
   
@@ -29,15 +36,7 @@ export default {
    */
   async getUnreadNotificationsCount(userId) {
     try {
-      const result = await db('Notification')
-        .where({
-          userId: userId,
-          isRead: false
-        })
-        .count('notificationId as count')
-        .first();
-        
-      return result ? result.count : 0;
+      return await NotificationDAO.countUnreadByUserId(userId);
     } catch (error) {
       console.error('Error counting unread notifications:', error);
       return 0;
@@ -51,15 +50,10 @@ export default {
    */
   async getUnreadNotifications(userId) {
     try {
-      return await db('Notification')
-        .where({
-          userId: userId,
-          isRead: false
-        })
-        .orderBy('createdDate', 'desc');
+      return await NotificationDAO.findUnreadByUserId(userId);
     } catch (error) {
       console.error('Error getting unread notifications:', error);
-      throw new Error('Failed to get unread notifications');
+      throw new Error('Failed to get unread notifications: ' + error.message);
     }
   },
   
@@ -70,14 +64,10 @@ export default {
    */
   async markAsRead(notificationId) {
     try {
-      const result = await db('Notification')
-        .where('notificationId', notificationId)
-        .update({ isRead: true });
-        
-      return result > 0;
+      return await NotificationDAO.markAsRead(notificationId);
     } catch (error) {
       console.error('Error marking notification as read:', error);
-      throw new Error('Failed to mark notification as read');
+      throw new Error('Failed to mark notification as read: ' + error.message);
     }
   },
   
@@ -88,17 +78,10 @@ export default {
    */
   async markAllAsRead(userId) {
     try {
-      const result = await db('Notification')
-        .where({
-          userId: userId,
-          isRead: false
-        })
-        .update({ isRead: true });
-        
-      return result > 0;
+      return await NotificationDAO.markAllAsReadForUser(userId);
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
-      throw new Error('Failed to mark all notifications as read');
+      throw new Error('Failed to mark all notifications as read: ' + error.message);
     }
   },
   
@@ -109,14 +92,10 @@ export default {
    */
   async deleteNotification(notificationId) {
     try {
-      const result = await db('Notification')
-        .where('notificationId', notificationId)
-        .delete();
-        
-      return result > 0;
+      return await NotificationDAO.delete(notificationId);
     } catch (error) {
       console.error('Error deleting notification:', error);
-      throw new Error('Failed to delete notification');
+      throw new Error('Failed to delete notification: ' + error.message);
     }
   },
   
@@ -137,7 +116,7 @@ export default {
         createdDate: new Date()
       };
       
-      await db('Notification').insert(techNotification);
+      await NotificationDAO.create(techNotification);
       console.log('Test request notification sent to lab technician');
       
       // Create notification for patient if we have their userId
@@ -150,7 +129,7 @@ export default {
           createdDate: new Date()
         };
         
-        await db('Notification').insert(patientNotification);
+        await NotificationDAO.create(patientNotification);
         console.log('Test request notification sent to patient');
       }
     } catch (error) {
@@ -182,7 +161,7 @@ export default {
           createdDate: new Date()
         };
         
-        await db('Notification').insert(notification);
+        await NotificationDAO.create(notification);
         console.log('Prescription notification sent to patient');
       }
     } catch (error) {
@@ -210,7 +189,7 @@ export default {
           createdDate: new Date()
         };
         
-        await db('Notification').insert(notification);
+        await NotificationDAO.create(notification);
         console.log('Examination completion notification sent to patient');
       }
     } catch (error) {
@@ -234,10 +213,36 @@ export default {
         createdDate: new Date()
       };
       
-      await db('Notification').insert(notification);
+      await NotificationDAO.create(notification);
       console.log('New appointment notification sent to doctor');
     } catch (error) {
       console.error('Error creating new appointment notification:', error);
+    }
+  },
+  
+  /**
+   * Send a notification to a specific user
+   * @param {number} userId - User ID to send notification to
+   * @param {string} title - Notification title
+   * @param {string} content - Notification content
+   * @returns {Promise<number>} ID of the created notification
+   */
+  async sendNotification(userId, title, content) {
+    try {
+      const notification = {
+        userId,
+        title,
+        content,
+        isRead: false,
+        createdDate: new Date()
+      };
+      
+      const notificationId = await NotificationDAO.create(notification);
+      console.log(`Notification sent to user ${userId}`);
+      return notificationId;
+    } catch (error) {
+      console.error('Error sending notification:', error);
+      throw new Error(`Failed to send notification: ${error.message}`);
     }
   },
   
@@ -247,103 +252,10 @@ export default {
   async insertTestNotifications() {
     try {
       console.log('Inserting test notifications...');
-      
-      // First, check if we already have notifications in the database
-      const existingNotifications = await db('Notification').count('notificationId as count').first();
-      
-      if (existingNotifications.count > 0) {
-        console.log(`Found ${existingNotifications.count} existing notifications. Skipping insertion.`);
-        console.log('To add more test notifications, clear the existing ones first.');
-        return false;
-      }
-      
-      // Sample notifications for doctors (userId 4 corresponds to doctorId 2)
-      const doctorNotifications = [
-        {
-          userId: 4, // Doctor with doctorId 2
-          title: 'New appointment scheduled',
-          content: 'You have a new appointment with patient John Doe on Monday at 10:00 AM.',
-          isRead: false,
-          createdDate: new Date(Date.now() - 1000 * 60 * 30) // 30 minutes ago
-        },
-        {
-          userId: 4,
-          title: 'Lab results ready',
-          content: 'Lab results for patient Jane Smith are now available for review.',
-          isRead: false,
-          createdDate: new Date(Date.now() - 1000 * 60 * 60 * 2) // 2 hours ago
-        },
-        {
-          userId: 4,
-          title: 'Appointment reminder',
-          content: 'You have 3 appointments scheduled for tomorrow.',
-          isRead: true,
-          createdDate: new Date(Date.now() - 1000 * 60 * 60 * 24) // 1 day ago
-        },
-        {
-          userId: 4,
-          title: 'New message from administrator',
-          content: 'Please review the updated hospital policies regarding patient care documentation.',
-          isRead: false,
-          createdDate: new Date(Date.now() - 1000 * 60 * 60 * 5) // 5 hours ago
-        },
-        {
-          userId: 4,
-          title: 'Schedule change',
-          content: 'Your schedule for next week has been updated. Please check the calendar.',
-          isRead: false,
-          createdDate: new Date(Date.now() - 1000 * 60 * 45) // 45 minutes ago
-        }
-      ];
-      
-      // Insert notifications into the database
-      await db('Notification').insert(doctorNotifications);
-      
-      console.log(`Successfully inserted ${doctorNotifications.length} test notifications for doctor.`);
-      return true;
+      // Use DAO to insert test notifications
+      await NotificationDAO.createTestNotifications();
     } catch (error) {
       console.error('Error inserting test notifications:', error);
-      return false;
-    }
-  },
-  
-  /**
-   * Send a general notification to any user
-   * @param {number} userId - User ID to send notification to
-   * @param {string} title - Notification title
-   * @param {string} content - Notification content
-   * @returns {Promise<Object>} Result with success status and notificationId if successful
-   */
-  async sendNotification(userId, title, content) {
-    try {
-      if (!userId) {
-        console.error('Error: Cannot send notification without userId');
-        return { success: false, error: 'Missing userId' };
-      }
-
-      const notification = {
-        userId,
-        title,
-        content,
-        isRead: false,
-        createdDate: new Date()
-      };
-      
-      const [notificationId] = await db('Notification').insert(notification);
-      console.log(`Notification sent to user (userId: ${userId})`);
-      
-      return { 
-        success: true, 
-        notificationId, 
-        message: 'Notification sent successfully' 
-      };
-    } catch (error) {
-      console.error(`Error sending notification: ${error.message}`);
-      return { 
-        success: false, 
-        error: error.message,
-        message: 'Failed to send notification'
-      };
     }
   }
 }; 

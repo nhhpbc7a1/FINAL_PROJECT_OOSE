@@ -1,22 +1,21 @@
-import db from '../../ultis/db.js';
+import MedicationDAO from '../../dao/MedicationDAO.js';
 
 export default {
     async findAll() {
         try {
-            return await db('Medication');
+            return await MedicationDAO.findAll();
         } catch (error) {
             console.error('Error in medicationService.findAll:', error);
-            throw error;
+            throw new Error('Unable to fetch medications: ' + error.message);
         }
     },
 
     async findById(medicationId) {
         try {
-            const medications = await db('Medication').where('medicationId', medicationId);
-            return medications[0];
+            return await MedicationDAO.findById(medicationId);
         } catch (error) {
             console.error(`Error in medicationService.findById(${medicationId}):`, error);
-            throw error;
+            throw new Error('Unable to find medication: ' + error.message);
         }
     },
 
@@ -28,12 +27,7 @@ export default {
      */
     async isNameUnique(name, excludeId = null) {
         try {
-            const query = db('Medication').whereRaw('LOWER(name) = LOWER(?)', [name]); // Case-insensitive check
-            if (excludeId) {
-                query.andWhereNot('medicationId', excludeId);
-            }
-            const existing = await query.first();
-            return !existing; // Return true if no existing record found
+            return await MedicationDAO.isNameUnique(name, excludeId);
         } catch (error) {
             console.error('Error checking medication name uniqueness:', error);
             return false; // Treat errors as non-unique to be safe
@@ -42,36 +36,50 @@ export default {
 
     async add(medication) {
         try {
+            // Validate medication data
+            if (!medication.name || medication.name.trim() === '') {
+                throw new Error('Medication name is required');
+            }
+
+            // Ensure price is a valid number
+            const price = parseFloat(medication.price);
+            if (isNaN(price) || price < 0) {
+                throw new Error('Invalid price provided. Price must be a non-negative number.');
+            }
+
             // Prepare data for insertion, handling optional fields
             const medicationData = {
                 name: medication.name,
                 description: medication.description || null,
                 dosage: medication.dosage || null,
-                price: parseFloat(medication.price), // Ensure price is a number
+                price: price,
                 category: medication.category || null,
                 manufacturer: medication.manufacturer || null,
                 sideEffects: medication.sideEffects || null
             };
 
-             // Basic validation on price
-            if (isNaN(medicationData.price) || medicationData.price < 0) {
-                throw new Error('Invalid price provided. Price must be a non-negative number.');
+            // Check for duplicate name
+            const isUnique = await this.isNameUnique(medicationData.name);
+            if (!isUnique) {
+                throw new Error(`Medication name "${medicationData.name}" already exists.`);
             }
 
-            const [medicationId] = await db('Medication').insert(medicationData);
-            return medicationId;
+            // Use DAO to add the medication
+            return await MedicationDAO.add(medicationData);
         } catch (error) {
             console.error('Error adding medication:', error);
-            if (error.code === 'ER_DUP_ENTRY' || (error.message && error.message.includes('Duplicate entry'))) {
-                 throw new Error(`Medication name "${medication.name}" already exists.`);
-             }
-            // Rethrow other errors, including the price validation error
             throw new Error(error.message || 'Unable to add medication');
         }
     },
 
     async update(medicationId, medication) {
         try {
+            // Check if medication exists
+            const existingMedication = await MedicationDAO.findById(medicationId);
+            if (!existingMedication) {
+                throw new Error(`Medication with ID ${medicationId} not found`);
+            }
+
             // Prepare data for update, only include provided fields
             const medicationData = {};
             if (medication.hasOwnProperty('name')) medicationData.name = medication.name;
@@ -87,22 +95,22 @@ export default {
             if (medication.hasOwnProperty('manufacturer')) medicationData.manufacturer = medication.manufacturer;
             if (medication.hasOwnProperty('sideEffects')) medicationData.sideEffects = medication.sideEffects;
 
-
             if (Object.keys(medicationData).length === 0) {
-                 return true; // Nothing to update
+                return true; // Nothing to update
             }
 
-            const result = await db('Medication')
-                .where('medicationId', medicationId)
-                .update(medicationData);
+            // If name is changing, check uniqueness
+            if (medicationData.name && medicationData.name !== existingMedication.name) {
+                const isUnique = await this.isNameUnique(medicationData.name, medicationId);
+                if (!isUnique) {
+                    throw new Error(`Medication name "${medicationData.name}" already exists.`);
+                }
+            }
 
-            return result > 0;
+            // Use DAO to update the medication
+            return await MedicationDAO.update(medicationId, medicationData);
         } catch (error) {
             console.error(`Error updating medication with ID ${medicationId}:`, error);
-            if (error.code === 'ER_DUP_ENTRY' || (error.message && error.message.includes('Duplicate entry'))) {
-                 throw new Error(`Medication name "${medication.name}" already exists.`);
-            }
-            // Rethrow other errors, including the price validation error
             throw new Error(error.message || 'Unable to update medication');
         }
     },
@@ -114,10 +122,7 @@ export default {
      */
     async checkDependencies(medicationId) {
         try {
-            const hasPrescriptions = await db('PrescriptionDetail')
-                                          .where('medicationId', medicationId)
-                                          .first();
-            return !!hasPrescriptions; // Returns true if a record is found
+            return await MedicationDAO.hasPrescriptions(medicationId);
         } catch (error) {
             console.error(`Error checking dependencies for medication ID ${medicationId}:`, error);
             return true; // Assume dependencies exist on error to be safe
@@ -126,56 +131,44 @@ export default {
 
     async delete(medicationId) {
         try {
-            // Dependency check should be done in the route before calling this.dsadsadas
-            const result = await db('Medication')
-                .where('medicationId', medicationId)
-                .delete();
-            return result > 0;
+            // Check for dependencies first
+            const hasDependencies = await this.checkDependencies(medicationId);
+            if (hasDependencies) {
+                throw new Error('Cannot delete medication because it is referenced in prescriptions.');
+            }
+            
+            // Use DAO to delete the medication
+            return await MedicationDAO.delete(medicationId);
         } catch (error) {
             console.error(`Error deleting medication with ID ${medicationId}:`, error);
-             if (error.code === 'ER_ROW_IS_REFERENCED_2') {
-                 // This might still happen if the check in the route fails or race condition
-                 throw new Error('Cannot delete medication because it is referenced in prescriptions.');
-             }
-            throw new Error('Unable to delete medication');
+            throw new Error(error.message || 'Unable to delete medication');
         }
     },
 
     async search(query) {
         try {
-            return await db('Medication')
-                .select('*')
-                .where(builder => {
-                    builder.where('name', 'like', `%${query}%`)
-                           .orWhere('category', 'like', `%${query}%`)
-                           .orWhere('manufacturer', 'like', `%${query}%`)
-                           .orWhere('description', 'like', `%${query}%`);
-                 })
-                 .orderBy('name');
+            return await MedicationDAO.search(query);
         } catch (error) {
             console.error(`Error searching medications with query "${query}":`, error);
-            throw new Error('Unable to search medications');
+            throw new Error('Unable to search medications: ' + error.message);
         }
     },
 
     async searchByName(searchTerm) {
         try {
-            return await db('Medication')
-                .where('name', 'like', `%${searchTerm}%`)
-                .orWhere('category', 'like', `%${searchTerm}%`)
-                .orWhere('description', 'like', `%${searchTerm}%`);
+            return await MedicationDAO.searchByName(searchTerm);
         } catch (error) {
             console.error(`Error in medicationService.searchByName(${searchTerm}):`, error);
-            throw error;
+            throw new Error('Unable to search medications by name: ' + error.message);
         }
     },
 
     async findByCategory(category) {
         try {
-            return await db('Medication').where('category', category);
+            return await MedicationDAO.findByCategory(category);
         } catch (error) {
             console.error(`Error in medicationService.findByCategory(${category}):`, error);
-            throw error;
+            throw new Error('Unable to find medications by category: ' + error.message);
         }
     }
 };

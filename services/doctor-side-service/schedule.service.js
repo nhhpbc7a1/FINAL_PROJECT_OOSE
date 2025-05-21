@@ -1,4 +1,6 @@
-import db from '../../ultis/db.js';
+import Doctor from '../../models/Doctor.js';
+import ScheduleDAO from '../../dao/ScheduleDAO.js';
+import AppointmentDAO from '../../dao/AppointmentDAO.js';
 import moment from 'moment';
 
 export default {
@@ -9,28 +11,17 @@ export default {
         return [];
       }
       
-      let query = db('Schedule')
-        .where('Schedule.doctorId', doctorId)
-        .leftJoin('Room', 'Schedule.roomId', '=', 'Room.roomId')
-        .select(
-          'Schedule.*',
-          'Room.roomNumber'
-        )
-        .orderBy('Schedule.workDate')
-        .orderBy('Schedule.startTime');
-
-      // Filter by specific date if provided
-      if (date) {
-        query = query.where('Schedule.workDate', date);
+      // Validate doctor exists
+      const doctor = await Doctor.findById(doctorId);
+      if (!doctor) {
+        throw new Error(`Doctor with ID ${doctorId} not found`);
       }
 
-      console.log('getDoctorSchedules query:', query.toString());
-      const result = await query;
-      console.log('getDoctorSchedules result count:', result.length);
-      return result;
+      // Get schedules from DAO
+      return await ScheduleDAO.findByDoctor(doctorId, date);
     } catch (error) {
       console.error(`Error fetching schedules for doctor ID ${doctorId}:`, error);
-      throw new Error('Unable to find doctor schedules');
+      throw new Error('Unable to find doctor schedules: ' + error.message);
     }
   },
 
@@ -46,46 +37,33 @@ export default {
         return [];
       }
       
-      const query = db('Schedule')
-        .where('Schedule.doctorId', doctorId)
-        .whereBetween('Schedule.workDate', [startDate, endDate])
-        .leftJoin('Room', 'Schedule.roomId', '=', 'Room.roomId')
-        .select(
-          'Schedule.*',
-          'Room.roomNumber'
-        )
-        .orderBy('Schedule.workDate')
-        .orderBy('Schedule.startTime');
-        
-      console.log('getDoctorSchedulesByDateRange query:', query.toString());
-      const result = await query;
-      console.log('getDoctorSchedulesByDateRange result count:', result.length);
-      return result;
+      // Validate doctor exists
+      const doctor = await Doctor.findById(doctorId);
+      if (!doctor) {
+        throw new Error(`Doctor with ID ${doctorId} not found`);
+      }
+      
+      // Get schedules from DAO
+      return await ScheduleDAO.findByDoctorAndDateRange(doctorId, startDate, endDate);
     } catch (error) {
       console.error(`Error fetching schedules for doctor ID ${doctorId} in date range:`, error);
-      throw new Error('Unable to find doctor schedules for the date range');
+      throw new Error('Unable to find doctor schedules for the date range: ' + error.message);
     }
   },
 
   async getDoctorAppointmentsByDate(doctorId, date) {
     try {
-      return await db('Appointment')
-        .where('Appointment.doctorId', doctorId)
-        .where('Appointment.appointmentDate', date)
-        .join('Patient', 'Appointment.patientId', '=', 'Patient.patientId')
-        .join('User', 'Patient.userId', '=', 'User.userId')
-        .leftJoin('Room', 'Appointment.roomId', '=', 'Room.roomId')
-        .leftJoin('Specialty', 'Appointment.specialtyId', '=', 'Specialty.specialtyId')
-        .select(
-          'Appointment.*',
-          'User.fullName as patientName',
-          'Room.roomNumber',
-          'Specialty.name as specialtyName'
-        )
-        .orderBy('Appointment.appointmentTime');
+      // Validate doctor exists
+      const doctor = await Doctor.findById(doctorId);
+      if (!doctor) {
+        throw new Error(`Doctor with ID ${doctorId} not found`);
+      }
+      
+      // Use AppointmentDAO to get the data
+      return await AppointmentDAO.findByDoctorAndDate(doctorId, date);
     } catch (error) {
       console.error(`Error fetching appointments for doctor ID ${doctorId} on date ${date}:`, error);
-      throw new Error('Unable to find doctor appointments for the date');
+      throw new Error('Unable to find doctor appointments for the date: ' + error.message);
     }
   },
 
@@ -137,36 +115,17 @@ export default {
         return { total: 0, available: 0, fullfilled: 0 };
       }
       
-      // Get total number of schedules
-      const totalSchedules = await db('Schedule')
-        .where('doctorId', doctorId)
-        .whereBetween('workDate', [startDate, endDate])
-        .count('scheduleId as total')
-        .first();
-
-      // Get count by status
-      const availableSchedules = await db('Schedule')
-        .where('doctorId', doctorId)
-        .whereBetween('workDate', [startDate, endDate])
-        .where('status', 'available')
-        .count('scheduleId as count')
-        .first();
-
-      const fullfilledSchedules = await db('Schedule')
-        .where('doctorId', doctorId)
-        .whereBetween('workDate', [startDate, endDate])
-        .where('status', 'fullfilled')
-        .count('scheduleId as count')
-        .first();
-
-      return {
-        total: parseInt(totalSchedules?.total || 0),
-        available: parseInt(availableSchedules?.count || 0),
-        fullfilled: parseInt(fullfilledSchedules?.count || 0)
-      };
+      // Validate doctor exists
+      const doctor = await Doctor.findById(doctorId);
+      if (!doctor) {
+        throw new Error(`Doctor with ID ${doctorId} not found`);
+      }
+      
+      // Get summary from DAO
+      return await ScheduleDAO.getSummaryByDoctorAndDateRange(doctorId, startDate, endDate);
     } catch (error) {
       console.error(`Error getting schedule summary for doctor ID ${doctorId}:`, error);
-      throw new Error('Unable to get schedule summary');
+      throw new Error('Unable to get schedule summary: ' + error.message);
     }
   }
 }; 

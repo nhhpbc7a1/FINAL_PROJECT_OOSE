@@ -1,48 +1,17 @@
-import db from '../../ultis/db.js';
+import Doctor from '../../models/Doctor.js';
+import PatientDAO from '../../dao/PatientDAO.js';
 
 export default {
     async findAll(doctorId) {
         try {
-            // First, get the latest appointment for each patient with this doctor
-            const latestAppointmentsSubquery = db('Appointment')
-                .select(
-                    'patientId',
-                    db.raw('MAX(appointmentDate) as latestDate')
-                )
-                .where('doctorId', '=', doctorId)
-                .groupBy('patientId')
-                .as('LatestApp');
+            // Validate doctor exists
+            const doctor = await Doctor.findById(doctorId);
+            if (!doctor) {
+                throw new Error(`Doctor with ID ${doctorId} not found`);
+            }
             
-            // Query to get patients assigned to this doctor through appointments
-            const patients = await db('Patient')
-                .join('User', 'Patient.userId', '=', 'User.userId')
-                .join('Appointment', 'Patient.patientId', '=', 'Appointment.patientId')
-                .where('Appointment.doctorId', '=', doctorId)
-                .distinct(
-                    'Patient.patientId',
-                    'Patient.userId',
-                    'Patient.dob',
-                    'Patient.gender',
-                    'Patient.bloodType',
-                    'Patient.medicalHistory',
-                    'User.email',
-                    'User.fullName',
-                    'User.phoneNumber',
-                    'User.address',
-                    'User.accountStatus'
-                )
-                // Join with the latest appointment subquery
-                .leftJoin(latestAppointmentsSubquery, 'Patient.patientId', '=', 'LatestApp.patientId')
-                // Join again with appointments to get the status of the latest appointment
-                .leftJoin('Appointment as LatestAppointment', function() {
-                    this.on('Patient.patientId', '=', 'LatestAppointment.patientId')
-                        .andOn('LatestAppointment.appointmentDate', '=', 'LatestApp.latestDate');
-                })
-                .select(
-                    'LatestApp.latestDate as lastVisitDate',
-                    'LatestAppointment.patientAppointmentStatus as appointmentStatus'
-                )
-                .orderBy('User.fullName', 'asc');
+            // Get patients with their latest appointments for this doctor
+            const patients = await PatientDAO.findByDoctorWithLastVisit(doctorId);
                 
             console.log(`Found ${patients.length} patients for doctor ID ${doctorId}`);
             // Add debug for patient status
@@ -56,7 +25,7 @@ export default {
             return patients;
         } catch (error) {
             console.error('Error fetching patients with appointment statuses:', error);
-            throw new Error('Unable to load patients');
+            throw new Error('Unable to load patients: ' + error.message);
         }
     }
 }; 

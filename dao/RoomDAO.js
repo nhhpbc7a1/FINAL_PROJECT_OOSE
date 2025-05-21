@@ -6,17 +6,24 @@ import db from '../ultis/db.js';
 class RoomDAO {
     /**
      * Get all rooms
+     * @param {number} limit - Optional limit of rooms to return
      * @returns {Promise<Array>} Array of room objects with specialty info
      */
-    static async findAll() {
+    static async findAll(limit) {
         try {
-            return await db('Room')
+            let query = db('Room')
                 .leftJoin('Specialty', 'Room.specialtyId', '=', 'Specialty.specialtyId')
                 .select(
                     'Room.*',
                     'Specialty.name as specialtyName'
                 )
                 .orderBy('Room.roomNumber');
+            
+            if (limit && Number.isInteger(Number(limit))) {
+                query = query.limit(limit);
+            }
+                
+            return await query;
         } catch (error) {
             console.error('Error fetching rooms:', error);
             throw new Error('Unable to load rooms');
