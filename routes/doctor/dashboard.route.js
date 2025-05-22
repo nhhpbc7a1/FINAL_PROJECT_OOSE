@@ -1,5 +1,5 @@
 import express from 'express';
-import dashboardService from '../../services/doctor-side-service/dashboard.service.js';
+import DoctorDashboard from '../../models/DoctorDashboard.js';
 
 const router = express.Router();
 
@@ -22,8 +22,8 @@ router.get('/', async function (req, res) {
     
     // Fetch dashboard data and doctor profile
     const [dashboardData, doctorProfile] = await Promise.all([
-      dashboardService.getDashboardData(doctorId),
-      dashboardService.getDoctorProfile(doctorId)
+      DoctorDashboard.getDashboardData(doctorId),
+      DoctorDashboard.getDoctorProfile(doctorId)
     ]);
     
     res.render('vwDoctor/dashboard', { 

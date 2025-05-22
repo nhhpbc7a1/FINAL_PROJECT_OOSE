@@ -1,8 +1,13 @@
 import express from 'express';
 import moment from 'moment';
-import appointmentService from '../../services/doctor-side-service/appointment.service.js';
-import patientDetailsService from '../../services/doctor-side-service/patientDetails.service.js';
-import doctorMedicalRecordService from '../../services/doctor-side-service/medical-record.service.js';
+import db from '../../ultis/db.js';
+import Appointment from '../../models/Appointment.js';
+import Patient from '../../models/Patient.js';
+import MedicalRecord from '../../models/MedicalRecord.js';
+import Doctor from '../../models/Doctor.js';
+import Room from '../../models/Room.js';
+import Schedule from '../../models/Schedule.js';
+import DoctorAppointment from '../../models/DoctorAppointment.js';
 
 const router = express.Router();
 
@@ -21,6 +26,12 @@ router.get('/', async function (req, res) {
     // Check if doctor is logged in
     if (!doctorId) {
       return res.redirect('/account/login'); // Redirect to login page if not logged in
+    }
+    
+    // Check for error message in session
+    const errorMessage = req.session.errorMessage || null;
+    if (req.session.errorMessage) {
+      delete req.session.errorMessage; // Clear the error message
     }
     
     // Debug incoming date parameter
@@ -69,11 +80,18 @@ router.get('/', async function (req, res) {
     const formattedDate = moment(selectedDate).format('dddd, MMMM D, YYYY');
     
     // Get appointments for the selected date
-    const appointments = await appointmentService.findByDateRange(selectedDate, selectedDate);
+    // Usando o método do modelo DoctorAppointment
+    const appointments = await DoctorAppointment.findByDateRange(selectedDate, selectedDate);
     console.log(`Found ${appointments.length} total appointments for date ${selectedDate}`);
     
     // Filter by doctor
-    const doctorAppointments = appointments.filter(app => app.doctorId === doctorId);
+    const doctorAppointments = appointments.filter(app => {
+      // Ensure we're comparing the same types (convert both to strings)
+      const appDoctorId = app.doctorId?.toString();
+      const currentDoctorId = doctorId?.toString();
+      console.log(`Comparing appointment doctor ID: ${appDoctorId} with current doctor ID: ${currentDoctorId}`);
+      return appDoctorId === currentDoctorId;
+    });
     console.log(`Found ${doctorAppointments.length} appointments for doctor ${doctorId} on ${selectedDate}`);
     
     // Debug appointment info
@@ -85,13 +103,34 @@ router.get('/', async function (req, res) {
     }
     
     // Format appointments for the template
-    const formattedAppointments = doctorAppointments.map((appointment, index) => ({
-      ...appointment,
-      timeFormatted: appointment.estimatedTime 
-        ? moment(appointment.estimatedTime, 'HH:mm:ss').format('hh:mm A') 
-        : 'N/A',
-      appointmentNumber: index + 1
-    }));
+    const formattedAppointments = doctorAppointments.map((appointment, index) => {
+      // Calculate age from DOB
+      let patientAge = 'Unknown';
+      if (appointment.patientDob) {
+        try {
+          patientAge = moment().diff(moment(appointment.patientDob), 'years');
+          console.log(`Calculated age for patient ${appointment.patientName}: ${patientAge} years old (DOB: ${appointment.patientDob})`);
+        } catch (ageError) {
+          console.error(`Error calculating age for ${appointment.patientName}:`, ageError);
+        }
+      } else {
+        console.log(`Missing DOB for patient ${appointment.patientName}`);
+      }
+      
+      // Debug room information
+      console.log(`Appointment ${appointment.appointmentId} room info: roomId=${appointment.roomId}, roomNumber=${appointment.roomNumber || 'Not assigned'}`);
+      
+      return {
+        ...appointment,
+        timeFormatted: appointment.estimatedTime 
+          ? moment(appointment.estimatedTime, 'HH:mm:ss').format('hh:mm A') 
+          : 'N/A',
+        appointmentNumber: index + 1,
+        patientAge: patientAge,
+        // Ensure roomNumber is properly set
+        roomNumber: appointment.roomNumber || 'Not assigned'
+      };
+    });
     
     // Get the currently selected appointment (if any)
     const selectedAppointmentId = req.query.appointmentId;
@@ -99,9 +138,54 @@ router.get('/', async function (req, res) {
     
     if (selectedAppointmentId) {
       // Fetch detailed info for the selected appointment
-      selectedAppointment = await appointmentService.getAppointmentWithServices(selectedAppointmentId);
+      selectedAppointment = await DoctorAppointment.findById(selectedAppointmentId);
       
       if (selectedAppointment) {
+        // Ensure patient DOB is available
+        if (!selectedAppointment.patientDob) {
+          console.log('Warning: patientDob is missing for selected appointment');
+          
+          // Try to get patient dob from Patient table if needed
+          try {
+            const patientData = await db('Patient').where('patientId', selectedAppointment.patientId).first('dob');
+            if (patientData && patientData.dob) {
+              selectedAppointment.patientDob = patientData.dob;
+              console.log(`Retrieved patient DOB from Patient table: ${selectedAppointment.patientDob}`);
+            }
+          } catch (dobError) {
+            console.error('Error retrieving patient DOB:', dobError);
+          }
+        }
+        
+        // Check if room information is missing
+        if (!selectedAppointment.roomNumber) {
+          console.log('Warning: Room number is missing for appointment, trying to fetch it directly');
+          try {
+            // Try to get room information directly from Appointment and Room tables
+            const roomData = await db('Appointment')
+              .leftJoin('Room', 'Appointment.roomId', '=', 'Room.roomId')
+              .where('Appointment.appointmentId', selectedAppointment.appointmentId)
+              .select('Room.roomNumber')
+              .first();
+              
+            if (roomData && roomData.roomNumber) {
+              selectedAppointment.roomNumber = roomData.roomNumber;
+              console.log(`Retrieved room number directly: ${selectedAppointment.roomNumber}`);
+            } else {
+              console.log('Room not assigned for this appointment');
+            }
+          } catch (roomError) {
+            console.error('Error retrieving room information:', roomError);
+          }
+        }
+        
+        // Calculate age explicitly
+        let patientAge = 'Unknown';
+        if (selectedAppointment.patientDob) {
+          patientAge = moment().diff(moment(selectedAppointment.patientDob), 'years');
+          console.log(`Selected appointment - Calculated age: ${patientAge} years (DOB: ${selectedAppointment.patientDob})`);
+        }
+        
         // Add formatting to selected appointment
         selectedAppointment = {
           ...selectedAppointment,
@@ -113,10 +197,22 @@ router.get('/', async function (req, res) {
             ? `${moment(selectedAppointment.estimatedTime, 'HH:mm:ss').format('hh:mm A')} - ${moment(selectedAppointment.estimatedTime, 'HH:mm:ss').add(30, 'minutes').format('hh:mm A')}`
             : 'Not specified',
           patientGenderFormatted: selectedAppointment.patientGender === 'male' ? 'Male' : 'Female',
-          patientAge: selectedAppointment.patientDob 
-            ? moment().diff(moment(selectedAppointment.patientDob), 'years') 
-            : 'Unknown'
+          patientAge: patientAge,
+          roomNumber: selectedAppointment.roomNumber || 'Not assigned'
         };
+        
+        // Ensure patient age is properly set
+        if (!selectedAppointment.patientAge || selectedAppointment.patientAge === 'Unknown') {
+          // Try to calculate age from patientDob again
+          if (selectedAppointment.patientDob) {
+            selectedAppointment.patientAge = moment().diff(moment(selectedAppointment.patientDob), 'years');
+          }
+        }
+        
+        // Make sure room information is available
+        if (!selectedAppointment.roomNumber) {
+          console.log('Room number is missing for appointment:', selectedAppointmentId);
+        }
       }
     }
     
@@ -125,7 +221,8 @@ router.get('/', async function (req, res) {
       formattedDate,
       appointments: formattedAppointments,
       hasAppointments: formattedAppointments.length > 0,
-      selectedAppointment
+      selectedAppointment,
+      errorMessage
     });
   } catch (error) {
     console.error('Error loading appointments:', error);
@@ -150,7 +247,7 @@ router.get('/detail', async function (req, res) {
     }
     
     // Fetch patient details for the appointment detail page
-    const patientDetails = await patientDetailsService.getPatientDetails(patientId);
+    const patientDetails = await Patient.findById(patientId);
     
     if (!patientDetails) {
       return res.redirect('/doctor/patients');
@@ -158,20 +255,16 @@ router.get('/detail', async function (req, res) {
     
     // Format the patient object for display
     const patient = {
-      patientId: patientDetails.patientId,
+      patientId: patientDetails._id,
       fullName: patientDetails.fullName,
-      age: patientDetails.age,
+      age: moment().diff(moment(patientDetails.dob), 'years'),
       gender: patientDetails.gender,
       patientCode: `P-${patientId.toString().padStart(8, '0')}`
     };
     
     // Format appointments for display with additional year property for filtering
-    const appointments = patientDetails.appointments.map(appointment => ({
-      ...appointment,
-      formattedDate: moment(appointment.appointmentDate).format('MMM D, YYYY'),
-      formattedTime: appointment.estimatedTime ? moment(appointment.estimatedTime, 'HH:mm:ss').format('hh:mm A') : 'N/A',
-      year: moment(appointment.appointmentDate).format('YYYY')
-    }));
+    // Usando o método do modelo DoctorAppointment
+    const appointments = await DoctorAppointment.getPatientAppointments(patientId);
     
     res.render('vwDoctor/appointmentDetail', { 
       patient,
@@ -196,10 +289,10 @@ router.get('/api/patients/:patientId', async function (req, res) {
       return res.status(400).json({ error: 'Patient ID is required' });
     }
 
-    // Get all appointments for the patient
-    console.log('Calling appointmentService.getPatientAppointments with patientId:', patientId);
-    const appointments = await appointmentService.getPatientAppointments(patientId);
-    console.log(`Retrieved ${appointments ? appointments.length : 0} appointments from service`);
+    // Get all appointments for the patient usando o modelo DoctorAppointment
+    console.log('Finding appointments for patient ID:', patientId);
+    const appointments = await DoctorAppointment.findByPatient(patientId);
+    console.log(`Retrieved ${appointments ? appointments.length : 0} appointments`);
     
     // Instead of filtering out the current appointment, mark it with a flag
     let formattedAppointments = [];
@@ -276,8 +369,8 @@ router.post('/api/update-status', async function (req, res) {
       });
     }
     
-    // Update with transition validation
-    await appointmentService.updatePatientAppointmentStatusWithTransition(appointmentId, status);
+    // Usando o método do modelo DoctorAppointment
+    await DoctorAppointment.updatePatientAppointmentStatusWithTransition(appointmentId, status);
     
     res.json({ 
       success: true,

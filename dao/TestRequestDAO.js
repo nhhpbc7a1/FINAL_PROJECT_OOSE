@@ -12,13 +12,15 @@ export default {
         try {
             return await db('TestRequest as tr')
                 .leftJoin('Doctor as d', 'tr.requestedByDoctorId', '=', 'd.doctorId')
+                .leftJoin('User as du', 'd.userId', '=', 'du.userId')
                 .leftJoin('Appointment as a', 'tr.appointmentId', '=', 'a.appointmentId')
                 .leftJoin('Patient as p', 'a.patientId', '=', 'p.patientId')
+                .leftJoin('User as pu', 'p.userId', '=', 'pu.userId')
                 .leftJoin('Service as s', 'tr.serviceId', '=', 's.serviceId')
                 .select(
                     'tr.*',
-                    'd.fullName AS doctorName',
-                    'p.fullName AS patientName',
+                    'du.fullName AS doctorName',
+                    'pu.fullName AS patientName',
                     's.name AS testName'
                 )
                 .orderBy('tr.requestDate', 'desc');
@@ -37,13 +39,15 @@ export default {
         try {
             const result = await db('TestRequest as tr')
                 .leftJoin('Doctor as d', 'tr.requestedByDoctorId', '=', 'd.doctorId')
+                .leftJoin('User as du', 'd.userId', '=', 'du.userId')
                 .leftJoin('Appointment as a', 'tr.appointmentId', '=', 'a.appointmentId')
                 .leftJoin('Patient as p', 'a.patientId', '=', 'p.patientId')
+                .leftJoin('User as pu', 'p.userId', '=', 'pu.userId')
                 .leftJoin('Service as s', 'tr.serviceId', '=', 's.serviceId')
                 .select(
                     'tr.*',
-                    'd.fullName AS doctorName',
-                    'p.fullName AS patientName',
+                    'du.fullName AS doctorName',
+                    'pu.fullName AS patientName',
                     's.name AS testName'
                 )
                 .where('tr.requestId', requestId)
@@ -65,13 +69,15 @@ export default {
         try {
             return await db('TestRequest as tr')
                 .leftJoin('Doctor as d', 'tr.requestedByDoctorId', '=', 'd.doctorId')
+                .leftJoin('User as du', 'd.userId', '=', 'du.userId')
                 .leftJoin('Appointment as a', 'tr.appointmentId', '=', 'a.appointmentId')
                 .leftJoin('Patient as p', 'a.patientId', '=', 'p.patientId')
+                .leftJoin('User as pu', 'p.userId', '=', 'pu.userId')
                 .leftJoin('Service as s', 'tr.serviceId', '=', 's.serviceId')
                 .select(
                     'tr.*',
-                    'd.fullName AS doctorName',
-                    'p.fullName AS patientName',
+                    'du.fullName AS doctorName',
+                    'pu.fullName AS patientName',
                     's.name AS testName'
                 )
                 .where('tr.appointmentId', appointmentId)
@@ -91,13 +97,15 @@ export default {
         try {
             return await db('TestRequest as tr')
                 .leftJoin('Doctor as d', 'tr.requestedByDoctorId', '=', 'd.doctorId')
+                .leftJoin('User as du', 'd.userId', '=', 'du.userId')
                 .leftJoin('Appointment as a', 'tr.appointmentId', '=', 'a.appointmentId')
                 .leftJoin('Patient as p', 'a.patientId', '=', 'p.patientId')
+                .leftJoin('User as pu', 'p.userId', '=', 'pu.userId')
                 .leftJoin('Service as s', 'tr.serviceId', '=', 's.serviceId')
                 .select(
                     'tr.*',
-                    'd.fullName AS doctorName',
-                    'p.fullName AS patientName',
+                    'du.fullName AS doctorName',
+                    'pu.fullName AS patientName',
                     's.name AS testName'
                 )
                 .where('tr.status', status)
@@ -245,13 +253,14 @@ export default {
         try {
             return await db('TestRequest as tr')
                 .join('Doctor as d', 'tr.requestedByDoctorId', '=', 'd.doctorId')
+                .join('User as u', 'd.userId', '=', 'u.userId')
                 .select(
                     'd.doctorId',
-                    'd.fullName AS doctorName'
+                    'u.fullName AS doctorName'
                 )
-                .count('tr.requestId as requestCount')
-                .groupBy('tr.requestedByDoctorId', 'd.fullName')
-                .orderBy('requestCount', 'desc');
+                .count('tr.requestId as count')
+                .groupBy('d.doctorId', 'u.fullName')
+                .orderBy('count', 'desc');
         } catch (error) {
             console.error('Error counting test requests by doctor:', error);
             throw error;
@@ -260,7 +269,7 @@ export default {
     
     /**
      * Count pending test requests by service
-     * @returns {Promise<Array>} Array of service counts
+     * @returns {Promise<Array>} Array of service counts for pending requests
      */
     async countPendingByService() {
         try {
@@ -268,14 +277,15 @@ export default {
                 .join('Service as s', 'tr.serviceId', '=', 's.serviceId')
                 .select(
                     's.serviceId',
-                    's.name as serviceName'
+                    's.name as serviceName',
+                    's.category as category'
                 )
-                .count('tr.requestId as pendingCount')
+                .count('tr.requestId as count')
                 .where('tr.status', 'pending')
-                .groupBy('tr.serviceId', 's.name')
-                .orderBy('pendingCount', 'desc');
+                .groupBy('s.serviceId', 's.name', 's.category')
+                .orderBy('count', 'desc');
         } catch (error) {
-            console.error('Error counting pending requests by service:', error);
+            console.error('Error counting pending test requests by service:', error);
             throw error;
         }
     }

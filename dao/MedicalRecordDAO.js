@@ -201,6 +201,40 @@ class MedicalRecordDAO {
             throw new Error('Failed to debug medical records: ' + error.message);
         }
     }
+
+    /**
+     * Create a new medical record or update if it already exists
+     * @param {Object} recordData - Medical record data
+     * @returns {Promise<number>} ID of the new or updated record
+     */
+    static async createOrUpdate(recordData) {
+        try {
+            // Check if a record already exists for this appointment
+            const existingRecord = await this.findByAppointmentId(recordData.appointmentId);
+            
+            if (existingRecord) {
+                // Update the existing record
+                console.log(`Medical record already exists for appointment ${recordData.appointmentId}, updating instead of creating`);
+                await db('MedicalRecord')
+                    .where('appointmentId', recordData.appointmentId)
+                    .update({
+                        diagnosis: recordData.diagnosis,
+                        notes: recordData.notes,
+                        recommendations: recordData.recommendations,
+                        followupDate: recordData.followupDate,
+                        updatedDate: db.fn.now()
+                    });
+                return existingRecord.recordId;
+            } else {
+                // Create a new record
+                const [recordId] = await db('MedicalRecord').insert(recordData);
+                return recordId;
+            }
+        } catch (error) {
+            console.error('Error creating or updating medical record:', error);
+            throw new Error('Failed to create or update medical record: ' + error.message);
+        }
+    }
 }
 
 export default MedicalRecordDAO; 

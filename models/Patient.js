@@ -164,6 +164,21 @@ class Patient {
     static async countByAgeGroup() {
         return await PatientDAO.countByAgeGroup();
     }
+
+    /**
+     * Find patients who have had appointments with a specific doctor
+     * @param {number} doctorId - ID of the doctor
+     * @returns {Promise<Array>} Array of Patient instances with last visit information
+     */
+    static async findByDoctorWithLastVisit(doctorId) {
+        try {
+            const patients = await PatientDAO.findByDoctorWithLastVisit(doctorId);
+            return patients; // Return raw data since it's already formatted with additional fields
+        } catch (error) {
+            console.error(`Error finding patients for doctor ID ${doctorId}:`, error);
+            throw new Error('Unable to find patients for this doctor');
+        }
+    }
 }
 
 export default Patient; 

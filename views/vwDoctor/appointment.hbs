@@ -23,6 +23,10 @@
     {{#if error}}
       <div class="error-message">{{error}}</div>
     {{else}}
+      {{#if errorMessage}}
+      <div class="error-message">{{errorMessage}}</div>
+      {{/if}}
+      
       {{#if hasAppointments}}
         <div class="appointments-list">
         {{#each appointments}}
@@ -30,7 +34,14 @@
             <div class="appointment-time">{{timeFormatted}}</div>
             <div class="patient-name">{{patientName}}</div>
             <div class="appointment-type">{{reason}}</div>
-            <div class="appointment-location">{{specialtyName}} - Room {{#if roomNumber}}{{roomNumber}}{{else}}Not assigned{{/if}}</div>
+            <div class="appointment-location">
+              {{specialtyName}} - Room 
+              {{#if roomNumber}}
+                {{roomNumber}}
+              {{else}}
+                Not assigned
+              {{/if}}
+            </div>
             <div class="appointment-status status-{{patientAppointmentStatus}}">{{patientAppointmentStatus}}</div>
             <div class="appointment-number">{{appointmentNumber}}</div>
           </div>
@@ -103,7 +114,13 @@
           </div>
           <div class="info-field">
             <div class="field-label">Room</div>
-            <div class="field-value">Room {{#if selectedAppointment.roomNumber}}{{selectedAppointment.roomNumber}}{{else}}Not assigned{{/if}}</div>
+            <div class="field-value">
+              {{#if selectedAppointment.roomNumber}}
+                Room {{selectedAppointment.roomNumber}}
+              {{else}}
+                Room Not assigned
+              {{/if}}
+            </div>
           </div>
           <div class="info-field status-field">
             <div class="field-label">Status</div>
@@ -120,12 +137,12 @@
             </div>
             <div class="info-field">
               <div class="field-label">Email</div>
-              <div class="field-value">{{selectedAppointment.email}}</div>
+              <div class="field-value">{{selectedAppointment.patientEmail}}</div>
             </div>
           </div>
         </div>
         
-        <a href="/doctor/examination?appointmentId={{selectedAppointment.appointmentId}}" id="examinationBtn" class="action-btn">Examination</a>
+        <button id="examinationBtn" class="action-btn">Examination</button>
       </div>
     </div>
     
@@ -566,6 +583,26 @@
       document.body.removeChild(overlay);
       if (callback) callback();
     });
+  }
+
+  // Handle examination button click
+  const examinationBtn = document.getElementById('examinationBtn');
+  if (examinationBtn) {
+    examinationBtn.addEventListener('click', function() {
+      const appointmentId = '{{selectedAppointment.appointmentId}}';
+      console.log('Examination button clicked for appointment:', appointmentId);
+      
+      if (!appointmentId) {
+        console.error('No appointment ID found');
+        showPopup('Error', 'No appointment ID found. Please select a valid appointment.');
+        return;
+      }
+      
+      // Navigate to examination page
+      window.location.href = `/doctor/examination?appointmentId=${appointmentId}`;
+    });
+  } else {
+    console.warn('Examination button not found in DOM');
   }
 </script>
 {{/section}}
