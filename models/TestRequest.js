@@ -1,17 +1,11 @@
 import TestRequestDAO from '../dao/TestRequestDAO.js';
 
 /**
-<<<<<<< HEAD
  * TestRequest model representing a test request in the system
-=======
- * TestRequest Model Class
- * Represents a test request in the system
->>>>>>> 1b35a7e990adc481ac2b9f5ec39584dd701f494e
  */
 class TestRequest {
     /**
      * Create a new TestRequest instance
-<<<<<<< HEAD
      * @param {Object} data - Test request data
      */
     constructor(data = {}) {
@@ -21,23 +15,25 @@ class TestRequest {
         this.serviceId = data.serviceId || null;
         this.requestDate = data.requestDate || null;
         this.status = data.status || 'pending';
-        this.notes = data.notes || null;
+        this.notes = data.notes || '';
         this.requestedByDoctorId = data.requestedByDoctorId || data.doctorId || null;
         this.priority = data.priority || 'normal';
         this.instructions = data.instructions || null;
+        this.completionDate = data.completionDate || null;
 
         // Trường cho quan hệ với medical record
         this.recordId = data.recordId || null;
         
         // Các trường từ join bảng
-        this.serviceName = data.serviceName || null;
-        this.serviceType = data.serviceType || null;
+        this.serviceName = data.serviceName || data.testName || null;
+        this.serviceType = data.serviceType || data.testType || null;
         this.patientId = data.patientId || null;
         this.patientName = data.patientName || null;
         this.patientDob = data.patientDob || null;
         this.patientGender = data.patientGender || null;
         this.doctorName = data.doctorName || null;
         this.appointmentDate = data.appointmentDate || null;
+        this.specialtyName = data.specialtyName || null;
     }
 
     /**
@@ -57,7 +53,8 @@ class TestRequest {
                     requestDate: this.requestDate,
                     status: this.status,
                     priority: this.priority,
-                    notes: this.notes
+                    notes: this.notes,
+                    completionDate: this.completionDate
                 };
                 
                 await TestRequestDAO.update(this.requestId, testRequestData);
@@ -77,52 +74,6 @@ class TestRequest {
                 };
                 
                 this.requestId = await TestRequestDAO.add(testRequestData);
-=======
-     * @param {Object} requestData - Test request data
-     */
-    constructor(requestData = {}) {
-        this.requestId = requestData.requestId || null;
-        this.appointmentId = requestData.appointmentId;
-        this.serviceId = requestData.serviceId;
-        this.requestedByDoctorId = requestData.requestedByDoctorId;
-        this.notes = requestData.notes || '';
-        this.status = requestData.status || 'pending';
-        this.priority = requestData.priority || 'normal';
-        this.requestDate = requestData.requestDate;
-        this.completionDate = requestData.completionDate;
-        
-        // Related data from joins
-        this.testName = requestData.testName;
-        this.testType = requestData.testType;
-        this.patientId = requestData.patientId;
-        this.patientName = requestData.patientName;
-        this.doctorName = requestData.doctorName;
-        this.specialtyName = requestData.specialtyName;
-    }
-
-    /**
-     * Save the test request
-     * @returns {Promise<number>} The request ID
-     */
-    async save() {
-        try {
-            const requestData = {
-                appointmentId: this.appointmentId,
-                serviceId: this.serviceId,
-                requestedByDoctorId: this.requestedByDoctorId,
-                notes: this.notes,
-                status: this.status,
-                priority: this.priority
-            };
-            
-            if (this.requestId) {
-                // Update existing request
-                await TestRequestDAO.update(this.requestId, requestData);
-                return this.requestId;
-            } else {
-                // Create new request
-                this.requestId = await TestRequestDAO.add(requestData);
->>>>>>> 1b35a7e990adc481ac2b9f5ec39584dd701f494e
                 return this.requestId;
             }
         } catch (error) {
@@ -133,20 +84,12 @@ class TestRequest {
 
     /**
      * Delete the test request
-<<<<<<< HEAD
      * @returns {Promise<boolean>} True if successful
-=======
-     * @returns {Promise<boolean>} Success status
->>>>>>> 1b35a7e990adc481ac2b9f5ec39584dd701f494e
      */
     async delete() {
         try {
             if (!this.requestId) {
-<<<<<<< HEAD
                 throw new Error('Cannot delete an unsaved test request');
-=======
-                throw new Error('Cannot delete unsaved test request');
->>>>>>> 1b35a7e990adc481ac2b9f5ec39584dd701f494e
             }
             
             return await TestRequestDAO.delete(this.requestId);
@@ -157,7 +100,6 @@ class TestRequest {
     }
 
     /**
-<<<<<<< HEAD
      * Start processing the test request
      * @param {number} technicianId - Lab technician ID
      * @returns {Promise<number>} Test result ID
@@ -192,23 +134,10 @@ class TestRequest {
         } catch (error) {
             console.error('Error finding all test requests:', error);
             throw new Error('Failed to find all test requests: ' + error.message);
-=======
-     * Find all test requests
-     * @returns {Promise<Array<TestRequest>>} Array of test requests
-     */
-    static async findAll() {
-        try {
-            const requests = await TestRequestDAO.findAll();
-            return requests.map(request => new TestRequest(request));
-        } catch (error) {
-            console.error('Error fetching all test requests:', error);
-            throw new Error('Unable to load test requests: ' + error.message);
->>>>>>> 1b35a7e990adc481ac2b9f5ec39584dd701f494e
         }
     }
 
     /**
-<<<<<<< HEAD
      * Find test request by ID with all details
      * @param {number} requestId - Request ID
      * @returns {Promise<TestRequest|null>} Test request or null
@@ -220,24 +149,40 @@ class TestRequest {
         } catch (error) {
             console.error(`Error finding test request with ID ${requestId}:`, error);
             throw new Error('Failed to find test request: ' + error.message);
-=======
-     * Find a test request by ID
-     * @param {number} requestId - Request ID
-     * @returns {Promise<TestRequest|null>} The found request or null
-     */
-    static async findById(requestId) {
-        try {
-            const request = await TestRequestDAO.findById(requestId);
-            return request ? new TestRequest(request) : null;
-        } catch (error) {
-            console.error(`Error finding test request with ID ${requestId}:`, error);
-            throw new Error('Unable to find test request: ' + error.message);
->>>>>>> 1b35a7e990adc481ac2b9f5ec39584dd701f494e
         }
     }
 
     /**
-<<<<<<< HEAD
+     * Find test requests by appointment
+     * @param {number} appointmentId - Appointment ID
+     * @returns {Promise<Array<TestRequest>>} Array of test requests
+     */
+    static async findByAppointment(appointmentId) {
+        try {
+            const requests = await TestRequestDAO.findByAppointment(appointmentId);
+            return requests.map(request => new TestRequest(request));
+        } catch (error) {
+            console.error(`Error finding test requests for appointment ${appointmentId}:`, error);
+            throw new Error('Unable to find test requests by appointment: ' + error.message);
+        }
+    }
+
+    /**
+     * Find test requests by status
+     * @param {string} status - Request status
+     * @returns {Promise<Array<TestRequest>>} Array of test requests
+     */
+    static async findByStatus(status) {
+        try {
+            const requests = await TestRequestDAO.findByStatus(status);
+            return requests.map(request => new TestRequest(request));
+        } catch (error) {
+            console.error(`Error finding test requests with status ${status}:`, error);
+            throw new Error('Unable to find test requests by status: ' + error.message);
+        }
+    }
+
+    /**
      * Get all test requests with filtering and pagination
      * @param {Object} filters - Filter criteria
      * @param {number} technicianId - Lab technician ID (optional)
@@ -317,33 +262,6 @@ class TestRequest {
         } catch (error) {
             console.error(`Error getting recent test requests for specialty ${specialtyId}:`, error);
             throw new Error('Failed to get recent test requests: ' + error.message);
-=======
-     * Find test requests by appointment
-     * @param {number} appointmentId - Appointment ID
-     * @returns {Promise<Array<TestRequest>>} Array of test requests
-     */
-    static async findByAppointment(appointmentId) {
-        try {
-            const requests = await TestRequestDAO.findByAppointment(appointmentId);
-            return requests.map(request => new TestRequest(request));
-        } catch (error) {
-            console.error(`Error finding test requests for appointment ${appointmentId}:`, error);
-            throw new Error('Unable to find test requests by appointment: ' + error.message);
-        }
-    }
-
-    /**
-     * Find test requests by status
-     * @param {string} status - Request status
-     * @returns {Promise<Array<TestRequest>>} Array of test requests
-     */
-    static async findByStatus(status) {
-        try {
-            const requests = await TestRequestDAO.findByStatus(status);
-            return requests.map(request => new TestRequest(request));
-        } catch (error) {
-            console.error(`Error finding test requests with status ${status}:`, error);
-            throw new Error('Unable to find test requests by status: ' + error.message);
         }
     }
 
@@ -383,7 +301,6 @@ class TestRequest {
         } catch (error) {
             console.error('Error counting pending requests by service:', error);
             throw new Error('Unable to count pending requests by service: ' + error.message);
->>>>>>> 1b35a7e990adc481ac2b9f5ec39584dd701f494e
         }
     }
 }

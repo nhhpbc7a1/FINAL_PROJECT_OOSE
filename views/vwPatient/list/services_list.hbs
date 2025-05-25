@@ -37,7 +37,7 @@
       </div>
       
       <div class="col-md-3">
-        <div class="form-group filter-submit">
+        <div class="form-group filter-submit d-flex flex-column justify-content-end">
           <label class="d-block">&nbsp;</label>
           <button type="submit" class="btn btn-primary w-100">
             <i class="fas fa-filter me-2"></i>Apply Filters
@@ -48,7 +48,7 @@
     
     <div class="active-filters mt-3">
       {{#if selectedSpecialty}}
-        <span class="badge bg-primary rounded-pill py-2 px-3 me-2">
+        <span class="badge rounded-pill py-2 px-3 me-2">
           <i class="fas fa-tag me-1"></i> Specialty: {{selectedSpecialty}} 
           <a href="{{removeFilterUrl 'specialty'}}" class="text-white ms-2"><i class="fas fa-times"></i></a>
         </span>
@@ -94,7 +94,7 @@
                   <span class="price-value">{{formattedPrice}}</span>
                 </div>
                 <div class="service-actions">
-                  <a href="/patient/book-appointment?service={{id}}" class="btn btn-primary w-100">
+                  <a href="/patient/book-appointment?service={{serviceId}}" class="btn btn-primary w-100">
                     <i class="far fa-calendar-check me-2"></i>Book Now
                   </a>
                 </div>

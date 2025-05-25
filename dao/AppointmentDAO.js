@@ -631,7 +631,7 @@ class AppointmentDAO {
                     'User.fullName as patientName',
                     'User.email as patientEmail',
                     'User.phoneNumber as patientPhone',
-                    'User.address',
+                    'User.address as patientAddress',
                     'Specialty.name as specialtyName',
                     'Specialty.specialtyId',
                     'Doctor.doctorId',

@@ -257,7 +257,7 @@
                 </div>
                 <div class="input-group">
                     <div class="birthday-input" style="width: 100%;">
-                        <input type="text" id="birthday" placeholder="Birthday" value="{{format_date userInfo.dob}}" >
+                        <input type="text" id="birthday" placeholder="Birthday" value="{{#if userInfo.dob}}{{format_date userInfo.dob}}{{/if}}" >
                         <img src="/public/images/icon/icons8-calendar-32.png" alt="" width="20px">
                     </div>
                 </div>
@@ -290,7 +290,7 @@
                         <select id="specialty">
                             <option value="" disabled selected>Select Specialty</option>
                             {{#each specialties}}
-                                <option value="{{id}}">{{name}}</option>
+                                <option value="{{specialtyId}}">{{name}}</option>
                             {{/each}}
                         </select>
                         <img src="/public/images/icon/icons8-arrow-down-24 (3).png" alt="">
@@ -323,7 +323,7 @@
                         <select id="service">
                             <option value="" disabled selected>Select Service</option>
                             {{#each services}}
-                                <option value="{{id}}">{{name}} ({{formatCurrency price}} VND)</option>
+                                <option value="{{serviceId}}">{{name}} ({{formatCurrency price}} VND)</option>
                             {{/each}}
                         </select>
                         <img src="/public/images/icon/icons8-arrow-down-24 (3).png" alt="">

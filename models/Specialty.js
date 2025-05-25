@@ -21,6 +21,13 @@ class Specialty {
         if (specialtyData.status) {
             this.status = specialtyData.status;
         }
+        // Include count properties if they exist
+        if (specialtyData.doctorCount !== undefined) {
+            this.doctorCount = specialtyData.doctorCount;
+        }
+        if (specialtyData.serviceCount !== undefined) {
+            this.serviceCount = specialtyData.serviceCount;
+        }
     }
 
     /**
@@ -126,6 +133,34 @@ class Specialty {
      */
     static async isNameUnique(name, excludeId = null) {
         return await SpecialtyDAO.isNameUnique(name, excludeId);
+    }
+
+    /**
+     * Count doctors by specialty
+     * @returns {Promise<Specialty[]>} Array of specialties with doctor counts
+     */
+    static async countDoctorsBySpecialty() {
+        try {
+            const specialtiesWithCounts = await SpecialtyDAO.countDoctorsBySpecialty();
+            return specialtiesWithCounts.map(data => new Specialty(data));
+        } catch (error) {
+            console.error('Error counting doctors by specialty:', error);
+            throw new Error('Failed to count doctors by specialty: ' + error.message);
+        }
+    }
+
+    /**
+     * Count services by specialty
+     * @returns {Promise<Specialty[]>} Array of specialties with service counts
+     */
+    static async countServicesBySpecialty() {
+        try {
+            const specialtiesWithCounts = await SpecialtyDAO.countServicesBySpecialty();
+            return specialtiesWithCounts.map(data => new Specialty(data));
+        } catch (error) {
+            console.error('Error counting services by specialty:', error);
+            throw new Error('Failed to count services by specialty: ' + error.message);
+        }
     }
 }
 

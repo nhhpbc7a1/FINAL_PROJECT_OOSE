@@ -1,17 +1,11 @@
 import TestResultDAO from '../dao/TestResultDAO.js';
 
 /**
-<<<<<<< HEAD
  * TestResult model representing a test result in the system
-=======
- * TestResult Model Class
- * Represents a test result in the system
->>>>>>> 1b35a7e990adc481ac2b9f5ec39584dd701f494e
  */
 class TestResult {
     /**
      * Create a new TestResult instance
-<<<<<<< HEAD
      * @param {Object} data - Test result data
      */
     constructor(data = {}) {
@@ -21,18 +15,19 @@ class TestResult {
         this.appointmentId = data.appointmentId || null;
         this.requestId = data.requestId || null;
         this.serviceId = data.serviceId || null;
-        this.technicianId = data.technicianId || null;
+        this.technicianId = data.technicianId || data.conductedBy || null;
         this.roomId = data.roomId || null;
         this.resultText = data.resultText || null;
-        this.resultNumeric = data.resultNumeric || null;
+        this.resultNumeric = data.resultNumeric || data.value || null;
         this.resultFileId = data.resultFileId || null;
         this.resultType = data.resultType || 'text';
         this.normalRange = data.normalRange || null;
         this.unit = data.unit || null;
         this.interpretation = data.interpretation || null;
-        this.performedDate = data.performedDate || null;
-        this.reportedDate = data.reportedDate || null;
+        this.performedDate = data.performedDate || data.conductedDate || null;
+        this.reportedDate = data.reportedDate || data.completionDate || null;
         this.status = data.status || 'pending';
+        this.result = data.result || '';
         
         // Các trường từ join bảng
         this.serviceName = data.serviceName || data.testName || null;
@@ -71,7 +66,8 @@ class TestResult {
                     unit: this.unit,
                     interpretation: this.interpretation,
                     performedDate: this.performedDate,
-                    status: this.status
+                    status: this.status,
+                    result: this.result
                 };
                 
                 await TestResultDAO.update(this.resultId, testResultData);
@@ -93,60 +89,11 @@ class TestResult {
                     unit: this.unit,
                     interpretation: this.interpretation,
                     performedDate: this.performedDate,
-                    status: this.status
+                    status: this.status,
+                    result: this.result
                 };
                 
                 this.resultId = await TestResultDAO.add(testResultData);
-=======
-     * @param {Object} resultData - Test result data
-     */
-    constructor(resultData = {}) {
-        this.resultId = resultData.resultId || null;
-        this.requestId = resultData.requestId;
-        this.recordId = resultData.recordId;
-        this.conductedBy = resultData.conductedBy;
-        this.value = resultData.value || '';
-        this.normalRange = resultData.normalRange || '';
-        this.unit = resultData.unit || '';
-        this.result = resultData.result || '';
-        this.interpretation = resultData.interpretation || '';
-        this.status = resultData.status || 'pending';
-        this.conductedDate = resultData.conductedDate;
-        this.completionDate = resultData.completionDate;
-        
-        // Related data from joins
-        this.testName = resultData.testName;
-        this.patientId = resultData.patientId;
-        this.patientName = resultData.patientName;
-        this.technicianName = resultData.technicianName;
-    }
-
-    /**
-     * Save the test result
-     * @returns {Promise<number>} The result ID
-     */
-    async save() {
-        try {
-            const resultData = {
-                requestId: this.requestId,
-                recordId: this.recordId,
-                conductedBy: this.conductedBy,
-                value: this.value,
-                normalRange: this.normalRange,
-                unit: this.unit,
-                result: this.result,
-                interpretation: this.interpretation,
-                status: this.status
-            };
-            
-            if (this.resultId) {
-                // Update existing result
-                await TestResultDAO.update(this.resultId, resultData);
-                return this.resultId;
-            } else {
-                // Create new result
-                this.resultId = await TestResultDAO.add(resultData);
->>>>>>> 1b35a7e990adc481ac2b9f5ec39584dd701f494e
                 return this.resultId;
             }
         } catch (error) {
@@ -156,7 +103,6 @@ class TestResult {
     }
 
     /**
-<<<<<<< HEAD
      * Save the test result (create or update) with file
      * @param {Object} fileData - File data (optional)
      * @returns {Promise<number>} Result ID
@@ -178,7 +124,8 @@ class TestResult {
                 unit: this.unit,
                 interpretation: this.interpretation,
                 performedDate: this.performedDate,
-                status: this.status
+                status: this.status,
+                result: this.result
             };
             
             if (this.resultId) {
@@ -252,19 +199,11 @@ class TestResult {
     /**
      * Delete the test result
      * @returns {Promise<boolean>} True if successful
-=======
-     * Delete the test result
-     * @returns {Promise<boolean>} Success status
->>>>>>> 1b35a7e990adc481ac2b9f5ec39584dd701f494e
      */
     async delete() {
         try {
             if (!this.resultId) {
-<<<<<<< HEAD
                 throw new Error('Cannot delete an unsaved test result');
-=======
-                throw new Error('Cannot delete unsaved test result');
->>>>>>> 1b35a7e990adc481ac2b9f5ec39584dd701f494e
             }
             
             return await TestResultDAO.delete(this.resultId);
@@ -276,7 +215,6 @@ class TestResult {
 
     /**
      * Find all test results
-<<<<<<< HEAD
      * @returns {Promise<TestResult[]>} Array of test results
      */
     static async findAll() {
@@ -286,22 +224,10 @@ class TestResult {
         } catch (error) {
             console.error('Error finding all test results:', error);
             throw new Error('Failed to find all test results: ' + error.message);
-=======
-     * @returns {Promise<Array<TestResult>>} Array of test results
-     */
-    static async findAll() {
-        try {
-            const results = await TestResultDAO.findAll();
-            return results.map(result => new TestResult(result));
-        } catch (error) {
-            console.error('Error fetching all test results:', error);
-            throw new Error('Unable to load test results: ' + error.message);
->>>>>>> 1b35a7e990adc481ac2b9f5ec39584dd701f494e
         }
     }
 
     /**
-<<<<<<< HEAD
      * Find test result by ID
      * @param {number} resultId - Result ID
      * @returns {Promise<TestResult|null>} Test result or null
@@ -313,24 +239,10 @@ class TestResult {
         } catch (error) {
             console.error(`Error finding test result with ID ${resultId}:`, error);
             throw new Error('Failed to find test result: ' + error.message);
-=======
-     * Find a test result by ID
-     * @param {number} resultId - Result ID
-     * @returns {Promise<TestResult|null>} The found result or null
-     */
-    static async findById(resultId) {
-        try {
-            const result = await TestResultDAO.findById(resultId);
-            return result ? new TestResult(result) : null;
-        } catch (error) {
-            console.error(`Error finding test result with ID ${resultId}:`, error);
-            throw new Error('Unable to find test result: ' + error.message);
->>>>>>> 1b35a7e990adc481ac2b9f5ec39584dd701f494e
         }
     }
 
     /**
-<<<<<<< HEAD
      * Find test results by medical record
      * @param {number} recordId - Medical record ID
      * @returns {Promise<TestResult[]>} Array of test results
@@ -342,7 +254,10 @@ class TestResult {
         } catch (error) {
             console.error(`Error finding test results for medical record ${recordId}:`, error);
             throw new Error('Failed to find test results by medical record: ' + error.message);
-=======
+        }
+    }
+
+    /**
      * Find test results by request ID
      * @param {number} requestId - Request ID
      * @returns {Promise<Array<TestResult>>} Array of test results
@@ -358,7 +273,7 @@ class TestResult {
     }
 
     /**
-     * Find test results by medical record ID
+     * Find test results by record ID
      * @param {number} recordId - Medical record ID
      * @returns {Promise<Array<TestResult>>} Array of test results
      */
@@ -369,24 +284,10 @@ class TestResult {
         } catch (error) {
             console.error(`Error finding test results for record ${recordId}:`, error);
             throw new Error('Unable to find test results by record: ' + error.message);
->>>>>>> 1b35a7e990adc481ac2b9f5ec39584dd701f494e
         }
     }
 
     /**
-<<<<<<< HEAD
-     * Find test results by lab technician
-     * @param {number} technicianId - Lab technician ID
-     * @returns {Promise<TestResult[]>} Array of test results
-     */
-    static async findByTechnician(technicianId) {
-        try {
-            const testResults = await TestResultDAO.findByTechnician(technicianId);
-            return testResults.map(result => new TestResult(result));
-        } catch (error) {
-            console.error(`Error finding test results for technician ${technicianId}:`, error);
-            throw new Error('Failed to find test results by technician: ' + error.message);
-=======
      * Find test results by patient ID
      * @param {number} patientId - Patient ID
      * @returns {Promise<Array<TestResult>>} Array of test results
@@ -398,12 +299,25 @@ class TestResult {
         } catch (error) {
             console.error(`Error finding test results for patient ${patientId}:`, error);
             throw new Error('Unable to find test results by patient: ' + error.message);
->>>>>>> 1b35a7e990adc481ac2b9f5ec39584dd701f494e
         }
     }
 
     /**
-<<<<<<< HEAD
+     * Find test results by lab technician
+     * @param {number} technicianId - Lab technician ID
+     * @returns {Promise<TestResult[]>} Array of test results
+     */
+    static async findByTechnician(technicianId) {
+        try {
+            const testResults = await TestResultDAO.findByTechnician(technicianId);
+            return testResults.map(result => new TestResult(result));
+        } catch (error) {
+            console.error(`Error finding test results for technician ${technicianId}:`, error);
+            throw new Error('Failed to find test results by technician: ' + error.message);
+        }
+    }
+
+    /**
      * Get recent test results by technician
      * @param {number} technicianId - Lab technician ID
      * @param {number} limit - Number of results to return
@@ -416,6 +330,21 @@ class TestResult {
         } catch (error) {
             console.error(`Error getting recent test results for technician ${technicianId}:`, error);
             throw new Error('Failed to get recent test results: ' + error.message);
+        }
+    }
+
+    /**
+     * Count completed test results by doctor in the last N days
+     * @param {number} doctorId - Doctor ID
+     * @param {number} days - Number of days to look back
+     * @returns {Promise<number>} Count of completed test results
+     */
+    static async countCompletedByDoctor(doctorId, days = 7) {
+        try {
+            return await TestResultDAO.countCompletedByDoctor(doctorId, days);
+        } catch (error) {
+            console.error(`Error counting completed test results for doctor ${doctorId}:`, error);
+            throw new Error('Unable to count completed test results: ' + error.message);
         }
     }
 
@@ -612,21 +541,6 @@ function isAbnormal(resultNumeric, normalRange) {
     
     const [min, max] = normalRange.split('-').map(val => parseFloat(val.trim()));
     return resultNumeric < min || resultNumeric > max;
-=======
-     * Count completed test results by doctor in the last N days
-     * @param {number} doctorId - Doctor ID
-     * @param {number} days - Number of days to look back
-     * @returns {Promise<number>} Count of completed test results
-     */
-    static async countCompletedByDoctor(doctorId, days = 7) {
-        try {
-            return await TestResultDAO.countCompletedByDoctor(doctorId, days);
-        } catch (error) {
-            console.error(`Error counting completed test results for doctor ${doctorId}:`, error);
-            throw new Error('Unable to count completed test results: ' + error.message);
-        }
-    }
->>>>>>> 1b35a7e990adc481ac2b9f5ec39584dd701f494e
 }
 
 export default TestResult; 

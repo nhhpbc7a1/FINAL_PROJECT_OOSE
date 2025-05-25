@@ -36,7 +36,7 @@ class SpecialtyDAO {
                 .leftJoin('Doctor', 'Specialty.headDoctorId', '=', 'Doctor.doctorId')
                 .leftJoin('User', 'Doctor.userId', '=', 'User.userId')
                 .select(
-                    'Specialty.specialtyId as id',
+                    'Specialty.specialtyId',
                     'Specialty.name',
                     'Specialty.description',
                     'Specialty.icon',
@@ -234,6 +234,58 @@ class SpecialtyDAO {
                  throw new Error('Cannot delete specialty because it is referenced by other records (Doctors, Services, Rooms, etc.).');
              }
             throw new Error('Unable to delete specialty');
+        }
+    }
+
+    /**
+     * Count doctors by specialty
+     * @returns {Promise<Array>} Array of objects with specialtyId, name, and doctorCount
+     */
+    static async countDoctorsBySpecialty() {
+        try {
+            const result = await db('Specialty')
+                .select(
+                    'Specialty.specialtyId',
+                    'Specialty.name'
+                )
+                .leftJoin('Doctor', 'Specialty.specialtyId', '=', 'Doctor.specialtyId')
+                .count('Doctor.doctorId as doctorCount')
+                .groupBy('Specialty.specialtyId', 'Specialty.name')
+                .orderBy('Specialty.name');
+            
+            return result.map(item => ({
+                ...item,
+                doctorCount: parseInt(item.doctorCount || 0)
+            }));
+        } catch (error) {
+            console.error('Error counting doctors by specialty:', error);
+            throw new Error('Unable to count doctors by specialty');
+        }
+    }
+
+    /**
+     * Count services by specialty
+     * @returns {Promise<Array>} Array of objects with specialtyId, name, and serviceCount
+     */
+    static async countServicesBySpecialty() {
+        try {
+            const result = await db('Specialty')
+                .select(
+                    'Specialty.specialtyId',
+                    'Specialty.name'
+                )
+                .leftJoin('Service', 'Specialty.specialtyId', '=', 'Service.specialtyId')
+                .count('Service.serviceId as serviceCount')
+                .groupBy('Specialty.specialtyId', 'Specialty.name')
+                .orderBy('Specialty.name');
+            
+            return result.map(item => ({
+                ...item,
+                serviceCount: parseInt(item.serviceCount || 0)
+            }));
+        } catch (error) {
+            console.error('Error counting services by specialty:', error);
+            throw new Error('Unable to count services by specialty');
         }
     }
 }

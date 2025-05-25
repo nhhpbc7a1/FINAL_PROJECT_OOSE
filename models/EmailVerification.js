@@ -13,7 +13,6 @@ class EmailVerification {
         this.email = data.email;
         this.verificationCode = data.verificationCode;
         this.appointmentId = data.appointmentId || null;
-        this.userId = data.userId || null;
         this.expiresAt = data.expiresAt;
         this.verified = data.verified || false;
         this.createdAt = data.createdAt || new Date();
@@ -37,7 +36,6 @@ class EmailVerification {
                 email: this.email,
                 verificationCode: this.verificationCode,
                 appointmentId: this.appointmentId,
-                userId: this.userId,
                 expiresAt: this.expiresAt,
                 verified: this.verified
             };

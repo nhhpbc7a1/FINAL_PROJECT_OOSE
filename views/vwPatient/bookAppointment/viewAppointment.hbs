@@ -23,19 +23,19 @@
             <h5>Patient Information</h5>
             <div class="modal-body">
                 <div class="input-group">
-                    <input type="text" id="name" value="{{appointment.fullName}}" readonly>
+                    <input type="text" id="name" value="{{appointment.patientName}}" readonly>
                 </div>
                 <div class="input-group">
-                    <input type="tel" id="phone" value="{{appointment.phoneNumber}}" readonly>
+                    <input type="tel" id="phone" value="{{appointment.patientPhone}}" readonly>
                 </div>
                 <div class="input-group">
                     <div class="birthday-input" style="width: 100%;">
-                        <input type="text" id="birthday" value="{{appointment.birthday}}" readonly>
+                        <input type="text" id="birthday" value="{{formatDate appointment.birthday}}" readonly>
                         <img src="/public/images/icon/icons8-calendar-32.png" alt="" width="20px">
                     </div>
                 </div>                           
                 <div class="input-group">
-                    <input type="text" id="address" value="{{appointment.address}}" readonly>
+                    <input type="text" id="address" value="{{appointment.patientAddress}}" readonly>
                 </div>
             </div>
             <hr class="custom-separate-line">
@@ -52,7 +52,7 @@
                             <div class="info-value">
                                 {{#if appointment.services.length}}
                                     {{#each appointment.services}}
-                                        {{name}}{{#unless @last}}, {{/unless}}
+                                        {{serviceName}}{{#unless @last}}, {{/unless}}
                                     {{/each}}
                                 {{else}}
                                     Basic Examination Only
