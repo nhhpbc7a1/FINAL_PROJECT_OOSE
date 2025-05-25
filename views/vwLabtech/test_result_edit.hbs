@@ -403,8 +403,8 @@
             <div class="detail-value">#{{testResult.resultId}}</div>
         </div>
         <div class="detail-group">
-            <div class="detail-label">Test Type</div>
-            <div class="detail-value">{{testResult.testName}}</div>
+            <div class="detail-label">Service name</div>
+            <div class="detail-value">{{testResult.serviceName}}</div>
         </div>
         <div class="detail-group">
             <div class="detail-label">Status</div>
@@ -417,8 +417,8 @@
             <div class="detail-value">{{formatDate testResult.performedDate}}</div>
         </div>
         <div class="detail-group">
-            <div class="detail-label">Test Description</div>
-            <div class="detail-value">{{testResult.testDescription}}</div>
+            <div class="detail-label">Service Description</div>
+            <div class="detail-value">{{testResult.serviceDescription}}</div>
         </div>
     </div>
 </div>
@@ -429,7 +429,7 @@
         
         <div class="form-group">
             <label for="resultType" class="form-label required-field">Result Type</label>
-            <select id="resultType" name="resultType" class="form-select" required {{#if testResult.resultType}}disabled{{/if}}>
+            <select id="resultType" name="resultType" class="form-select" required>
                 <option value="">Select result type</option>
                 <option value="numeric" {{#if (eq testResult.resultType 'numeric')}}selected{{/if}}>Numeric Value</option>
                 <option value="text" {{#if (eq testResult.resultType 'text')}}selected{{/if}}>Text Description</option>
@@ -509,10 +509,10 @@
                 <div class="form-text mb-3">Upload a new file to replace the current one (optional)</div>
                 {{/if}}
                 
-                <div class="file-upload">
+                <div class="file-upload" id="dropZone">
                     <i class="fas fa-cloud-upload-alt file-upload-icon"></i>
                     <div class="file-upload-text">Drag and drop your file here or click to browse</div>
-                    <input type="file" id="resultFile" name="resultFile" class="form-control" style="display: none;" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                    <input type="file" id="resultFile" name="resultFile" class="form-control" style="opacity: 0; position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer;" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
                     <button type="button" id="browseButton" class="btn btn-outline">Browse Files</button>
                     <div class="form-text">Supported formats: PDF, JPG, PNG, DOCX (Max: 10MB)</div>
                 </div>
@@ -589,6 +589,81 @@
             }
         });
         
+        // File upload handling
+        const fileInput = document.getElementById('resultFile');
+        const browseButton = document.getElementById('browseButton');
+        const dropZone = document.getElementById('dropZone');
+        const filePreviewContainer = document.getElementById('filePreviewContainer');
+        const selectedFileName = document.getElementById('selectedFileName');
+        const selectedFileSize = document.getElementById('selectedFileSize');
+        const selectedFileIcon = document.getElementById('selectedFileIcon');
+        const removeFileButton = document.getElementById('removeFile');
+        const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+        
+        // Click the hidden file input when the browse button is clicked
+        browseButton.addEventListener('click', function() {
+            fileInput.click();
+        });
+        
+        // Handle file selection
+        fileInput.addEventListener('change', function() {
+            handleFileSelection(this.files);
+        });
+        
+        // Handle drag and drop
+        dropZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            dropZone.classList.add('highlight');
+        });
+        
+        dropZone.addEventListener('dragleave', function() {
+            dropZone.classList.remove('highlight');
+        });
+        
+        dropZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            dropZone.classList.remove('highlight');
+            handleFileSelection(e.dataTransfer.files);
+        });
+        
+        // Remove selected file
+        removeFileButton.addEventListener('click', function() {
+            fileInput.value = '';
+            filePreviewContainer.style.display = 'none';
+            imagePreviewContainer.innerHTML = '';
+        });
+        
+        // Function to handle file selection
+        function handleFileSelection(files) {
+            if (files.length === 0) return;
+            
+            const file = files[0];
+            const fileSize = formatFileSize(file.size);
+            const fileType = file.name.split('.').pop().toLowerCase();
+            
+            // Update file preview
+            selectedFileName.textContent = file.name;
+            selectedFileSize.textContent = fileSize;
+            
+            // Set appropriate icon based on file type
+            const iconClass = getFileIconClass(fileType);
+            selectedFileIcon.className = `${iconClass} selected-file-icon`;
+            
+            // Show file preview
+            filePreviewContainer.style.display = 'block';
+            
+            // Show image preview if it's an image
+            if (['jpg', 'jpeg', 'png'].includes(fileType)) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreviewContainer.innerHTML = `<img src="${e.target.result}" class="file-preview">`;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                imagePreviewContainer.innerHTML = '';
+            }
+        }
+        
         // Function to format file size in human-readable format
         function formatFileSize(bytes) {
             if (bytes === 0) return '0 Bytes';
@@ -600,159 +675,46 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
         
-        // Function to get file icon based on type
-        function getFileIcon(file) {
-            const fileType = file.type || '';
+        // Function to get file icon class
+        function getFileIconClass(fileType) {
+            const iconMap = {
+                'pdf': 'fas fa-file-pdf',
+                'doc': 'fas fa-file-word',
+                'docx': 'fas fa-file-word',
+                'jpg': 'fas fa-file-image',
+                'jpeg': 'fas fa-file-image',
+                'png': 'fas fa-file-image'
+            };
             
-            if (fileType.includes('pdf')) {
-                return 'fas fa-file-pdf';
-            } else if (fileType.includes('image')) {
-                return 'fas fa-file-image';
-            } else if (fileType.includes('word') || fileType.includes('document')) {
-                return 'fas fa-file-word';
-            } else {
-                return 'fas fa-file';
-            }
+            return iconMap[fileType] || 'fas fa-file';
         }
         
-        // Function to display file preview
-        function displayFilePreview(file) {
-            if (!file) {
-                $('#filePreviewContainer').hide();
-                return;
-            }
-            
-            const fileSize = formatFileSize(file.size);
-            const fileIcon = getFileIcon(file);
-            
-            $('#selectedFileIcon').attr('class', fileIcon + ' selected-file-icon');
-            $('#selectedFileName').text(file.name);
-            $('#selectedFileSize').text(fileSize);
-            $('#filePreviewContainer').show();
-            
-            // Clear any existing image preview
-            $('#imagePreviewContainer').empty();
-            
-            // If it's an image, show preview
-            if (file.type.includes('image')) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = $('<img>').addClass('file-preview').attr('src', e.target.result);
-                    $('#imagePreviewContainer').append(img);
-                };
-                reader.readAsDataURL(file);
-            }
+        // Initialize file preview if a file is already selected
+        if (fileInput.files.length > 0) {
+            handleFileSelection(fileInput.files);
         }
         
-        // Handle file upload through button
-        $('#browseButton').click(function() {
-            $('#resultFile').click();
-        });
-        
-        // Handle file selection
-        $('#resultFile').change(function() {
-            const fileInput = this;
-            if (fileInput.files && fileInput.files[0]) {
-                const file = fileInput.files[0];
-                
-                // Check file size (max 10MB)
-                if (file.size > 10 * 1024 * 1024) {
-                    alert('File size exceeds 10MB limit. Please select a smaller file.');
-                    fileInput.value = '';
-                    return;
-                }
-                
-                displayFilePreview(file);
-            } else {
-                $('#filePreviewContainer').hide();
-            }
-        });
-        
-        // Handle removing selected file
-        $('#removeFile').click(function() {
-            $('#resultFile').val('');
-            $('#filePreviewContainer').hide();
-        });
-        
-        // Handle drag and drop
-        const dropArea = $('.file-upload');
-        
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropArea.on(eventName, function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-            });
-        });
-        
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropArea.on(eventName, function() {
-                dropArea.addClass('highlight');
-            });
-        });
-        
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropArea.on(eventName, function() {
-                dropArea.removeClass('highlight');
-            });
-        });
-        
-        dropArea.on('drop', function(e) {
-            const files = e.originalEvent.dataTransfer.files;
-            if (files.length) {
-                const file = files[0];
-                
-                // Check file size (max 10MB)
-                if (file.size > 10 * 1024 * 1024) {
-                    alert('File size exceeds 10MB limit. Please select a smaller file.');
-                    return;
-                }
-                
-                // Check file type
-                const acceptedTypes = [
-                    'application/pdf', 
-                    'image/jpeg', 
-                    'image/png', 
-                    'application/msword', 
-                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-                ];
-                
-                if (!acceptedTypes.includes(file.type)) {
-                    alert('Invalid file type. Please upload PDF, JPG, PNG, or DOCX files.');
-                    return;
-                }
-                
-                $('#resultFile')[0].files = files;
-                displayFilePreview(file);
-            }
-        });
-        
-        // Form validation
-        $('#test-result-form').submit(function(e) {
-            // Validation logic based on the selected result type
+        // Validate form before submission
+        $('#test-result-form').on('submit', function(e) {
             const resultType = $('#resultType').val();
-            let isValid = true;
             
-            if (resultType === 'numeric' && !$('#resultNumeric').val()) {
-                alert('Please enter a numeric result value');
-                isValid = false;
-            } else if (resultType === 'text' && !$('#resultText').val()) {
-                alert('Please enter result text');
-                isValid = false;
-            } else if (resultType === 'file' && !$('#resultFile').val() && !$('{{testResult.fileName}}').length) {
-                // Only validate file upload if there's no existing file
-                if (!$('#resultFile').val() && !$('{{testResult.fileName}}').length) {
-                    alert('Please upload a file');
-                    isValid = false;
+            if (resultType === 'numeric') {
+                const resultNumeric = $('#resultNumeric').val();
+                const normalRangeMin = $('#normalRangeMin').val();
+                const normalRangeMax = $('#normalRangeMax').val();
+                const unit = $('#unit').val();
+                
+                if (!resultNumeric || !normalRangeMin || !normalRangeMax || !unit) {
+                    alert('For numeric results, please provide the value, normal range, and unit.');
+                    e.preventDefault();
                 }
-            }
-            
-            if (!$('#performedDate').val()) {
-                alert('Please select the date the test was performed');
-                isValid = false;
-            }
-            
-            if (!isValid) {
-                e.preventDefault();
+            } else if (resultType === 'text') {
+                const resultText = $('#resultText').val();
+                
+                if (!resultText) {
+                    alert('Please provide the result text.');
+                    e.preventDefault();
+                }
             }
         });
     });

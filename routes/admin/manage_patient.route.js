@@ -375,28 +375,28 @@ router.post('/update/:patientId', async function (req, res) {
 
 // GET: View patient details
 router.get('/view/:patientId', async function (req, res) {
-  try {
+    try {
     res.locals.pageTitle = 'Patient Details';
-    const patientId = parseInt(req.params.patientId, 10);
+        const patientId = parseInt(req.params.patientId, 10);
 
-    if (isNaN(patientId)) {
+        if (isNaN(patientId)) {
       throw new Error('Invalid Patient ID');
-    }
+        }
 
     // Get patient with appointments
     const patient = await Patient.getPatientWithAppointments(patientId);
 
-    if (!patient) {
+        if (!patient) {
       req.session.flashMessage = { type: 'danger', message: 'Patient not found' };
       return res.redirect('/admin/manage_patient');
-    }
+        }
 
     // Format dates and add computed properties
     const formattedPatient = {
-      ...patient,
+             ...patient,
       formattedDob: patient.dob ? new Date(patient.dob).toLocaleDateString() : 'N/A',
       age: patient.dob ? calculateAge(patient.dob) : 'N/A',
-      profilePictureUrl: patient.profileImage || '/public/images/default-avatar.png',
+             profilePictureUrl: patient.profileImage || '/public/images/default-avatar.png',
       // Format appointments
       appointments: patient.appointments.map(appt => ({
         ...appt,
@@ -405,11 +405,11 @@ router.get('/view/:patientId', async function (req, res) {
       }))
     };
 
-    res.render('vwAdmin/manage_patient/view_patient', {
+        res.render('vwAdmin/manage_patient/view_patient', {
       patient: formattedPatient
-    });
+        });
 
-  } catch (error) {
+    } catch (error) {
     console.error('Error loading patient details:', error);
     req.session.flashMessage = { type: 'danger', message: error.message || 'Could not load patient details' };
     res.redirect('/admin/manage_patient');

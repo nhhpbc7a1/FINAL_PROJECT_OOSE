@@ -362,6 +362,7 @@
             fetch(`/labtech/dashboard/schedule-data?month=${month}&year=${year}`)
                 .then(response => response.json())
                 .then(data => {
+
                     if (data.success) {
                         scheduleData = data.scheduleData;
                     } else {
@@ -494,8 +495,28 @@
                 return [];
             }
             
+            // Format the date to compare with the date part of event.start
+            // Need to pad month and day with leading zeros if needed
             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            return scheduleData.filter(event => event.date === dateStr);
+            
+            // Filter events that match the date
+            const events = scheduleData.filter(event => {
+                // Extract the date part from the event.start (format: YYYY-MM-DDThh:mm:ss)
+                const eventDate = event.start.split('T')[0];
+                return eventDate === dateStr;
+            }).map(event => {
+                // Extract time from the start property (format: YYYY-MM-DDThh:mm:ss)
+                const time = event.start.split('T')[1].substring(0, 5);
+                // Return a new object with the properties needed for display
+                return {
+                    id: event.id,
+                    title: event.room,  // Show room number as title
+                    time: time,         // Show just the time
+                    status: event.status
+                };
+            });
+                        
+            return events;
         }
         
         // Initial load - render current month

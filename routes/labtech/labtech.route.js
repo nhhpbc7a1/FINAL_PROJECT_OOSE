@@ -3,7 +3,7 @@ import dashboardRouter from './dashboard.route.js';
 import testRequestsRouter from './test_requests.route.js';
 import testResultsRouter from './test_results.route.js';
 import LabTechnician from '../../models/LabTechnician.js';
-import testResultsService from '../../services/labtech/test_results.service.js';
+import TestResult from '../../models/TestResult.js';
 
 const router = express.Router();
 
@@ -54,7 +54,7 @@ router.get('/profile', async (req, res) => {
         }
         
         // Get recent test results
-        const recentResults = await testResultsService.getRecentTestResultsByTechnician(technicianId, 5);
+        const recentResults = await TestResult.getRecentByTechnician(technicianId, 5);
         
         res.render('vwLabTech/profile', {
             technician,

@@ -1,8 +1,9 @@
 import express from 'express';
 import moment from 'moment';
-import testResultsService from '../../services/labtech/test_results.service.js';
-import labtechService from '../../services/lab-technician.service.js';
+import TestResult from '../../models/TestResult.js';
+import LabTechnician from '../../models/LabTechnician.js';
 import upload from '../../middlewares/upload.middleware.js';
+import db from '../../ultis/db.js';
 
 const router = express.Router();
 
@@ -25,7 +26,7 @@ router.get('/', async (req, res) => {
     try {
         // Get logged in lab technician ID
         const userId = req.session.authUser.userId;
-        const labTechnician = await labtechService.findByUserId(userId);
+        const labTechnician = await LabTechnician.findByUserId(userId);
         
         if (!labTechnician) {
             return res.redirect('/account/login');
@@ -46,8 +47,8 @@ router.get('/', async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = 10;
         
-        // Get test results using the service
-        const { testResults, pagination, total } = await testResultsService.getAll(
+        // Get test results using the model
+        const { testResults, pagination, total } = await TestResult.getAll(
             filters,
             technicianId,
             page,
@@ -55,7 +56,7 @@ router.get('/', async (req, res) => {
         );
         
         // Get test types for filter dropdown
-        const testTypes = await testResultsService.getTestTypesBySpecialty(labTechnician.specialtyId);
+        const testTypes = await TestResult.getTestTypesBySpecialty(labTechnician.specialtyId);
         res.render('vwLabtech/test_results', {
             testResults,
             filters,
@@ -85,8 +86,8 @@ router.get('/:id', async (req, res) => {
     try {
         const resultId = req.params.id;
         
-        // Get the test result with associated details using the service
-        const testResult = await testResultsService.getTestResultById(resultId);
+        // Get the test result with associated details using the model
+        const testResult = await TestResult.findById(resultId);
         
         if (!testResult) {
             return res.status(404).render('error', {
@@ -133,30 +134,22 @@ router.get('/edit/:id', async (req, res) => {
         
         // Get logged in lab technician
         const userId = req.session.authUser.userId;
-        const labTechnician = await labtechService.findByUserId(userId);
+        const labTechnician = await LabTechnician.findByUserId(userId);
         
         if (!labTechnician) {
             return res.redirect('/account/login');
         }
         
-        // Check if lab technician has an active schedule
-        const hasActiveSchedule = await testResultsService.hasActiveSchedule(labTechnician.technicianId);
-        
-        if (!hasActiveSchedule) {
-            req.session.flashMessage = { type: 'error', message: 'You cannot edit test results when you are not on duty. Please try again during your scheduled shift.' };
-            return res.redirect('/labtech/test-results');
-        }
-        
-        // Get the test result using the service
-        const testResult = await testResultsService.getTestResultById(id);
+        // Get the test result using the model
+        const testResult = await TestResult.findById(id);
         
         if (!testResult) {
             req.session.flashMessage = { type: 'error', message: 'Test result not found' };
             return res.redirect('/labtech/test-results');
         }
         
-        // Get lab rooms using the service
-        const rooms = await testResultsService.getLabRooms();
+        // Get lab rooms using the model
+        const rooms = await TestResult.getLabRooms();
         
         // Format the date for the input field
         testResult.performedDate = moment(testResult.performedDate).format('YYYY-MM-DD');
@@ -201,85 +194,117 @@ router.get('/edit/:id', async (req, res) => {
 
 /**
  * POST /labtech/test-results/edit/:id
- * Handle test result edit form submission
+ * Handle form submission for updating a test result
  */
 router.post('/edit/:id', upload.single('resultFile'), async (req, res) => {
     try {
-        const { id } = req.params;
+        console.log("Form data received:", req.body);
+        console.log("File received:", req.file);
+        
+        const resultId = req.params.id;
         
         // Get logged in lab technician
         const userId = req.session.authUser.userId;
-        const labTechnician = await labtechService.findByUserId(userId);
+        const labTechnician = await LabTechnician.findByUserId(userId);
         
         if (!labTechnician) {
             return res.redirect('/account/login');
         }
         
-        // Check if lab technician has an active schedule
-        const hasActiveSchedule = await testResultsService.hasActiveSchedule(labTechnician.technicianId);
+        // Get the test result
+        const testResult = await TestResult.findById(resultId);
         
-        if (!hasActiveSchedule) {
-            req.session.flashMessage = { type: 'error', message: 'You cannot update test results when you are not on duty. Please try again during your scheduled shift.' };
+        if (!testResult) {
+            req.session.flashMessage = { type: 'error', message: 'Test result not found' };
             return res.redirect('/labtech/test-results');
         }
         
-        const {
-            resultType,
-            performedDate,
-            resultNumeric,
-            unit,
-            normalRangeMin,
-            normalRangeMax,
-            resultText,
-            interpretation,
-            roomId
+        // Ensure recordId is set by synchronizing it from the appointment
+        if (!testResult.recordId) {
+            console.log("No recordId found, attempting to synchronize from appointment");
+            const syncSuccess = await testResult.syncRecordIdFromAppointment();
+            
+            if (syncSuccess) {
+                console.log(`Successfully synchronized recordId: ${testResult.recordId}`);
+            } else {
+                console.warn(`Could not synchronize recordId for test result ${resultId}. Proceeding with null recordId.`);
+            }
+        }
+        
+        // Parse form data
+        const { 
+            resultText, 
+            resultNumeric, 
+            normalRangeMin, 
+            normalRangeMax, 
+            unit, 
+            interpretation, 
+            roomId, 
+            resultType 
         } = req.body;
         
-        // Prepare update data
-        const updateData = {
-            performedDate: performedDate ? moment(performedDate).format('YYYY-MM-DD') : null,
-            interpretation,
-            status: 'in_progress'
-        };
-        
-        if (roomId) {
-            updateData.roomId = roomId;
+        // Validate required data based on result type
+        if (resultType === 'numeric' && (!resultNumeric || !normalRangeMin || !normalRangeMax || !unit)) {
+            req.session.flashMessage = { type: 'error', message: 'For numeric results, please provide the value, normal range, and unit.' };
+            return res.redirect(`/labtech/test-results/edit/${resultId}`);
         }
         
-        // Handle different result types
-        if (resultType === 'numeric') {
-            updateData.resultNumeric = resultNumeric;
-            updateData.unit = unit;
-            updateData.resultType = 'numeric';
-            
-            // Combine normal range
-            if (normalRangeMin && normalRangeMax) {
-                updateData.normalRange = `${normalRangeMin} - ${normalRangeMax}`;
-            }
-            
-            // Determine if result is abnormal
-            if (resultNumeric && updateData.normalRange) {
-                updateData.isAbnormal = isAbnormal(parseFloat(resultNumeric), updateData.normalRange);
-            }
-        } else if (resultType === 'text') {
-            updateData.resultText = resultText;
-            updateData.resultType = 'text';
+        if (resultType === 'text' && !resultText) {
+            req.session.flashMessage = { type: 'error', message: 'Please provide the result text.' };
+            return res.redirect(`/labtech/test-results/edit/${resultId}`);
         }
         
-        // Update the test result using the service
-        await testResultsService.updateTestResult(
-            id, 
-            updateData, 
-            req.file, // Pass the file object directly
-            userId    // Pass the user ID for file upload tracking
-        );
+        // Handle file upload
+        let fileData = null;
         
-        req.session.flashMessage = { type: 'success', message: 'Test result updated successfully' };
-        res.redirect(`/labtech/test-results/${id}`);
+        if (req.file) {
+            console.log("Processing uploaded file:", req.file);
+            // Prepare file data for database
+            fileData = {
+                fileName: req.file.originalname,
+                filePath: req.file.path.replace(/\\/g, '/'),
+                fileType: req.file.originalname.split('.').pop().toLowerCase(),
+                mimeType: req.file.mimetype,
+                fileSize: req.file.size,
+                uploadDate: new Date()
+            };
+            console.log("File data prepared:", fileData);
+        }
+        
+        // Prepare normalized data
+        let normalRange = null;
+        if (normalRangeMin && normalRangeMax) {
+            normalRange = `${normalRangeMin}-${normalRangeMax}`;
+        }
+        
+        // Update test result
+        testResult.resultText = resultText;
+        testResult.resultNumeric = resultNumeric ? parseFloat(resultNumeric) : null;
+        testResult.normalRange = normalRange;
+        testResult.unit = unit;
+        testResult.interpretation = interpretation;
+        testResult.roomId = roomId ? parseInt(roomId) : null;
+        testResult.technicianId = labTechnician.technicianId;
+        testResult.resultType = resultType;
+        testResult.status = 'completed';
+        testResult.performedDate = new Date();
+        
+        console.log("Saving test result with file:", testResult);
+        
+        // Use the new saveWithFile method if we have a file, otherwise use regular save
+        if (fileData) {
+            await testResult.saveWithFile(fileData);
+        } else {
+            await testResult.save();
+        }
+        
+        req.session.flashMessage = { type: 'success', message: 'Test result updated successfully!' };
+        res.redirect('/labtech/test-results');
+        
     } catch (error) {
         console.error('Error updating test result:', error);
-        req.session.flashMessage = { type: 'error', message: 'Failed to update test result' };
-        res.redirect(`/labtech/test-results/${id}`);
+        req.session.flashMessage = { type: 'error', message: 'Failed to update test result: ' + error.message };
+        res.redirect('/labtech/test-results');
     }
 });
 
@@ -288,8 +313,8 @@ router.get('/print/:id', async (req, res) => {
     try {
         const resultId = req.params.id;
         
-        // Get the printable test result using the service
-        const printData = await testResultsService.generatePrintableView(resultId);
+        // Get the printable test result using the model
+        const printData = await TestResult.generatePrintableView(resultId);
         
         if (!printData || !printData.result) {
             req.session.flashMessage = { type: 'error', message: 'Test result not found' };

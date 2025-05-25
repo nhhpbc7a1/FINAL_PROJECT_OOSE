@@ -74,15 +74,66 @@ router.get('/', async function (req, res) {
         if (specialtyId) {
             console.log(`Filtering by specialty ID: ${specialtyId}`);
             
-            // Verify the specialtyId field exists
+            // Verify the specialtyId field exists and show debugging info
             schedules.forEach((s, i) => {
-                if (i < 5) console.log(`Schedule ${i} specialtyId: ${s.specialtyId}`);
+                if (i < 5) {
+                    console.log(`Schedule ${i} staffType: ${s.staffType}, specialtyId: ${s.specialtyId}, 
+                        labTechnicianId: ${s.labTechnicianId}, doctorId: ${s.doctorId},
+                        doctorSpecialtyName: ${s.doctorSpecialtyName}, labSpecialtyName: ${s.labSpecialtyName}`);
+                }
             });
             
             const beforeCount = schedules.length;
+            
+            // Get lab technicians by specialty for lookup
+            const labTechnicians = await LabTechnician.findBySpecialty(specialtyId);
+            const labTechIds = labTechnicians.map(tech => tech.technicianId);
+            console.log(`Found ${labTechIds.length} lab technicians for specialty ID ${specialtyId}:`, labTechIds);
+            
+            // Try to find specialty name for given ID to match against name
+            let targetSpecialtyName = '';
+            const foundSpecialty = specialties.find(s => s.specialtyId === specialtyId);
+            if (foundSpecialty) {
+                targetSpecialtyName = foundSpecialty.name;
+                console.log(`Target specialty name: ${targetSpecialtyName}`);
+            }
+            
             schedules = schedules.filter(schedule => {
-                // Make sure we're comparing the same types (numbers)
-                return schedule.specialtyId === specialtyId;
+                // For doctor schedules
+                if (schedule.staffType === 'doctor') {
+                    const doctorSpecialtyId = typeof schedule.specialtyId === 'string' 
+                        ? parseInt(schedule.specialtyId) 
+                        : schedule.specialtyId;
+                    
+                    return doctorSpecialtyId === specialtyId;
+                } 
+                // For lab technician schedules - use technicianId to match with labs in the correct specialty
+                else if (schedule.staffType === 'labTechnician') {
+                    // First try direct ID comparison if available
+                    if (schedule.specialtyId !== null && schedule.specialtyId !== undefined) {
+                        const techSpecialtyId = typeof schedule.specialtyId === 'string' 
+                            ? parseInt(schedule.specialtyId) 
+                            : schedule.specialtyId;
+                        
+                        if (techSpecialtyId === specialtyId) {
+                            return true;
+                        }
+                    }
+                    
+                    // If ID comparison didn't work, try name matching
+                    if (targetSpecialtyName && schedule.labSpecialtyName === targetSpecialtyName) {
+                        return true;
+                    }
+                    
+                    // If both above methods fail, check if the lab technician's ID is in our list
+                    if (schedule.labTechnicianId && labTechIds.includes(schedule.labTechnicianId)) {
+                        return true;
+                    }
+                    
+                    return false;
+                }
+                
+                return false;
             });
             console.log(`Schedules after specialty filter: ${schedules.length} (removed ${beforeCount - schedules.length})`);
         }

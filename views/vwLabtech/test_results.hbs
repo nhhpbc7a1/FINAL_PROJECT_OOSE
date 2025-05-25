@@ -464,29 +464,5 @@
 
 {{#section 'js'}}
 <script>
-    $(document).ready(function() {
-        // Check if lab technician has active schedule
-        function checkActiveSchedule() {
-            fetch('/labtech/active-schedule-status')
-                .then(response => response.json())
-                .then(data => {
-                    if (!data.hasActiveSchedule) {
-                        // Disable edit buttons if no active schedule
-                        $('.btn-edit').addClass('disabled');
-                        $('.btn-edit').attr('title', 'You must be on duty to edit test results');
-                        $('.btn-edit').click(function(e) {
-                            e.preventDefault();
-                            alert('You cannot edit test results when you are not on duty. Please try again during your scheduled shift.');
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('Error checking active schedule:', error);
-                });
-        }
-        
-        // Call the function when page loads
-        checkActiveSchedule();
-    });
 </script>
 {{/section}} 
