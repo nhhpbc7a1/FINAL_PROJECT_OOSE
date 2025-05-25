@@ -60,6 +60,88 @@ class PatientDAO {
     }
 
     /**
+     * Find detailed patient information by ID
+     * @param {number} patientId - Patient ID
+     * @returns {Promise<Object|null>} Detailed patient object or null
+     */
+    static async findDetailedById(patientId) {
+        try {
+            const patient = await db('Patient')
+                .join('User', 'Patient.userId', '=', 'User.userId')
+                .select(
+                    'Patient.*',
+                    'User.email',
+                    'User.fullName',
+                    'User.phoneNumber',
+                    'User.address',
+                    'User.accountStatus',
+                    'User.gender',
+                    'User.dob',
+                    'User.profileImage',
+                    // Additional medical details
+                    'Patient.bloodType',
+                    'Patient.medicalHistory'
+                )
+                .where('Patient.patientId', patientId)
+                .first();
+                
+            if (!patient) return null;
+            
+            // Add allergies information if available
+            try {
+                const medicalData = await db('MedicalRecord as mr')
+                    .join('Appointment as a', 'mr.appointmentId', '=', 'a.appointmentId')
+                    .where('a.patientId', patientId)
+                    .orderBy('mr.createdDate', 'desc')
+                    .select('mr.diagnosis', 'mr.notes', 'mr.recommendations')
+                    .first();
+                    
+                if (medicalData) {
+                    patient.diagnosis = medicalData.diagnosis;
+                    patient.medicalNotes = medicalData.notes;
+                    patient.recommendations = medicalData.recommendations;
+                }
+            } catch (err) {
+                console.log('No medical records found for patient');
+            }
+            
+            return patient;
+        } catch (error) {
+            console.error(`Error fetching detailed patient with ID ${patientId}:`, error);
+            throw new Error('Unable to find detailed patient information');
+        }
+    }
+    
+    /**
+     * Find basic patient information by ID
+     * @param {number} patientId - Patient ID
+     * @returns {Promise<Object|null>} Basic patient object or null
+     */
+    static async findBasicInfoById(patientId) {
+        try {
+            const patient = await db('Patient')
+                .join('User', 'Patient.userId', '=', 'User.userId')
+                .select(
+                    'Patient.patientId',
+                    'Patient.userId',
+                    'User.fullName',
+                    'User.gender',
+                    'User.dob',
+                    'User.email',
+                    'User.phoneNumber',
+                    'User.profileImage'
+                )
+                .where('Patient.patientId', patientId)
+                .first();
+                
+            return patient || null;
+        } catch (error) {
+            console.error(`Error fetching basic patient info with ID ${patientId}:`, error);
+            throw new Error('Unable to find basic patient information');
+        }
+    }
+
+    /**
      * Find a patient by user ID
      * @param {number} userId - User ID
      * @returns {Promise<Object|null>} Patient object or null
@@ -335,6 +417,48 @@ class PatientDAO {
         } catch (error) {
             console.error('Error counting patients by age group:', error);
             throw new Error('Unable to count patients by age group');
+        }
+    }
+
+    /**
+     * Find patients who have had appointments with a specific doctor and get their last visit information
+     * @param {number} doctorId - ID of the doctor
+     * @returns {Promise<Array>} Array of patient objects with last visit information
+     */
+    static async findByDoctorWithLastVisit(doctorId) {
+        try {
+            // Get all distinct patients who have had appointments with this doctor
+            // along with their most recent appointment
+            const patients = await db('Appointment as a')
+                .join('Patient as p', 'a.patientId', '=', 'p.patientId')
+                .join('User as u', 'p.userId', '=', 'u.userId')
+                .select(
+                    'p.patientId',
+                    'u.fullName',
+                    'u.gender',
+                    'u.dob',
+                    'u.email',
+                    'u.phoneNumber',
+                    'p.bloodType',
+                    'u.profileImage',
+                    db.raw('MAX(a.appointmentDate) as lastVisitDate'),
+                    db.raw(`
+                        (SELECT patientAppointmentStatus 
+                         FROM Appointment 
+                         WHERE patientId = p.patientId AND doctorId = ? 
+                         ORDER BY appointmentDate DESC, appointmentTime DESC 
+                         LIMIT 1) as appointmentStatus
+                    `, [doctorId])
+                )
+                .where('a.doctorId', doctorId)
+                .groupBy('p.patientId', 'u.fullName', 'u.gender', 'u.dob', 'u.email', 
+                         'u.phoneNumber', 'p.bloodType', 'u.profileImage')
+                .orderBy('lastVisitDate', 'desc');
+            
+            return patients;
+        } catch (error) {
+            console.error(`Error finding patients for doctor ID ${doctorId}:`, error);
+            throw new Error('Unable to find patients for this doctor');
         }
     }
 }

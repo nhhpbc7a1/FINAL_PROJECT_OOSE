@@ -134,7 +134,7 @@
 </div>
 
 <!-- Hidden form for submitting prescription data -->
-<form id="prescriptionSubmitForm" action="/doctor/prescription-save" method="POST" style="display: none;">
+<form id="prescriptionSubmitForm" action="/doctor/prescription/save" method="POST" style="display: none;">
   <input type="hidden" name="patientId" value="{{patient.patientId}}">
   <input type="hidden" name="appointmentId" value="{{patient.appointmentId}}">
   <input type="hidden" name="doctorId" value="{{doctorId}}">

@@ -292,6 +292,31 @@ class ServiceDAO {
             throw new Error('Unable to search services');
         }
     }
+
+    /**
+     * Find active services by type
+     * @param {string} type - Type of service (e.g., 'service', 'test')
+     * @returns {Promise<Array>} Array of active services of the specified type
+     */
+    static async findActiveByType(type) {
+        try {
+            return await db('Service')
+                .leftJoin('Specialty', 'Service.specialtyId', '=', 'Specialty.specialtyId')
+                .select(
+                    'Service.*',
+                    'Specialty.name as specialtyName'
+                )
+                .where({
+                    'Service.type': type,
+                    'Service.status': 'active'
+                })
+                .orderBy('Service.category')
+                .orderBy('Service.name');
+        } catch (error) {
+            console.error(`Error fetching active services of type ${type}:`, error);
+            throw new Error(`Unable to load active ${type} services`);
+        }
+    }
 }
 
 export default ServiceDAO; 

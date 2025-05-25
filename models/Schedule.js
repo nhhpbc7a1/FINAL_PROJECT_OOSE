@@ -209,7 +209,7 @@ class Schedule {
     }
 
     /**
-     * Find schedules by doctor and date
+     * Find schedules by doctor ID and date
      * @param {number} doctorId - Doctor ID
      * @param {string} date - Date (YYYY-MM-DD)
      * @returns {Promise<Schedule[]>} Array of schedules for the doctor and date
@@ -219,8 +219,25 @@ class Schedule {
             const schedulesData = await ScheduleDAO.findByDoctorAndDate(doctorId, date);
             return schedulesData.map(scheduleData => new Schedule(scheduleData));
         } catch (error) {
-            console.error(`Error finding schedules for doctor ID ${doctorId} on date ${date}:`, error);
+            console.error(`Error finding schedules for doctor ID ${doctorId} and date ${date}:`, error);
             throw new Error('Failed to find schedules by doctor and date: ' + error.message);
+        }
+    }
+
+    /**
+     * Find schedules by doctor ID and date range
+     * @param {number} doctorId - Doctor ID
+     * @param {string} startDate - Start date (YYYY-MM-DD)
+     * @param {string} endDate - End date (YYYY-MM-DD)
+     * @returns {Promise<Schedule[]>} Array of schedules within the date range
+     */
+    static async findByDoctorAndDateRange(doctorId, startDate, endDate) {
+        try {
+            const schedulesData = await ScheduleDAO.findByDoctorAndDateRange(doctorId, startDate, endDate);
+            return schedulesData.map(scheduleData => new Schedule(scheduleData));
+        } catch (error) {
+            console.error(`Error finding schedules for doctor ID ${doctorId} between ${startDate} and ${endDate}:`, error);
+            throw new Error('Failed to find schedules by doctor and date range: ' + error.message);
         }
     }
 
@@ -240,6 +257,22 @@ class Schedule {
     }
 
     /**
+     * Get schedule summary statistics by doctor and date range
+     * @param {number} doctorId - Doctor ID
+     * @param {string} startDate - Start date (YYYY-MM-DD)
+     * @param {string} endDate - End date (YYYY-MM-DD)
+     * @returns {Promise<Object>} Summary object with counts by status
+     */
+    static async getSummaryByDoctorAndDateRange(doctorId, startDate, endDate) {
+        try {
+            return await ScheduleDAO.getSummaryByDoctorAndDateRange(doctorId, startDate, endDate);
+        } catch (error) {
+            console.error(`Error getting schedule summary for doctor ID ${doctorId} in date range ${startDate} to ${endDate}:`, error);
+            throw new Error('Failed to get schedule summary: ' + error.message);
+        }
+    }
+
+    /**
      * Add multiple schedules in bulk
      * @param {Array} schedulesData - Array of schedule data
      * @returns {Promise<Array>} Result of bulk insert
@@ -251,6 +284,49 @@ class Schedule {
             console.error('Error adding schedules in bulk:', error);
             throw new Error('Failed to add schedules in bulk: ' + error.message);
         }
+    }
+
+    /**
+     * Format schedules for calendar display
+     * @param {Array<Schedule>} schedules - List of schedules
+     * @returns {Array<Object>} Formatted schedule events for calendar
+     */
+    static formatSchedulesForCalendar(schedules) {
+        return schedules.map(schedule => {
+            // Determine event color based on status
+            let backgroundColor;
+            if (schedule.status === 'available') {
+                backgroundColor = '#0d6efd'; // blue for available
+            } else if (schedule.status === 'fullfilled' || schedule.status === 'booked') {
+                backgroundColor = '#198754'; // green for booked/fullfilled
+            } else if (schedule.status === 'unavailable') {
+                backgroundColor = '#dc3545'; // red for unavailable
+            } else {
+                backgroundColor = '#6c757d'; // grey for other statuses
+            }
+            
+            // Format room info
+            const roomInfo = schedule.roomNumber ? `Room ${schedule.roomNumber}` : 'No room';
+            
+            return {
+                id: schedule.scheduleId,
+                title: `${schedule.startTime.substring(0, 5)} - ${schedule.endTime.substring(0, 5)}`,
+                description: roomInfo,
+                start: `${schedule.workDate}T${schedule.startTime}`,
+                end: `${schedule.workDate}T${schedule.endTime}`,
+                backgroundColor: backgroundColor,
+                borderColor: backgroundColor,
+                textColor: '#ffffff',
+                classNames: [schedule.status],
+                extendedProps: {
+                    roomNumber: schedule.roomNumber,
+                    roomType: schedule.roomType,
+                    status: schedule.status,
+                    doctorName: schedule.doctorName,
+                    specialtyName: schedule.specialtyName
+                }
+            };
+        });
     }
 }
 
