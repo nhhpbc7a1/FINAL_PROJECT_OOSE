@@ -1,4 +1,5 @@
 import AppointmentDAO from '../dao/AppointmentDAO.js';
+import Room from './Room.js';
 
 /**
  * Appointment model representing an appointment in the system
@@ -157,6 +158,21 @@ class Appointment {
     }
 
     /**
+     * Find the latest appointment for a patient
+     * @param {number} patientId - Patient ID
+     * @returns {Promise<Appointment|null>} Latest appointment or null
+     */
+    static async findLatestForPatient(patientId) {
+        try {
+            const appointment = await AppointmentDAO.findLatestForPatient(patientId);
+            return appointment ? new Appointment(appointment) : null;
+        } catch (error) {
+            console.error(`Error fetching latest appointment for patient ${patientId}:`, error);
+            throw new Error('Failed to load latest patient appointment: ' + error.message);
+        }
+    }
+
+    /**
      * Find appointments by date
      * @param {string} date - Date string in YYYY-MM-DD format
      * @returns {Promise<Array<Appointment>>} Array of appointments
@@ -211,6 +227,135 @@ class Appointment {
         } catch (error) {
             console.error('Error counting appointments by status:', error);
             throw new Error('Failed to count appointments: ' + error.message);
+        }
+    }
+
+    /**
+     * Update the patient appointment status
+     * @param {number} appointmentId - The appointment ID 
+     * @param {string} status - The new status value
+     * @returns {Promise<boolean>} Success status
+     */
+    static async updatePatientAppointmentStatus(appointmentId, status) {
+        try {
+            // Validate status
+            const validStatuses = ['waiting', 'examining', 'examined'];
+            if (!validStatuses.includes(status)) {
+                throw new Error(`Invalid status: ${status}`);
+            }
+            
+            // Get current appointment
+            const appointment = await this.findById(appointmentId);
+            if (!appointment) {
+                throw new Error(`Appointment with ID ${appointmentId} not found`);
+            }
+            
+            // Update status
+            appointment.patientAppointmentStatus = status;
+            await appointment.save();
+            
+            console.log(`Successfully updated appointment ${appointmentId} status to ${status}`);
+            return true;
+        } catch (error) {
+            console.error(`Error updating appointment status to ${status}:`, error);
+            throw new Error('Failed to update appointment status: ' + error.message);
+        }
+    }
+    
+    /**
+     * Assign a random room to the appointment
+     * @param {number} appointmentId - The appointment ID
+     * @returns {Promise<Object>} Room information
+     */
+    static async assignRandomRoom(appointmentId) {
+        try {
+            // Get appointment
+            const appointment = await this.findById(appointmentId);
+            if (!appointment) {
+                throw new Error(`Appointment with ID ${appointmentId} not found`);
+            }
+            
+            // If appointment already has a room, return its details
+            if (appointment.roomId) {
+                const room = await Room.findById(appointment.roomId);
+                if (room) {
+                    return {
+                        roomId: room.roomId,
+                        roomNumber: room.roomNumber,
+                        floor: '1' // Assuming floor information might be missing
+                    };
+                }
+            }
+            
+            // Find available rooms
+            const availableRooms = await Room.findByStatus('available');
+            if (!availableRooms || availableRooms.length === 0) {
+                throw new Error('No available rooms found');
+            }
+            
+            // Filter examination rooms if needed
+            const examinationRooms = availableRooms.filter(room => 
+                room.roomType === 'examination'
+            );
+            
+            // Use examination rooms if available, otherwise use any room
+            const roomsToUse = examinationRooms.length > 0 ? examinationRooms : availableRooms;
+            
+            // Select a random room
+            const randomRoom = roomsToUse[Math.floor(Math.random() * roomsToUse.length)];
+            
+            // Update appointment with the room
+            appointment.roomId = randomRoom.roomId;
+            await appointment.save();
+            
+            // Set the selected room as occupied
+            randomRoom.status = 'occupied';
+            await randomRoom.save();
+            
+            return {
+                roomId: randomRoom.roomId,
+                roomNumber: randomRoom.roomNumber,
+                floor: '1' // Assuming floor information might be missing
+            };
+        } catch (error) {
+            console.error(`Error assigning room to appointment ${appointmentId}:`, error);
+            throw new Error('Failed to assign room: ' + error.message);
+        }
+    }
+    
+    /**
+     * Release the room assigned to an appointment
+     * @param {number} appointmentId - The appointment ID
+     * @returns {Promise<boolean>} Success status
+     */
+    static async releaseRoom(appointmentId) {
+        try {
+            const appointment = await this.findById(appointmentId);
+            if (!appointment) {
+                throw new Error(`Appointment with ID ${appointmentId} not found`);
+            }
+            
+            if (!appointment.roomId) {
+                // No room assigned, nothing to release
+                return false;
+            }
+            
+            // Get the room from the Room model
+            const room = await Room.findById(appointment.roomId);
+            if (room) {
+                // Set room back to available
+                room.status = 'available';
+                await room.save();
+            }
+            
+            // Clear room assignment from appointment
+            appointment.roomId = null;
+            await appointment.save();
+            
+            return true;
+        } catch (error) {
+            console.error(`Error releasing room for appointment ${appointmentId}:`, error);
+            throw new Error('Failed to release room: ' + error.message);
         }
     }
 }

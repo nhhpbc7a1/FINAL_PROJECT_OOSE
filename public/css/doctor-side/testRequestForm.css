@@ -202,6 +202,67 @@
     width: 100%;
   }
   
+  /* Existing Tests Table Styles */
+  .existing-tests-card {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .existing-tests-container {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .existing-tests-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  .existing-tests-table th {
+    background-color: #f5f8fa;
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 1px solid #dee2e6;
+  }
+
+  .existing-tests-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
+    color: #495057;
+  }
+
+  .existing-tests-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .status-badge.pending {
+    background-color: #fff8e1;
+    color: #ffa000;
+  }
+
+  .status-badge.in-progress {
+    background-color: #e3f2fd;
+    color: #1976d2;
+  }
+
+  .status-badge.completed {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+  }
+  
   .card-header {
     display: flex;
     justify-content: space-between;
@@ -248,8 +309,8 @@
   }
   .test-option label {
     margin-left: 8px;
-    font-size: 14px;
   }
+  
   .test-categories {
     display: flex;
     flex-wrap: wrap;

@@ -1,11 +1,14 @@
 import express from 'express';
 import moment from 'moment';
-import dashboardService from '../../services/doctor-side-service/dashboard.service.js';
-import patientDetailsService from '../../services/doctor-side-service/patientDetails.service.js';
-import appointmentService from '../../services/doctor-side-service/appointment.service.js';
-import prescriptionService from '../../services/doctor-side-service/prescription.service.js';
-import medicationService from '../../services/doctor-side-service/medication.service.js';
-import doctorMedicalRecordService from '../../services/doctor-side-service/medical-record.service.js';
+import Doctor from '../../models/Doctor.js';
+import Patient from '../../models/Patient.js';
+import Appointment from '../../models/Appointment.js';
+import Prescription from '../../models/Prescription.js';
+import Medication from '../../models/Medication.js';
+import MedicalRecord from '../../models/MedicalRecord.js';
+import Notification from '../../models/Notification.js';
+import db from '../../ultis/db.js';
+import PrescriptionDAO from '../../dao/PrescriptionDAO.js';
 
 const router = express.Router();
 
@@ -39,7 +42,7 @@ router.get('/medicine', async function (req, res) {
       // If no appointment ID is provided, try to get the latest appointment for this patient
       if (!appointmentId) {
         try {
-          const latestAppointment = await appointmentService.getLatestAppointmentForPatient(req.query.patientId);
+          const latestAppointment = await Appointment.findLatestForPatient(req.query.patientId);
           if (latestAppointment) {
             appointmentId = latestAppointment.appointmentId;
             patientDetails.appointmentId = appointmentId;
@@ -58,25 +61,29 @@ router.get('/medicine', async function (req, res) {
     }
     // If we have an appointment ID, get patient details from the appointment
     else if (appointmentId) {
-      const appointmentDetails = await appointmentService.getAppointmentWithServices(appointmentId);
+      const appointmentDetails = await Appointment.findById(appointmentId);
       if (appointmentDetails) {
-        patientDetails = {
-          patientId: appointmentDetails.patientId,
-          patientName: appointmentDetails.patientName,
-          patientGender: appointmentDetails.patientGender,
-          patientDob: appointmentDetails.patientDob,
-          patientAge: appointmentDetails.patientDob 
-            ? moment().diff(moment(appointmentDetails.patientDob), 'years') 
-            : 'Unknown',
-          patientGenderFormatted: appointmentDetails.patientGender === 'male' ? 'Male' : 'Female',
-          appointmentId: appointmentId,
-          patientAppointmentStatus: appointmentDetails.patientAppointmentStatus || 'examining'
-        };
+        // Get patient details separately since we don't have populate
+        const patient = await Patient.findById(appointmentDetails.patientId);
+        if (patient) {
+          patientDetails = {
+            patientId: patient.patientId,
+            patientName: patient.fullName,
+            patientGender: patient.gender,
+            patientDob: patient.dob,
+            patientAge: patient.dob 
+              ? moment().diff(moment(patient.dob), 'years') 
+              : 'Unknown',
+            patientGenderFormatted: patient.gender === 'male' ? 'Male' : 'Female',
+            appointmentId: appointmentId,
+            patientAppointmentStatus: appointmentDetails.patientAppointmentStatus || 'examining'
+          };
+        }
       }
-    } 
+    }
     // Otherwise use the patient ID to get patient details
     else if (patientId) {
-      const patient = await patientDetailsService.getPatientDetails(patientId);
+      const patient = await Patient.findById(patientId);
       if (patient) {
         // Get the most recent appointment for this patient to check status
         let appointmentStatus = 'examining'; // Default status
@@ -119,14 +126,17 @@ router.get('/medicine', async function (req, res) {
       return res.redirect('/account/login');
     }
     
-    const doctorProfile = await dashboardService.getDoctorProfile(doctorId);
+    // Get doctor details without using populate
+    const doctorProfile = await Doctor.findById(doctorId);
+    const specialty = doctorProfile?.specialtyId ? 
+      await db('Specialty').where('specialtyId', doctorProfile.specialtyId).first() : null;
     
     // Pass data to the template
     res.render('vwDoctor/prescriptionMedicine', { 
       patient: patientDetails,
       prescriptionCode: `RX-${moment().format('YYYYMMDD')}-${Math.floor(1000 + Math.random() * 9000)}`,
       currentDate: new Date(),
-      doctorSpecialty: doctorProfile?.specialtyName || 'General Medicine',
+      doctorSpecialty: specialty?.name || 'General Medicine',
       doctorName: doctorProfile?.fullName || 'Doctor',
       doctorId: doctorId // Pass doctorId to the template
     });
@@ -173,7 +183,7 @@ router.post('/save', async function(req, res) {
     // Find a valid appointment for this patient if not provided
     let finalAppointmentId = appointmentId;
     if (!finalAppointmentId) {
-      const latestAppointment = await appointmentService.getLatestAppointmentForPatient(patientId);
+      const latestAppointment = await Appointment.findLatestForPatient(patientId);
       if (latestAppointment) {
         finalAppointmentId = latestAppointment.appointmentId;
         console.log('Using latest appointment ID:', finalAppointmentId);
@@ -185,59 +195,82 @@ router.post('/save', async function(req, res) {
     
     // Check if we need to create a medical record first
     let recordId;
-    const medicalRecord = await doctorMedicalRecordService.findByAppointmentId(finalAppointmentId);
-    
-    if (medicalRecord) {
-      // Use existing medical record
-      recordId = medicalRecord.recordId;
-      console.log('Using existing medical record:', recordId);
-    } else {
-      // Create a new medical record
-      recordId = await doctorMedicalRecordService.createExaminationRecord({
-        appointmentId: finalAppointmentId,
-        diagnosis,
-        notes: 'Created from prescription module', 
-        recommendations: additionalInstructions || '',
-        followupDate: null // Optional: could be added to the form if needed
-      });
-      console.log('Created new medical record:', recordId);
+    try {
+      const medicalRecord = await MedicalRecord.findByAppointmentId(finalAppointmentId);
+      
+      if (medicalRecord) {
+        // Use existing medical record
+        recordId = medicalRecord.recordId;
+        console.log('Using existing medical record:', recordId);
+      } else {
+        // Create a new medical record
+        const newRecord = new MedicalRecord({
+          appointmentId: finalAppointmentId,
+          diagnosis,
+          notes: 'Created from prescription module', 
+          recommendations: additionalInstructions || '',
+          followupDate: null // Optional: could be added to the form if needed
+        });
+        recordId = await newRecord.save(); // save() returns the ID directly
+        console.log('Created new medical record:', recordId);
+      }
+    } catch (error) {
+      console.error('Error finding/creating medical record:', error);
+      return res.status(500).send('Failed to create medical record: ' + error.message);
     }
     
     // Create the prescription
-    const prescriptionId = await prescriptionService.add({
-      recordId,
-      doctorId,
-      notes: additionalInstructions || ''
-    });
-    console.log('Created prescription:', prescriptionId);
-    
-    // Add prescription medications
-    await prescriptionService.addPrescriptionDetails(prescriptionId, medicationsArray);
-    console.log('Added prescription medications');
+    try {
+      const prescription = new Prescription({
+        recordId: recordId,
+        doctorId: doctorId,
+        notes: additionalInstructions || '',
+      });
+      const prescriptionId = await prescription.save();
+      console.log('Created prescription:', prescriptionId);
+      
+      // Now add medication details to the prescription
+      if (medicationsArray && medicationsArray.length > 0) {
+        // Format medications for prescription details
+        const prescriptionDetails = medicationsArray.map(med => ({
+          prescriptionId: prescriptionId,
+          medicationId: med.medicationId,
+          dosage: med.dosage || null,
+          frequency: med.frequency || null,
+          duration: med.duration ? `${med.duration} days` : null,
+          instructions: med.instructions || null
+        }));
+        
+        // Add the details
+        await PrescriptionDAO.addDetails(prescriptionId, prescriptionDetails);
+        console.log(`Added ${prescriptionDetails.length} medications to prescription ${prescriptionId}`);
+      }
+    } catch (error) {
+      console.error('Error creating prescription:', error);
+      return res.status(500).send('Failed to save prescription: ' + error.message);
+    }
     
     // Get the doctor and patient information for notification
     try {
-      const [doctorData, patientData] = await Promise.all([
-        dashboardService.getDoctorProfile(doctorId),
-        patientDetailsService.getPatientBasicInfo(patientId)
-      ]);
+      // Get doctor details
+      const doctorData = await Doctor.findById(doctorId);
+      const specialty = doctorData?.specialtyId ? 
+        await db('Specialty').where('specialtyId', doctorData.specialtyId).first() : null;
+      
+      // Get patient details
+      const patientData = await Patient.findById(patientId);
       
       if (patientData && patientData.userId) {
-        // Import the notification utility
-        const notificationUtils = (await import('../../ultis/notification.utils.js')).default;
+        // Create a notification
+        const notification = new Notification({
+          userId: patientData.userId,
+          title: 'New prescription available',
+          content: `Dr. ${doctorData?.fullName || 'your doctor'} has prescribed medication for you. Please check your prescriptions.`,
+          isRead: false,
+          createdDate: new Date().toISOString() // Format date as ISO string for MySQL
+        });
         
-        // Generate a summary of medications for the notification
-        const medSummary = medicationsArray.length === 1 
-          ? medicationsArray[0].name
-          : `${medicationsArray.length} medications`;
-        
-        // Send notification to patient
-        await notificationUtils.sendNotification(
-          patientData.userId,
-          'New prescription available',
-          `Dr. ${doctorData?.fullName || 'your doctor'} has prescribed ${medSummary} for you. Please check your prescriptions.`
-        );
-        
+        await notification.save();
         console.log(`Notification sent to patient (userId: ${patientData.userId})`);
       }
     } catch (notificationError) {
@@ -265,16 +298,9 @@ router.get('/history', async function (req, res) {
     }
     
     // Fetch prescriptions for the patient
-    const prescriptions = await prescriptionService.getByPatientId(patientId);
+    const prescriptions = await Prescription.findByPatientId(patientId);
     
-    // Get medication details for each prescription
-    for (const prescription of prescriptions) {
-      // Get the details for this prescription
-      const prescriptionDetails = await prescriptionService.getById(prescription.prescriptionId);
-      
-      // Add medication details to the prescription
-      prescription.medicationDetails = prescriptionDetails ? prescriptionDetails.medications : [];
-    }
+    // The medications are already included in the prescription model
     
     // Return prescription data as JSON
     res.json(prescriptions);
@@ -293,11 +319,11 @@ router.get('/api/medications', async function (req, res) {
     let medications;
     
     if (searchTerm) {
-      medications = await medicationService.searchByName(searchTerm);
+      medications = await Medication.searchByName(searchTerm);
     } else if (category) {
-      medications = await medicationService.findByCategory(category);
+      medications = await Medication.findByCategory(category);
     } else {
-      medications = await medicationService.findAll();
+      medications = await Medication.findAll();
     }
     
     res.json({ success: true, medications });

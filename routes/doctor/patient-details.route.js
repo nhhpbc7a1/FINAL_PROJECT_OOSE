@@ -1,6 +1,9 @@
 import express from 'express';
 import moment from 'moment';
-import patientDetailsService from '../../services/doctor-side-service/patientDetails.service.js';
+import Patient from '../../models/Patient.js';
+import Appointment from '../../models/Appointment.js';
+import TestResult from '../../models/TestResult.js';
+import Prescription from '../../models/Prescription.js';
 
 const router = express.Router();
 
@@ -20,11 +23,33 @@ router.get('/', async function (req, res) {
     }
     
     // Fetch patient details
-    const patientDetails = await patientDetailsService.getPatientDetails(patientId);
+    const patientDetails = await Patient.findById(patientId);
     
     if (!patientDetails) {
       return res.redirect('/doctor/patients');
     }
+    
+    // Get additional data for the patient
+    const appointments = await Appointment.findByPatient(patientId);
+    const formattedAppointments = appointments.map(appointment => ({
+      ...appointment,
+      formattedDate: moment(appointment.appointmentDate).format('MMM D, YYYY'),
+      formattedTime: appointment.estimatedTime ? moment(appointment.estimatedTime, 'HH:mm:ss').format('hh:mm A') : 'N/A'
+    }));
+    
+    // Get lab results for the patient
+    const labResults = await TestResult.findByPatientId(patientId);
+    const formattedLabResults = labResults.map(result => ({
+      ...result,
+      formattedDate: moment(result.performedDate).format('MMM D, YYYY')
+    }));
+    
+    // Get prescriptions for the patient
+    const prescriptions = await Prescription.findByPatientId(patientId);
+    const formattedPrescriptions = prescriptions.map(prescription => ({
+      ...prescription,
+      formattedDate: moment(prescription.prescriptionDate).format('MMM D, YYYY')
+    }));
     
     // Format dates for display
     const formattedPatient = {
@@ -32,19 +57,9 @@ router.get('/', async function (req, res) {
       formattedDob: moment(patientDetails.dob || patientDetails.userDob).format('MMMM D, YYYY'),
       formattedLastVisit: patientDetails.lastVisit ? moment(patientDetails.lastVisit).format('MMM D, YYYY') : 'Not visited yet',
       patientCode: `P-${patientId.toString().padStart(8, '0')}`,
-      appointments: patientDetails.appointments.map(appointment => ({
-        ...appointment,
-        formattedDate: moment(appointment.appointmentDate).format('MMM D, YYYY'),
-        formattedTime: appointment.estimatedTime ? moment(appointment.estimatedTime, 'HH:mm:ss').format('hh:mm A') : 'N/A'
-      })),
-      labResults: patientDetails.labResults.map(result => ({
-        ...result,
-        formattedDate: moment(result.performedDate).format('MMM D, YYYY')
-      })),
-      prescriptions: patientDetails.prescriptions.map(prescription => ({
-        ...prescription,
-        formattedDate: moment(prescription.prescriptionDate).format('MMM D, YYYY')
-      }))
+      appointments: formattedAppointments,
+      labResults: formattedLabResults,
+      prescriptions: formattedPrescriptions
     };
     
     // Get success message from session if exists

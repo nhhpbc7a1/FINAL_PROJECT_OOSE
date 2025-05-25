@@ -43,6 +43,9 @@
         <span>{{appointment.patientGenderFormatted}}</span>
         <span class="patient-code">Code: P-{{appointment.patientId}}</span>
         <span class="badge">{{appointment.patientAppointmentStatus}}</span>
+        {{#if appointment.patientEmail}}
+        <span class="patient-email">Email: {{appointment.patientEmail}}</span>
+        {{/if}}
         {{#if appointment.roomNumber}}
         <span class="room-info">Room: {{appointment.roomNumber}}</span>
         {{else}}
@@ -201,7 +204,9 @@
       // Get the appointmentId from the hidden input
       const appointmentId = document.getElementById('appointmentIdInput').value;
       const patientId = '{{appointment.patientId}}';
-      // Navigate to test request form with both patient ID and appointment ID
+      console.log(`Test Request button clicked - redirecting with appointmentId: ${appointmentId} and patientId: ${patientId}`);
+      
+      // Use window.location.href for direct redirect
       window.location.href = `/doctor/test-request?patientId=${patientId}&appointmentId=${appointmentId}`;
     });
     

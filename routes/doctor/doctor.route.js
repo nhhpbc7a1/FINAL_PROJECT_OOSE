@@ -1,5 +1,4 @@
 import express from 'express';
-import patientListRouter from './patientList.route.js';
 import dashboardRouter from './dashboard.route.js';
 import appointmentRouter from './appointment.route.js';
 import examinationRouter from './examination.route.js';
@@ -8,7 +7,10 @@ import prescriptionRouter from './prescription.route.js';
 import messageRouter from './message.route.js';
 import patientDetailsRouter from './patient-details.route.js';
 import scheduleRouter from './schedule.route.js';
-import notificationService from '../../services/notification.service.js';
+import Patient from '../../models/Patient.js';
+import Doctor from '../../models/Doctor.js';
+import Notification from '../../models/Notification.js';
+import moment from 'moment';
 
 const router = express.Router();
 
@@ -18,8 +20,11 @@ router.use(async (req, res, next) => {
     // Get the userId from session or use default for testing
     const userId = req.session.authUser?.userId || ""; 
     
-    // Get unread count
-    const unreadCount = await notificationService.countUnreadByUser(userId);
+    // Get unread count if we have a valid userId
+    let unreadCount = 0;
+    if (userId) {
+      unreadCount = await Notification.countUnreadByUserId(userId);
+    }
     
     // Add to locals for use in templates
     res.locals.unreadCount = unreadCount;
@@ -35,6 +40,91 @@ router.use(async (req, res, next) => {
 router.use((req, res, next) => {
     res.locals.layout = 'doctor';
     next();
+  });
+
+// Create a new patients route directly here
+router.get('/patients', async function (req, res) {
+  try {
+    const flashMessage = req.session.flashMessage;
+    if (flashMessage) {
+      res.locals.flashMessage = flashMessage;
+      delete req.session.flashMessage;
+    }
+
+    // Get doctor ID from session
+    const doctorId = req.session.authUser?.doctorId;
+    
+    // Check if doctor is logged in
+    if (!doctorId) {
+      return res.redirect('/account/login'); // Redirect to login page if not logged in
+    }
+
+    // Validate doctor exists
+    const doctor = await Doctor.findById(doctorId);
+    if (!doctor) {
+      throw new Error(`Doctor with ID ${doctorId} not found`);
+    }
+    
+    // Get patients with their latest appointments for this doctor
+    const patients = await Patient.findByDoctorWithLastVisit(doctorId);
+    
+    console.log(`Found ${patients.length} patients for doctor ID ${doctorId}`);
+    // Add debug for patient status
+    if (patients.length > 0) {
+      console.log('Sample patient data:', {
+        patientId: patients[0].patientId,
+        fullName: patients[0].fullName,
+        appointmentStatus: patients[0].appointmentStatus || 'no status'
+      });
+    }
+
+    // Calculate age for each patient and format dates
+    const patientsWithAge = patients.map(patient => {
+      // Calculate age
+      const dob = new Date(patient.dob);
+      const ageDifMs = Date.now() - dob.getTime();
+      const ageDate = new Date(ageDifMs);
+      const age = Math.abs(ageDate.getUTCFullYear() - 1970);
+      
+      // Format the last visit date if available
+      let lastVisitFormatted = 'Not visited yet';
+      if (patient.lastVisitDate) {
+        const lastVisit = new Date(patient.lastVisitDate);
+        const today = new Date();
+        const isToday = lastVisit.toDateString() === today.toDateString();
+        
+        if (isToday) {
+          lastVisitFormatted = `Today, ${lastVisit.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+        } else {
+          lastVisitFormatted = lastVisit.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          });
+        }
+      }
+      
+      // Get appointment status from database or set default
+      let appointmentStatus = patient.appointmentStatus || 'no-appointments';
+      
+      return {
+        ...patient,
+        age,
+        lastVisitFormatted,
+        appointmentStatus
+      };
+    });
+    
+    console.log(`Processed ${patientsWithAge.length} patients for doctor ID ${doctorId}`);
+
+    res.render('vwDoctor/patient', {
+      patients: patientsWithAge,
+      totalPatients: patients.length
+    });
+  } catch (error) {
+    console.error('Error loading patients:', error);
+    res.render('vwDoctor/patient', { error: 'Failed to load patients' });
+  }
   });
 
 // Home route redirect to dashboard
@@ -84,7 +174,6 @@ router.get('/api/debug/medical-records', (req, res) => {
 // Use the separated route files
 router.use('/dashboard', dashboardRouter);
 router.use('/appointments', appointmentRouter);
-router.use('/patients', patientListRouter);
 router.use('/examination', examinationRouter);
 router.use('/test-request', testRequestRouter);
 router.use('/prescription', prescriptionRouter);

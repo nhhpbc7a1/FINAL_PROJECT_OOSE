@@ -1,5 +1,7 @@
 import express from 'express';
-import scheduleService from '../../services/doctor-side-service/schedule.service.js';
+import Doctor from '../../models/Doctor.js';
+import Schedule from '../../models/Schedule.js';
+import Appointment from '../../models/Appointment.js';
 import moment from 'moment';
 
 const router = express.Router();
@@ -61,46 +63,63 @@ router.get('/', async (req, res) => {
     let monthSchedules = [];
     
     try {
-      todaySchedules = await scheduleService.getDoctorSchedules(doctorId, selectedDate);
+      todaySchedules = await Schedule.findByDoctorAndDate(doctorId, selectedDate);
       console.log(`Found ${todaySchedules.length} schedules for today`);
+      
+      // Check if we have data
+      if (todaySchedules.length === 0) {
+        console.log('No schedules found for today, this is expected if no schedules were created');
+      }
     } catch (error) {
-      console.error('Error fetching today schedules:', error);
+      console.error('Error fetching today schedules:', error.message);
     }
     
     try {
-      monthSchedules = await scheduleService.getDoctorSchedulesByDateRange(doctorId, monthStart, monthEnd);
+      monthSchedules = await Schedule.findByDoctorAndDateRange(doctorId, monthStart, monthEnd);
       console.log(`Found ${monthSchedules.length} schedules for month`);
     } catch (error) {
-      console.error('Error fetching month schedules:', error);
+      console.error('Error fetching month schedules:', error.message);
     }
     
     // Format schedules for calendar
     let scheduleEvents = [];
     try {
-      scheduleEvents = scheduleService.formatSchedulesForCalendar(monthSchedules);
+      scheduleEvents = Schedule.formatSchedulesForCalendar(monthSchedules);
       console.log(`Formatted ${scheduleEvents.length} events for calendar`);
     } catch (error) {
-      console.error('Error formatting schedules for calendar:', error);
+      console.error('Error formatting schedules for calendar:', error.message);
     }
     
     // Get summary of schedules
-    let summary = { total: 0, available: 0, fullfilled: 0 };
+    let summary = { total: 0, available: 0, fullfilled: 0, booked: 0, unavailable: 0 };
     try {
-      summary = await scheduleService.getSummaryByDoctorAndDateRange(
+      summary = await Schedule.getSummaryByDoctorAndDateRange(
         doctorId, 
         moment().startOf('month').format('YYYY-MM-DD'),
         moment().endOf('month').format('YYYY-MM-DD')
       );
       console.log('Schedule Summary:', summary);
     } catch (error) {
-      console.error('Error getting schedule summary:', error);
+      console.error('Error getting schedule summary:', error.message);
+    }
+    
+    // Get doctor details to display name
+    let doctorDetails = null;
+    try {
+      doctorDetails = await Doctor.findById(doctorId);
+      console.log('Doctor details loaded:', doctorDetails ? 'Yes' : 'No');
+    } catch (error) {
+      console.error('Error loading doctor details:', error.message);
     }
     
     res.render('vwDoctor/schedule', {
       doctorSchedules: todaySchedules,
       selectedDate: selectedDate,
       scheduleEvents: JSON.stringify(scheduleEvents),
-      summary: summary
+      summary: summary,
+      doctor: doctorDetails,
+      formatDate: (date) => moment(date).format('DD MMM YYYY'),
+      formatTime: (time) => time ? moment(time, 'HH:mm:ss').format('h:mm A') : 'N/A'
     });
     
   } catch (error) {

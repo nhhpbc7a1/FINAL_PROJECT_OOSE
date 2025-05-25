@@ -1,6 +1,5 @@
 import express from 'express';
-import notificationService from '../../services/notification.service.js';
-import doctorNotificationService from '../../services/doctor-side-service/doctorNotification.service.js';
+import Notification from '../../models/Notification.js';
 import moment from 'moment';
 
 const router = express.Router();
@@ -8,89 +7,120 @@ const router = express.Router();
 // Middleware for layout and current route
 router.use((req, res, next) => {
     res.locals.layout = 'doctor';
-    res.locals.active = 'messages'; // Set active menu item
+    res.locals.currentRoute = 'messages';
     next();
 });
 
-router.get('/', async function (req, res) {
+// GET: Messages list page
+router.get('/', async (req, res) => {
   try {
-    // Get the userId from the session
+        // Get user ID from session
     const userId = req.session.authUser?.userId;
     
-    // Check if user is logged in
     if (!userId) {
-      return res.redirect('/account/login'); // Redirect to login page if not logged in
+            return res.redirect('/account/login'); // Redirect to login if not logged in
     }
     
-    console.log(userId);
-    
     // Fetch notifications for this user
-    const notifications = await notificationService.findByUser(userId);
+        const notifications = await Notification.findByUserId(userId);
     
     // Format notifications
     const formattedNotifications = notifications.map(notification => ({
       ...notification,
       formattedDate: moment(notification.createdDate).format('MMM D, YYYY'),
-      formattedTime: moment(notification.createdDate).format('hh:mm A'),
-      timeAgo: moment(notification.createdDate).fromNow()
+            timeAgo: moment(notification.createdDate).fromNow(),
+            cssClass: notification.isRead ? 'read' : 'unread',
+            icon: _getNotificationIcon(notification.title)
     }));
     
     // Get unread count
-    const unreadCount = await notificationService.countUnreadByUser(userId);
+        const unreadCount = await Notification.countUnreadByUserId(userId);
     
     res.render('vwDoctor/messages', {
       notifications: formattedNotifications,
-      hasNotifications: formattedNotifications.length > 0,
       unreadCount
     });
   } catch (error) {
     console.error('Error loading messages:', error);
-    res.render('vwDoctor/messages', { error: 'Could not load notifications' });
+        res.render('vwDoctor/messages', { error: 'Failed to load messages' });
   }
 });
 
-router.post('/mark-read/:id', async function (req, res) {
+// POST: Mark notification as read
+router.post('/mark-read/:id', async (req, res) => {
   try {
     const notificationId = req.params.id;
-    console.log(`Attempting to mark notification ${notificationId} as read`);
-    const result = await doctorNotificationService.markAsRead(notificationId);
-    console.log(`Mark as read result: ${result}`);
-    res.redirect('/doctor/messages');
+        if (!notificationId) {
+            return res.status(400).json({ success: false, message: 'Notification ID is required' });
+        }
+        
+        const notification = await Notification.findById(notificationId);
+        if (!notification) {
+            return res.status(404).json({ success: false, message: 'Notification not found' });
+        }
+        
+        notification.isRead = true;
+        await notification.save();
+        
+        res.json({ success: true });
   } catch (error) {
     console.error('Error marking notification as read:', error);
-    res.redirect('/doctor/messages?error=Could not mark notification as read');
+        res.status(500).json({ success: false, message: 'Failed to mark notification as read' });
   }
 });
 
-router.post('/mark-all-read', async function (req, res) {
+// POST: Mark all notifications as read
+router.post('/mark-all-read', async (req, res) => {
   try {
-    // Get the userId from the session
     const userId = req.session.authUser?.userId;
-    
-    // Check if user is logged in
     if (!userId) {
-      return res.redirect('/account/login'); // Redirect to login page if not logged in
+            return res.status(401).json({ success: false, message: 'Authentication required' });
     }
     
-    await doctorNotificationService.markAllAsRead(userId);
-    res.redirect('/doctor/messages');
+        await Notification.markAllAsReadForUser(userId);
+        
+        res.json({ success: true });
   } catch (error) {
     console.error('Error marking all notifications as read:', error);
-    res.redirect('/doctor/messages?error=Could not mark all notifications as read');
+        res.status(500).json({ success: false, message: 'Failed to mark all notifications as read' });
   }
 });
 
-router.post('/delete/:id', async function (req, res) {
+// POST: Delete notification
+router.post('/delete/:id', async (req, res) => {
   try {
     const notificationId = req.params.id;
-    console.log(`Attempting to delete notification ${notificationId}`);
-    const result = await doctorNotificationService.deleteNotification(notificationId);
-    console.log(`Delete result: ${result}`);
-    res.redirect('/doctor/messages');
+        if (!notificationId) {
+            return res.status(400).json({ success: false, message: 'Notification ID is required' });
+        }
+        
+        const notification = await Notification.findById(notificationId);
+        if (!notification) {
+            return res.json({ success: true }); // Already deleted, consider it success
+        }
+        
+        await notification.delete();
+        
+        res.json({ success: true });
   } catch (error) {
     console.error('Error deleting notification:', error);
-    res.redirect('/doctor/messages?error=Could not delete notification');
-  }
+        res.status(500).json({ success: false, message: 'Failed to delete notification' });
+    }
 });
+
+// Helper function to get appropriate icon based on notification title
+function _getNotificationIcon(title) {
+    title = title.toLowerCase();
+    
+    if (title.includes('appointment')) return 'fa-calendar-check';
+    if (title.includes('test') || title.includes('lab')) return 'fa-flask';
+    if (title.includes('prescription')) return 'fa-pills';
+    if (title.includes('examination') || title.includes('medical')) return 'fa-stethoscope';
+    if (title.includes('message')) return 'fa-envelope';
+    if (title.includes('payment')) return 'fa-dollar-sign';
+    
+    // Default icon
+    return 'fa-bell';
+}
 
 export default router; 

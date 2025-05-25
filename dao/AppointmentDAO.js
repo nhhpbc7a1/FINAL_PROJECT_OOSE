@@ -53,6 +53,8 @@ class AppointmentDAO {
                     'PatientUser.fullName as patientName',
                     'PatientUser.email as patientEmail',
                     'PatientUser.phoneNumber as patientPhone',
+                    'PatientUser.gender as patientGender',
+                    'Patient.dob as patientDob',
                     'DoctorUser.fullName as doctorName',
                     'Specialty.name as specialtyName',
                     'Room.roomNumber as roomNumber'
@@ -89,6 +91,31 @@ class AppointmentDAO {
                     db.raw('Service.price as totalPrice')
                 )
                 .where('AppointmentServices.appointmentId', appointmentId);
+            
+            // Get patient email from Patient and User tables if not already available
+            if (!appointment.patientEmail) {
+                const patientData = await db('Patient')
+                    .join('User', 'Patient.userId', '=', 'User.userId')
+                    .select('User.email as patientEmail')
+                    .where('Patient.patientId', appointment.patientId)
+                    .first();
+                
+                if (patientData && patientData.patientEmail) {
+                    appointment.patientEmail = patientData.patientEmail;
+                }
+            }
+            
+            // Get room information if not already available
+            if (!appointment.roomNumber && appointment.roomId) {
+                const roomData = await db('Room')
+                    .select('roomNumber')
+                    .where('roomId', appointment.roomId)
+                    .first();
+                
+                if (roomData && roomData.roomNumber) {
+                    appointment.roomNumber = roomData.roomNumber;
+                }
+            }
             
             return {
                 ...appointment,
@@ -233,6 +260,36 @@ class AppointmentDAO {
     }
 
     /**
+     * Find the latest appointment for a patient
+     * @param {number} patientId - ID of patient
+     * @returns {Promise<Object|null>} Latest appointment or null if none found
+     */
+    static async findLatestForPatient(patientId) {
+        try {
+            const appointment = await db('Appointment')
+                .join('Doctor', 'Appointment.doctorId', '=', 'Doctor.doctorId')
+                .join('User AS DoctorUser', 'Doctor.userId', '=', 'DoctorUser.userId')
+                .join('Specialty', 'Doctor.specialtyId', '=', 'Specialty.specialtyId')
+                .leftJoin('Room', 'Appointment.roomId', '=', 'Room.roomId')
+                .select(
+                    'Appointment.*',
+                    'DoctorUser.fullName as doctorName',
+                    'Specialty.name as specialtyName',
+                    'Room.roomNumber as roomNumber'
+                )
+                .where('Appointment.patientId', patientId)
+                .orderBy('Appointment.appointmentDate', 'desc')
+                .orderBy('Appointment.appointmentTime', 'desc')
+                .first();
+            
+            return appointment || null;
+        } catch (error) {
+            console.error(`Error fetching latest appointment for patient ID ${patientId}:`, error);
+            throw new Error('Unable to load latest patient appointment');
+        }
+    }
+
+    /**
      * Get appointments for a specific date
      * @param {string} date - Date in YYYY-MM-DD format
      * @returns {Promise<Array>} Array of appointments
@@ -288,6 +345,242 @@ class AppointmentDAO {
         } catch (error) {
             console.error(`Error fetching appointments with status ${status}:`, error);
             throw new Error('Unable to load appointments by status');
+        }
+    }
+
+    /**
+     * Count unique patients for a specific doctor
+     * @param {number} doctorId - ID of doctor
+     * @returns {Promise<number>} Count of unique patients
+     */
+    static async countUniquePatientsByDoctor(doctorId) {
+        try {
+            const result = await db('Appointment')
+                .where('doctorId', doctorId)
+                .countDistinct('patientId as count')
+                .first();
+            
+            return result ? result.count : 0;
+        } catch (error) {
+            console.error(`Error counting unique patients for doctor ID ${doctorId}:`, error);
+            throw new Error('Unable to count unique patients');
+        }
+    }
+    
+    /**
+     * Get appointments for a specific doctor on a specific date
+     * @param {number} doctorId - ID of doctor
+     * @param {string} date - Date in YYYY-MM-DD format
+     * @returns {Promise<Array>} Array of appointments
+     */
+    static async findByDoctorAndDate(doctorId, date) {
+        try {
+            const appointments = await db('Appointment')
+                .join('Patient', 'Appointment.patientId', '=', 'Patient.patientId')
+                .join('User AS PatientUser', 'Patient.userId', '=', 'PatientUser.userId')
+                .leftJoin('Room', 'Appointment.roomId', '=', 'Room.roomId')
+                .select(
+                    'Appointment.*',
+                    'PatientUser.fullName as patientName',
+                    'PatientUser.email as patientEmail',
+                    'PatientUser.phoneNumber as patientPhone',
+                    'Room.roomNumber'
+                )
+                .where('Appointment.doctorId', doctorId)
+                .where('Appointment.appointmentDate', date)
+                .orderBy('Appointment.estimatedTime', 'asc');
+            
+            // Log room information for debugging
+            if (appointments.length > 0) {
+                console.log(`Found ${appointments.length} appointments for doctor ${doctorId} on date ${date}`);
+                console.log("Room information:", appointments.map(a => ({
+                    id: a.appointmentId,
+                    roomId: a.roomId,
+                    roomNumber: a.roomNumber || 'Not assigned'
+                })));
+            }
+            
+            // Manually fetch room information for any appointment that's missing it but has a roomId
+            for (const appt of appointments) {
+                if (appt.roomId && !appt.roomNumber) {
+                    console.log(`Appointment ${appt.appointmentId} has roomId ${appt.roomId} but no roomNumber, fetching directly`);
+                    try {
+                        const roomData = await db('Room')
+                            .select('roomNumber')
+                            .where('roomId', appt.roomId)
+                            .first();
+                            
+                        if (roomData && roomData.roomNumber) {
+                            appt.roomNumber = roomData.roomNumber;
+                            console.log(`Successfully fetched room number ${roomData.roomNumber} for appointment ${appt.appointmentId}`);
+                        }
+                    } catch (roomError) {
+                        console.error(`Error fetching room data for appointment ${appt.appointmentId}:`, roomError);
+                    }
+                }
+            }
+            
+            return appointments;
+        } catch (error) {
+            console.error(`Error fetching appointments for doctor ID ${doctorId} on date ${date}:`, error);
+            throw new Error('Unable to load doctor appointments for the specified date');
+        }
+    }
+    
+    /**
+     * Get doctor's schedule with patient and specialty details for a specific date
+     * @param {number} doctorId - ID of doctor
+     * @param {string} date - Date in YYYY-MM-DD format
+     * @returns {Promise<Array>} Array of schedule items with patient details
+     */
+    static async getDoctorScheduleForDate(doctorId, date) {
+        try {
+            const schedule = await db('Appointment')
+                .join('Patient', 'Appointment.patientId', '=', 'Patient.patientId')
+                .join('User AS PatientUser', 'Patient.userId', '=', 'PatientUser.userId')
+                .leftJoin('Doctor', 'Appointment.doctorId', '=', 'Doctor.doctorId')
+                .leftJoin('Specialty', 'Doctor.specialtyId', '=', 'Specialty.specialtyId')
+                .leftJoin('Room', 'Appointment.roomId', '=', 'Room.roomId')
+                .select(
+                    'Appointment.*',
+                    'PatientUser.fullName as patientName',
+                    'PatientUser.gender as patientGender',
+                    'PatientUser.phoneNumber as patientPhone',
+                    'PatientUser.email as patientEmail',
+                    'Patient.dob as patientDob',
+                    'Specialty.name as specialtyName',
+                    'Room.roomNumber'
+                )
+                .where('Appointment.doctorId', doctorId)
+                .where('Appointment.appointmentDate', date)
+                .orderBy('Appointment.estimatedTime', 'asc');
+            
+            // For debugging
+            if (schedule.length > 0) {
+                console.log("Schedule for doctor with room info:", schedule.map(appt => ({
+                    id: appt.appointmentId,
+                    roomId: appt.roomId,
+                    roomNumber: appt.roomNumber || 'Not assigned',
+                    patientName: appt.patientName
+                })));
+            }
+            
+            // Now manually fetch room information for any appointment that's missing it but has a roomId
+            for (const appt of schedule) {
+                if (appt.roomId && !appt.roomNumber) {
+                    console.log(`Appointment ${appt.appointmentId} has roomId ${appt.roomId} but no roomNumber, fetching directly`);
+                    try {
+                        const roomData = await db('Room')
+                            .select('roomNumber')
+                            .where('roomId', appt.roomId)
+                            .first();
+                            
+                        if (roomData && roomData.roomNumber) {
+                            appt.roomNumber = roomData.roomNumber;
+                            console.log(`Successfully fetched room number ${roomData.roomNumber} for appointment ${appt.appointmentId}`);
+                        }
+                    } catch (roomError) {
+                        console.error(`Error fetching room data for appointment ${appt.appointmentId}:`, roomError);
+                    }
+                }
+            }
+            
+            return schedule;
+        } catch (error) {
+            console.error(`Error fetching schedule for doctor ID ${doctorId} on date ${date}:`, error);
+            throw new Error('Unable to load doctor schedule for the specified date');
+        }
+    }
+    
+    /**
+     * Get all appointments for a doctor for calendar view
+     * @param {number} doctorId - ID of doctor
+     * @returns {Promise<Array>} Array of appointments for calendar
+     */
+    static async getDoctorAppointmentsForCalendar(doctorId) {
+        try {
+            return await db('Appointment')
+                .join('Patient', 'Appointment.patientId', '=', 'Patient.patientId')
+                .join('User AS PatientUser', 'Patient.userId', '=', 'PatientUser.userId')
+                .select(
+                    'Appointment.appointmentId',
+                    'Appointment.appointmentDate',
+                    'Appointment.estimatedTime',
+                    'Appointment.status',
+                    'Appointment.patientAppointmentStatus',
+                    'PatientUser.fullName as patientName'
+                )
+                .where('Appointment.doctorId', doctorId)
+                .orderBy('Appointment.appointmentDate', 'asc')
+                .orderBy('Appointment.estimatedTime', 'asc');
+        } catch (error) {
+            console.error(`Error fetching calendar appointments for doctor ID ${doctorId}:`, error);
+            throw new Error('Unable to load doctor calendar appointments');
+        }
+    }
+
+    /**
+     * Get appointments within a date range
+     * @param {string} startDate - Start date in YYYY-MM-DD format
+     * @param {string} endDate - End date in YYYY-MM-DD format
+     * @returns {Promise<Array>} Array of appointments
+     */
+    static async findByDateRange(startDate, endDate) {
+        try {
+            return await db('Appointment')
+                .join('Patient', 'Appointment.patientId', '=', 'Patient.patientId')
+                .join('User AS PatientUser', 'Patient.userId', '=', 'PatientUser.userId')
+                .join('Doctor', 'Appointment.doctorId', '=', 'Doctor.doctorId')
+                .join('User AS DoctorUser', 'Doctor.userId', '=', 'DoctorUser.userId')
+                .join('Specialty', 'Doctor.specialtyId', '=', 'Specialty.specialtyId')
+                .leftJoin('Room', 'Appointment.roomId', '=', 'Room.roomId')
+                .select(
+                    'Appointment.*',
+                    'PatientUser.fullName as patientName',
+                    'PatientUser.email as patientEmail',
+                    'PatientUser.phoneNumber as patientPhone',
+                    'PatientUser.gender as patientGender',
+                    'Patient.dob as patientDob',
+                    'DoctorUser.fullName as doctorName',
+                    'Specialty.name as specialtyName',
+                    'Room.roomNumber as roomNumber'
+                )
+                .whereBetween('Appointment.appointmentDate', [startDate, endDate])
+                .orderBy('Appointment.appointmentDate', 'asc')
+                .orderBy('Appointment.appointmentTime', 'asc');
+        } catch (error) {
+            console.error(`Error fetching appointments between ${startDate} and ${endDate}:`, error);
+            throw new Error('Unable to load appointments for the specified date range');
+        }
+    }
+    
+    /**
+     * Get appointments by patient appointment status
+     * @param {string} status - Patient appointment status
+     * @returns {Promise<Array>} Array of appointments
+     */
+    static async findByPatientAppointmentStatus(status) {
+        try {
+            return await db('Appointment')
+                .join('Patient', 'Appointment.patientId', '=', 'Patient.patientId')
+                .join('User AS PatientUser', 'Patient.userId', '=', 'PatientUser.userId')
+                .join('Doctor', 'Appointment.doctorId', '=', 'Doctor.doctorId')
+                .join('User AS DoctorUser', 'Doctor.userId', '=', 'DoctorUser.userId')
+                .join('Specialty', 'Doctor.specialtyId', '=', 'Specialty.specialtyId')
+                .leftJoin('Room', 'Appointment.roomId', '=', 'Room.roomId')
+                .select(
+                    'Appointment.*',
+                    'PatientUser.fullName as patientName',
+                    'DoctorUser.fullName as doctorName',
+                    'Specialty.name as specialtyName',
+                    'Room.roomNumber as roomNumber'
+                )
+                .where('Appointment.patientAppointmentStatus', status)
+                .orderBy('Appointment.appointmentDate', 'desc')
+                .orderBy('Appointment.appointmentTime', 'asc');
+        } catch (error) {
+            console.error(`Error fetching appointments with patient appointment status ${status}:`, error);
+            throw new Error('Unable to load appointments by patient appointment status');
         }
     }
 }

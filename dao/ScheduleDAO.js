@@ -166,7 +166,7 @@ class ScheduleDAO {
     }
 
     /**
-     * Find schedules by doctor and date
+     * Find schedules by doctor ID and date
      * @param {number} doctorId - Doctor ID
      * @param {string} date - Date (YYYY-MM-DD)
      * @returns {Promise<Array>} List of schedules for the doctor and date
@@ -175,9 +175,15 @@ class ScheduleDAO {
         try {
             return await db('Schedule')
                 .leftJoin('Room', 'Schedule.roomId', '=', 'Room.roomId')
+                .leftJoin('Doctor', 'Schedule.doctorId', '=', 'Doctor.doctorId')
+                .leftJoin('User', 'Doctor.userId', '=', 'User.userId')
+                .leftJoin('Specialty', 'Doctor.specialtyId', '=', 'Specialty.specialtyId')
                 .select(
                     'Schedule.*',
-                    'Room.roomNumber'
+                    'Room.roomNumber',
+                    'Room.roomType',
+                    'User.fullName as doctorName',
+                    'Specialty.name as specialtyName'
                 )
                 .where({
                     'Schedule.doctorId': doctorId,
@@ -353,6 +359,76 @@ class ScheduleDAO {
         } catch (error) {
             console.error(`Error deleting schedules for doctor ID ${doctorId}:`, error);
             throw new Error('Unable to delete doctor schedules');
+        }
+    }
+
+    /**
+     * Find schedules by doctor ID and date range
+     * @param {number} doctorId - Doctor ID
+     * @param {string} startDate - Start date (YYYY-MM-DD)
+     * @param {string} endDate - End date (YYYY-MM-DD)
+     * @returns {Promise<Array>} List of schedules for the doctor within the date range
+     */
+    static async findByDoctorAndDateRange(doctorId, startDate, endDate) {
+        try {
+            return await db('Schedule')
+                .leftJoin('Room', 'Schedule.roomId', '=', 'Room.roomId')
+                .leftJoin('Doctor', 'Schedule.doctorId', '=', 'Doctor.doctorId')
+                .leftJoin('User', 'Doctor.userId', '=', 'User.userId')
+                .leftJoin('Specialty', 'Doctor.specialtyId', '=', 'Specialty.specialtyId')
+                .select(
+                    'Schedule.*',
+                    'Room.roomNumber',
+                    'Room.roomType',
+                    'User.fullName as doctorName',
+                    'Specialty.name as specialtyName'
+                )
+                .where('Schedule.doctorId', doctorId)
+                .whereBetween('Schedule.workDate', [startDate, endDate])
+                .orderBy('Schedule.workDate')
+                .orderBy('Schedule.startTime');
+        } catch (error) {
+            console.error(`Error fetching schedules for doctor ID ${doctorId} in date range ${startDate} to ${endDate}:`, error);
+            throw new Error('Unable to find schedules by doctor and date range');
+        }
+    }
+
+    /**
+     * Get schedule summary statistics by doctor and date range
+     * @param {number} doctorId - Doctor ID
+     * @param {string} startDate - Start date (YYYY-MM-DD)
+     * @param {string} endDate - End date (YYYY-MM-DD)
+     * @returns {Promise<Object>} Summary object with counts by status
+     */
+    static async getSummaryByDoctorAndDateRange(doctorId, startDate, endDate) {
+        try {
+            // Default summary object
+            const summary = {
+                total: 0,
+                available: 0,
+                fullfilled: 0,
+                booked: 0,
+                unavailable: 0
+            };
+            
+            // Get all schedules for the doctor in the date range
+            const schedules = await this.findByDoctorAndDateRange(doctorId, startDate, endDate);
+            
+            if (!schedules || !schedules.length) {
+                return summary;
+            }
+            
+            // Count schedules by status
+            summary.total = schedules.length;
+            summary.available = schedules.filter(s => s.status === 'available').length;
+            summary.fullfilled = schedules.filter(s => s.status === 'fullfilled').length;
+            summary.booked = schedules.filter(s => s.status === 'booked').length; 
+            summary.unavailable = schedules.filter(s => s.status === 'unavailable').length;
+            
+            return summary;
+        } catch (error) {
+            console.error(`Error getting schedule summary for doctor ID ${doctorId} in date range ${startDate} to ${endDate}:`, error);
+            throw new Error('Unable to get schedule summary');
         }
     }
 }
