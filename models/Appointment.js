@@ -1,4 +1,5 @@
 import AppointmentDAO from '../dao/AppointmentDAO.js';
+import db from '../ultis/db.js';
 
 /**
  * Appointment model representing an appointment in the system
@@ -81,16 +82,15 @@ class Appointment {
 
     /**
      * Delete the appointment
-     * @returns {Promise<boolean>} True if deleted successfully
+     * @returns {Promise<boolean>} True if the appointment was deleted
      */
     async delete() {
         try {
             if (!this.appointmentId) {
                 throw new Error('Cannot delete unsaved appointment');
             }
-            
-            const result = await AppointmentDAO.delete(this.appointmentId);
-            return result;
+            await AppointmentDAO.delete(this.appointmentId);
+            return true;
         } catch (error) {
             console.error('Error deleting appointment:', error);
             throw new Error('Failed to delete appointment: ' + error.message);
@@ -98,119 +98,318 @@ class Appointment {
     }
 
     /**
-     * Get all appointments
-     * @returns {Promise<Array<Appointment>>} Array of appointments
+     * Find all appointments
+     * @param {Object} filters - Optional filters for the query
+     * @returns {Promise<Appointment[]>} Array of appointments
      */
-    static async findAll() {
+    static async findAll(filters = {}) {
         try {
-            const appointments = await AppointmentDAO.findAll();
+            const appointments = await AppointmentDAO.findAll(filters);
             return appointments.map(appointment => new Appointment(appointment));
         } catch (error) {
-            console.error('Error fetching all appointments:', error);
-            throw new Error('Failed to load appointments: ' + error.message);
+            console.error('Error finding appointments:', error);
+            throw new Error('Failed to find appointments: ' + error.message);
         }
     }
 
     /**
      * Find an appointment by ID
-     * @param {number} appointmentId - Appointment ID
-     * @returns {Promise<Appointment|null>} Found appointment or null
+     * @param {number} appointmentId - The appointment ID
+     * @returns {Promise<Appointment|null>} The appointment or null if not found
      */
     static async findById(appointmentId) {
         try {
             const appointment = await AppointmentDAO.findById(appointmentId);
-            return appointment ? new Appointment(appointment) : null;
+            if (!appointment) return null;
+            return new Appointment(appointment);
         } catch (error) {
-            console.error(`Error fetching appointment by ID ${appointmentId}:`, error);
+            console.error(`Error finding appointment with ID ${appointmentId}:`, error);
             throw new Error('Failed to find appointment: ' + error.message);
         }
     }
 
     /**
-     * Find appointments by doctor ID
-     * @param {number} doctorId - Doctor ID
-     * @returns {Promise<Array<Appointment>>} Array of appointments
+     * Find appointments for a patient
+     * @param {number} patientId - The patient ID
+     * @param {Object} filters - Optional filters for the query
+     * @returns {Promise<Appointment[]>} Array of appointments
      */
-    static async findByDoctor(doctorId) {
+    static async findByPatient(patientId, filters = {}) {
         try {
-            const appointments = await AppointmentDAO.findByDoctor(doctorId);
+            const appointments = await AppointmentDAO.findByPatient(patientId, filters);
             return appointments.map(appointment => new Appointment(appointment));
         } catch (error) {
-            console.error(`Error fetching appointments for doctor ${doctorId}:`, error);
-            throw new Error('Failed to load doctor appointments: ' + error.message);
+            console.error(`Error finding appointments for patient ${patientId}:`, error);
+            throw new Error('Failed to find patient appointments: ' + error.message);
         }
     }
 
     /**
-     * Find appointments by patient ID
-     * @param {number} patientId - Patient ID
-     * @returns {Promise<Array<Appointment>>} Array of appointments
+     * Find appointments for a doctor
+     * @param {number} doctorId - The doctor ID
+     * @param {Object} filters - Optional filters for the query
+     * @returns {Promise<Appointment[]>} Array of appointments
      */
-    static async findByPatient(patientId) {
+    static async findByDoctor(doctorId, filters = {}) {
         try {
-            const appointments = await AppointmentDAO.findByPatient(patientId);
+            const appointments = await AppointmentDAO.findByDoctor(doctorId, filters);
             return appointments.map(appointment => new Appointment(appointment));
         } catch (error) {
-            console.error(`Error fetching appointments for patient ${patientId}:`, error);
-            throw new Error('Failed to load patient appointments: ' + error.message);
+            console.error(`Error finding appointments for doctor ${doctorId}:`, error);
+            throw new Error('Failed to find doctor appointments: ' + error.message);
+        }
+    }
+
+    /**
+     * Find appointments for a specialty
+     * @param {number} specialtyId - The specialty ID
+     * @param {Object} filters - Optional filters for the query
+     * @returns {Promise<Appointment[]>} Array of appointments
+     */
+    static async findBySpecialty(specialtyId, filters = {}) {
+        try {
+            const appointments = await AppointmentDAO.findBySpecialty(specialtyId, filters);
+            return appointments.map(appointment => new Appointment(appointment));
+        } catch (error) {
+            console.error(`Error finding appointments for specialty ${specialtyId}:`, error);
+            throw new Error('Failed to find specialty appointments: ' + error.message);
         }
     }
 
     /**
      * Find appointments by date
-     * @param {string} date - Date string in YYYY-MM-DD format
-     * @returns {Promise<Array<Appointment>>} Array of appointments
+     * @param {string} date - The appointment date
+     * @param {Object} filters - Optional filters for the query
+     * @returns {Promise<Appointment[]>} Array of appointments
      */
-    static async findByDate(date) {
+    static async findByDate(date, filters = {}) {
         try {
-            const appointments = await AppointmentDAO.findByDate(date);
+            const appointments = await AppointmentDAO.findByDate(date, filters);
             return appointments.map(appointment => new Appointment(appointment));
         } catch (error) {
-            console.error(`Error fetching appointments for date ${date}:`, error);
-            throw new Error('Failed to load appointments for the specified date: ' + error.message);
+            console.error(`Error finding appointments for date ${date}:`, error);
+            throw new Error('Failed to find appointments by date: ' + error.message);
         }
     }
 
     /**
      * Find appointments by status
-     * @param {string} status - Appointment status
-     * @returns {Promise<Array<Appointment>>} Array of appointments
+     * @param {string} status - The appointment status
+     * @param {Object} filters - Optional filters for the query
+     * @returns {Promise<Appointment[]>} Array of appointments
      */
-    static async findByStatus(status) {
+    static async findByStatus(status, filters = {}) {
         try {
-            const appointments = await AppointmentDAO.findByStatus(status);
+            const appointments = await AppointmentDAO.findByStatus(status, filters);
             return appointments.map(appointment => new Appointment(appointment));
         } catch (error) {
-            console.error(`Error fetching appointments with status ${status}:`, error);
-            throw new Error('Failed to load appointments by status: ' + error.message);
+            console.error(`Error finding appointments with status ${status}:`, error);
+            throw new Error('Failed to find appointments by status: ' + error.message);
         }
     }
 
     /**
-     * Get appointment with its related services
-     * @param {number} appointmentId - Appointment ID
-     * @returns {Promise<Appointment|null>} Appointment with services or null
+     * Search for appointments
+     * @param {string} query - The search query
+     * @returns {Promise<Appointment[]>} Array of appointments
      */
-    static async getWithServices(appointmentId) {
+    static async search(query) {
         try {
-            const appointmentData = await AppointmentDAO.getAppointmentWithServices(appointmentId);
-            return appointmentData ? new Appointment(appointmentData) : null;
+            const appointments = await AppointmentDAO.search(query);
+            return appointments.map(appointment => new Appointment(appointment));
         } catch (error) {
-            console.error(`Error fetching appointment with services for ID ${appointmentId}:`, error);
-            throw new Error('Failed to load appointment with services: ' + error.message);
+            console.error(`Error searching appointments with query "${query}":`, error);
+            throw new Error('Failed to search appointments: ' + error.message);
         }
     }
 
     /**
-     * Count appointments by status
-     * @returns {Promise<Object>} Counts by status
+     * Find an appointment by ID with all related details (patient, doctor, specialty, room, services)
+     * @param {number} appointmentId - The appointment ID
+     * @returns {Promise<Appointment|null>} The appointment with details or null if not found
      */
-    static async countByStatus() {
+    static async findByIdWithDetails(appointmentId) {
         try {
-            return await AppointmentDAO.countByStatus();
+            const appointment = await AppointmentDAO.findByIdWithDetails(appointmentId);
+            if (!appointment) return null;
+            return new Appointment(appointment);
         } catch (error) {
-            console.error('Error counting appointments by status:', error);
-            throw new Error('Failed to count appointments: ' + error.message);
+            console.error(`Error finding appointment details for ID ${appointmentId}:`, error);
+            throw new Error('Failed to find appointment details: ' + error.message);
+        }
+    }
+
+    /**
+     * Get the highest queue number for a specialty on a specific date
+     * @param {number} specialtyId - The specialty ID
+     * @param {string} appointmentDate - The appointment date
+     * @returns {Promise<number>} The highest queue number
+     */
+    static async getHighestQueueNumber(specialtyId, appointmentDate) {
+        try {
+            const result = await db('Appointment')
+                .max('queueNumber as maxQueue')
+                .where({
+                    specialtyId: specialtyId,
+                    appointmentDate: appointmentDate
+                })
+                .first();
+            
+            return result && result.maxQueue ? parseInt(result.maxQueue) : 0;
+        } catch (error) {
+            console.error('Error getting highest queue number:', error);
+            throw new Error('Failed to get highest queue number: ' + error.message);
+        }
+    }
+
+    /**
+     * Calculate estimated time for an appointment
+     * @param {number} doctorId - The doctor ID
+     * @param {string} appointmentDate - The appointment date
+     * @param {number} queueNumber - The queue number
+     * @returns {Promise<string|null>} The estimated time or null if not available
+     */
+    static async calculateEstimatedTime(doctorId, appointmentDate, queueNumber) {
+        try {
+            // Get doctor's schedule for the selected date
+            const doctorSchedule = await db('Schedule')
+                .select('startTime')
+                .where({
+                    doctorId: doctorId,
+                    workDate: appointmentDate,
+                    status: 'available'
+                })
+                .orderBy('startTime', 'asc')
+                .first();
+
+            if (!doctorSchedule) {
+                console.log('No schedule found for doctor on the selected date');
+                return null;
+            }
+
+            // Calculate estimated time: startTime + (queueNumber - 1) * 20 minutes
+            const appointmentTimeBase = new Date(`${appointmentDate}T${doctorSchedule.startTime}`);
+            const estimatedMinutes = (queueNumber - 1) * 20; // 20 minutes per patient
+            
+            appointmentTimeBase.setMinutes(appointmentTimeBase.getMinutes() + estimatedMinutes);
+            
+            // Format time for database
+            const hours = appointmentTimeBase.getHours().toString().padStart(2, '0');
+            const minutes = appointmentTimeBase.getMinutes().toString().padStart(2, '0');
+            const seconds = appointmentTimeBase.getSeconds().toString().padStart(2, '0');
+            
+            return `${hours}:${minutes}:${seconds}`;
+        } catch (error) {
+            console.error('Error calculating estimated time:', error);
+            throw new Error('Failed to calculate estimated time: ' + error.message);
+        }
+    }
+
+    /**
+     * Assign a doctor and room for an appointment
+     * @param {number} specialtyId - The specialty ID
+     * @param {string} appointmentDate - The appointment date
+     * @returns {Promise<Object|null>} Assignment details or null if not possible
+     */
+    static async assignDoctorAndRoom(specialtyId, appointmentDate) {
+        try {
+            // Get doctors assigned to this specialty on the selected date
+            const assignedDoctors = await db('Schedule')
+                .select(
+                    'Schedule.*', 
+                    'Doctor.doctorId',
+                    'Doctor.specialtyId',
+                    'Room.roomId',
+                    'Room.roomNumber'
+                )
+                .join('Doctor', 'Schedule.doctorId', 'Doctor.doctorId')
+                .join('Room', 'Schedule.roomId', 'Room.roomId')
+                .where({
+                    'Doctor.specialtyId': specialtyId,
+                    'Schedule.workDate': appointmentDate,
+                    'Schedule.status': 'available'
+                });
+
+            if (!assignedDoctors || assignedDoctors.length === 0) {
+                console.log('No doctors assigned for this specialty on the selected date');
+                return null;
+            }
+
+            // Count current appointments for each doctor
+            const doctorAppointmentCounts = await Promise.all(
+                assignedDoctors.map(async (doctor) => {
+                    const appointmentCount = await db('Appointment')
+                        .count('appointmentId as count')
+                        .where({
+                            'doctorId': doctor.doctorId,
+                            'appointmentDate': appointmentDate
+                        })
+                        .first();
+                    
+                    return {
+                        ...doctor,
+                        appointmentCount: appointmentCount ? parseInt(appointmentCount.count) : 0
+                    };
+                })
+            );
+
+            // Sort by appointment count (ascending)
+            doctorAppointmentCounts.sort((a, b) => a.appointmentCount - b.appointmentCount);
+            
+            // Select doctor with fewest appointments
+            const selectedDoctor = doctorAppointmentCounts[0];
+            
+            if (!selectedDoctor) {
+                console.log('Could not select an appropriate doctor');
+                return null;
+            }
+
+            // Get next queue number for this specialty on this date
+            const nextQueueNumber = await Appointment.getHighestQueueNumber(specialtyId, appointmentDate) + 1;
+            
+            // Calculate estimated time
+            const estimatedTime = await Appointment.calculateEstimatedTime(
+                selectedDoctor.doctorId,
+                appointmentDate,
+                nextQueueNumber
+            );
+
+            return {
+                doctorId: selectedDoctor.doctorId,
+                roomId: selectedDoctor.roomId,
+                roomNumber: selectedDoctor.roomNumber,
+                queueNumber: nextQueueNumber,
+                appointmentDate: appointmentDate,
+                estimatedTime: estimatedTime
+            };
+        } catch (error) {
+            console.error('Error assigning doctor and room:', error);
+            throw new Error('Failed to assign doctor and room: ' + error.message);
+        }
+    }
+
+    /**
+     * Get available dates for appointments with a specialty
+     * @param {number} specialtyId - The specialty ID
+     * @returns {Promise<string[]>} Array of available dates
+     */
+    static async getAvailableDatesForSpecialty(specialtyId) {
+        try {
+            // Get dates with available schedules for doctors in this specialty
+            const availableDates = await db('Schedule')
+                .select(db.raw('DISTINCT DATE_FORMAT(workDate, "%Y-%m-%d") as date'))
+                .join('Doctor', 'Schedule.doctorId', 'Doctor.doctorId')
+                .where({
+                    'Doctor.specialtyId': specialtyId,
+                    'Schedule.status': 'available'
+                })
+                .where('workDate', '>=', db.raw('CURDATE()'))
+                .orderBy('workDate', 'asc');
+            
+            return availableDates.map(dateObj => dateObj.date);
+        } catch (error) {
+            console.error('Error getting available dates for specialty:', error);
+            throw new Error('Failed to get available dates: ' + error.message);
         }
     }
 }

@@ -1,6 +1,6 @@
 import express from 'express';
-import doctorListService from '../../services/patient/doctor_list.service.js';
-import specialtyService from '../../services/specialty.service.js';
+import Doctor from '../../models/Doctor.js';
+import Specialty from '../../models/Specialty.js';
 
 const router = express.Router();
 
@@ -11,23 +11,31 @@ router.get('/', async function (req, res) {
     const specialtyId = req.query.specialty ? parseInt(req.query.specialty, 10) : null;
     
     // Get doctors, optionally filtered by specialty
-    const doctors = await doctorListService.getAllDoctors(specialtyId);
+    let doctors;
+    if (specialtyId) {
+      doctors = await Doctor.findBySpecialty(specialtyId);
+    } else {
+      doctors = await Doctor.findAll();
+    }
     
-    // Get specialties with doctor counts for the filter
-    const specialties = await doctorListService.getDoctorCountBySpecialty();
+    // Get all specialties for the filter
+    const specialties = await Specialty.findAll();
     
     // Get selected specialty name if filter is active
     let selectedSpecialty = null;
     if (specialtyId) {
-      const specialty = await specialtyService.findById(specialtyId);
+      const specialty = await Specialty.findById(specialtyId);
       if (specialty) {
         selectedSpecialty = specialty.name;
       }
     }
     
+    // Format specialties with doctor counts
+    const specialtiesWithCounts = await Doctor.countBySpecialty();
+    
     res.render('vwPatient/list/doctors_list', {
       doctors,
-      specialties,
+      specialties: specialtiesWithCounts,
       selectedSpecialtyId: specialtyId,
       selectedSpecialty,
       title: selectedSpecialty ? `Doctors - ${selectedSpecialty}` : "Our Medical Team",

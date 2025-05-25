@@ -1,5 +1,7 @@
 import express from 'express';
-import doctorDetailService from '../../services/patient/doctor_detail.service.js';
+import Doctor from '../../models/Doctor.js';
+import Schedule from '../../models/Schedule.js';
+import Service from '../../models/Service.js';
 
 const router = express.Router();
 
@@ -15,8 +17,8 @@ router.get('/:doctorId', async function (req, res) {
       });
     }
     
-    // Get doctor details
-    const doctor = await doctorDetailService.getDoctorById(doctorId);
+    // Get doctor details using Doctor model
+    const doctor = await Doctor.findById(doctorId);
     
     if (!doctor) {
       return res.status(404).render('error', {
@@ -25,24 +27,54 @@ router.get('/:doctorId', async function (req, res) {
       });
     }
     
-    // Get doctor's specialties
-    const specialties = await doctorDetailService.getDoctorSpecialties(doctorId);
+    // Get doctor's specialties - since each doctor has one specialty in this system
+    const specialties = [{
+      specialtyId: doctor.specialtyId,
+      name: doctor.specialtyName
+    }];
     
-    // Get doctor's schedule in calendar format
-    const scheduleData = await doctorDetailService.getDoctorSchedule(doctorId);
+    // Get doctor's schedule
+    const today = new Date();
+    const endDate = new Date();
+    endDate.setDate(today.getDate() + 14); // Get schedule for next 2 weeks
     
-    // Extract schedule components
-    const { doctorSchedules, scheduleDays, timeSlots } = scheduleData;
+    // Format dates for query
+    const startDateFormatted = today.toISOString().split('T')[0];
+    const endDateFormatted = endDate.toISOString().split('T')[0];
     
-    // Get doctor's services
-    const services = await doctorDetailService.getDoctorServices(doctorId);
+    // Get doctor's schedules for the date range
+    const doctorSchedules = await Schedule.findByDoctorAndDate(doctorId, startDateFormatted, endDateFormatted);
     
-    // Get doctor's reviews and ratings
-    const reviews = await doctorDetailService.getDoctorReviews(doctorId);
+    // Create schedule days (next 14 days)
+    const scheduleDays = [];
+    for (let i = 0; i < 14; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      scheduleDays.push({
+        date: date.toISOString().split('T')[0],
+        dayName: new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(date)
+      });
+    }
     
-    const avgRating = reviews.length > 0 
-      ? (reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length).toFixed(1) 
-      : 0;
+    // Define common time slots
+    const timeSlots = [
+      { start: '07:00:00', end: '08:00:00' },
+      { start: '08:00:00', end: '09:00:00' },
+      { start: '09:00:00', end: '10:00:00' },
+      { start: '10:00:00', end: '11:00:00' },
+      { start: '13:00:00', end: '14:00:00' },
+      { start: '14:00:00', end: '15:00:00' },
+      { start: '15:00:00', end: '16:00:00' },
+      { start: '16:00:00', end: '17:00:00' }
+    ];
+    
+    // Get services by doctor's specialty
+    const services = await Service.findBySpecialty(doctor.specialtyId);
+    
+    // In this implementation, we don't have reviews yet
+    // For now, provide empty reviews or mock data if needed
+    const reviews = [];
+    const avgRating = 0;
     
     console.log(`[INFO] Doctor ${doctorId} - Schedule count: ${doctorSchedules.length}`);
     
@@ -56,8 +88,8 @@ router.get('/:doctorId', async function (req, res) {
       reviews,
       avgRating,
       reviewCount: reviews.length,
-      title: `Dr. ${doctor.name} - Doctor Profile`,
-      description: `Learn more about Dr. ${doctor.name}, qualifications, specialties, and available appointments.`
+      title: `Dr. ${doctor.fullName} - Doctor Profile`,
+      description: `Learn more about Dr. ${doctor.fullName}, qualifications, specialties, and available appointments.`
     });
   } catch (error) {
     console.error('Error loading doctor details:', error);

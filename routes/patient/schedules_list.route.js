@@ -1,6 +1,6 @@
 import express from 'express';
-import specialtyService from '../../services/specialty.service.js';
-import scheduleService from '../../services/schedule.service.js';
+import Specialty from '../../models/Specialty.js';
+import Schedule from '../../models/Schedule.js';
 import moment from 'moment';
 
 const router = express.Router();
@@ -17,10 +17,10 @@ router.get('/', async function (req, res) {
         const endDate = moment(dateFilter).endOf('week').format('YYYY-MM-DD');
         
         // Get all specialties for the filter dropdown
-        const specialties = await specialtyService.findAll();
+        const specialties = await Specialty.findAll();
         
         // Get schedules for the date range
-        let schedules = await scheduleService.findByDateRange(startDate, endDate);
+        let schedules = await Schedule.findByDateRange(startDate, endDate);
         
         console.log('Raw schedules count:', schedules.length);
         console.log('Raw schedule example:', schedules.length > 0 ? {

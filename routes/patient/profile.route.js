@@ -1,5 +1,6 @@
 import express from 'express';
-import userService from '../../services/user.service.js';
+import User from '../../models/User.js';
+import Patient from '../../models/Patient.js';
 import moment from 'moment';
 import bcrypt from 'bcryptjs';
 const router = express.Router();
@@ -10,9 +11,12 @@ router.use((req, res, next) => {
 });
 router.get('/', async function (req, res) {
     try {
-
         const userId = req.session.authUser?.userId; // lấy userId từ session
-        const user = await userService.findById(userId); // gọi service để lấy thông tin user
+        const user = await User.findById(userId); // sử dụng model User để lấy thông tin
+
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
 
         res.render('vwPatient/individualPage/personalInfo', { layout: 'profile', user });
     }
@@ -22,39 +26,51 @@ router.get('/', async function (req, res) {
     }
 });
 router.post('/personalInfo', async (req, res) => {
-    const userId = req.session.authUser.userId;
-
-    const { fullname, phone, birthday, email, gender, address } = req.body;
-    const ymd_dob = moment(birthday,'DD/MM/YYYY').format('YYYY-MM-DD');
-
-    const updatedUser = {
-        fullName: fullname,
-        phoneNumber: phone,
-        dob: ymd_dob,
-        email: email,
-        gender,
-        address
-    };
     try {
-        const success = await userService.update(userId, updatedUser);
+        const userId = req.session.authUser.userId;
+        const { fullname, phone, birthday, email, gender, address } = req.body;
+        const ymd_dob = moment(birthday,'DD/MM/YYYY').format('YYYY-MM-DD');
 
-        if (success) {
-            // Cập nhật lại session
-            req.session.authUser = {
-                ...req.session.authUser,
-                ...updatedUser
-            };
-
-            res.render('vwPatient/individualPage/personalInfo', {
-                user: req.session.authUser,
-                updateSuccess: true
-            });
-        } else {
-            res.render('vwPatient/individualPage/personalInfo', {
-                user: req.session.authUser,
-                updateError: true
-            });
+        // Lấy user hiện tại
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).send('User not found');
         }
+
+        // Cập nhật thông tin
+        user.fullName = fullname;
+        user.phoneNumber = phone;
+        user.dob = ymd_dob;
+        user.email = email;
+        user.gender = gender;
+        user.address = address;
+
+        // Lưu thông tin
+        await user.save();
+
+        // Cập nhật thông tin bệnh nhân nếu có
+        const patient = await Patient.findByUserId(userId);
+        if (patient) {
+            patient.dob = ymd_dob;
+            patient.gender = gender;
+            await patient.save();
+        }
+
+        // Cập nhật lại session
+        req.session.authUser = {
+            ...req.session.authUser,
+            fullName: fullname,
+            phoneNumber: phone,
+            dob: ymd_dob,
+            email: email,
+            gender,
+            address
+        };
+
+        res.render('vwPatient/individualPage/personalInfo', {
+            user: req.session.authUser,
+            updateSuccess: true
+        });
     } catch (error) {
         console.error('Error updating profile:', error);
         res.render('vwPatient/individualPage/personalInfo', {
@@ -64,82 +80,27 @@ router.post('/personalInfo', async (req, res) => {
     }
 });
 
-//     try {
-
-//         // Cập nhật thông tin vào DB (ví dụ dùng SQL hoặc MongoDB)
-//         const ymd_dob = moment(birthday,'DD/MM/YYYY').format('YYYY-MM-DD');
-        
-//         await UserModel.updateOne(
-//             { _id: userId },
-//             {
-//                 fullName: fullname,
-//                 phoneNumber: phone,
-//                 dob: ymd_dob,
-//                 email: email,
-//                 gender,
-//                 address
-//             }
-//         );
-
-//         // Redirect hoặc render lại với thông báo
-//         res.redirect('/patient/profile');
-//     } catch (error) {
-//         console.error('Update failed:', error);
-//         res.status(500).send('Update failed');
-//     }
-// });
-// router.post('/profile', async (req, res) => {
-//     // if (!req.session.auth || req.session.authUser.roleName !== 'patient') {
-//     //     return res.redirect('/account/login');
-//     // }
-
-//     const userId = req.session.user_id;
-//     const { fullname, phone, birthday, email, gender, address } = req.body;
-
-//     const sql = `
-//         UPDATE users
-//         SET fullName = ?, phoneNumber = ?, dob = ?, email = ?, gender = ?, address = ?
-//         WHERE userId = ?
-//     `;
-
-//     try {
-//         await db.query(sql, [fullname, phone, birthday, email, gender, address, userId]);
-
-//         // Cập nhật lại session nếu cần
-//         req.session.authUser.fullName = fullname;
-//         req.session.authUser.phoneNumber = phone;
-//         req.session.authUser.dob = birthday;
-//         req.session.authUser.email = email;
-//         req.session.authUser.gender = gender;
-//         req.session.authUser.address = address;
-
-//         res.redirect('/patient/profile');
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).send('Error updating profile');
-//     }
-// });
 router.get('/changePass', async function (req, res) {
     res.render('vwPatient/individualPage/changePass');
 });
 router.post('/changePass', async (req, res) => {
-    const userId = req.session.authUser.userId;
-    const newPassword = req.body.new_password;
-
     try {
-        // Mã hóa và cập nhật
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-        const success = await userService.update(userId, { password: hashedPassword });
+        const userId = req.session.authUser.userId;
+        const newPassword = req.body.new_password;
 
-        if (success) {
-            return res.render('vwPatient/individualPage/changePass', {
-                success: 'Changed password successfully'
-            });
-        } else {
-            return res.render('vwPatient/individualPage/changePass', {
-                error: 'Cannot updated password'
-            });
+        // Lấy user hiện tại
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).send('User not found');
         }
+
+        // Cập nhật mật khẩu
+        user.password = newPassword; // model sẽ tự mã hóa khi lưu
+        await user.save();
+
+        return res.render('vwPatient/individualPage/changePass', {
+            success: 'Changed password successfully'
+        });
     } catch (err) {
         console.error('Change password error:', err);
         return res.render('vwPatient/individualPage/changePass', {
