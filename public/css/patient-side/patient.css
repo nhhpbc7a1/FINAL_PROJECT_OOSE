@@ -21,6 +21,22 @@ body {
     color: #333;
 }
 
+.btn-primary,
+.bg-primary {
+    background-color: #6bc0e7 !important;
+    border: none;
+}
+
+.text-primary {
+    color: #3159a3 !important;
+}
+
+.btn-outline-primary {
+    color: #3159a3 !important;
+    border-color: #3159a3 !important;
+}
+
+
 .container_downHeader {
     max-width: 1200px;
     margin: 0 auto;

@@ -31,28 +31,28 @@
                 <div class="stats d-flex justify-content-between mb-4">
                   <div class="stat-item d-flex align-items-center">
                     <div class="stat-icon me-2 bg-primary text-white rounded-circle p-2">
-                      <i class="fas fa-user-md"></i>
+                      <i class="bi bi-people"></i>
                     </div>
                     <div class="stat-text ml-2">
-                      <span class="fw-bold">{{doctor_count}}</span> Doctors
+                      <span class="fw-bold">{{doctorCount}}</span> Doctors
                     </div>
                   </div>
                   <div class="stat-item d-flex align-items-center">
                     <div class="stat-icon me-2 bg-info text-white rounded-circle p-2">
-                      <i class="fas fa-stethoscope"></i>
+                      <i class="bi bi-building-add"></i>
                     </div>
                     <div class="stat-text ml-2">
                       <span class="fw-bold">{{serviceCount}}</span> Services
                     </div>
                   </div>
                 </div>
-                <div class="specialty-actions d-grid gap-2">
-                  <a href="/patient/specialty/{{id}}" class="btn btn-primary">
+                <div class="specialty-actions d-flex justify-content-around">
+                  <a href="/patient/specialty/{{specialtyId}}" class="btn btn-primary">
                     <i class="fas fa-info-circle me-2"></i>View Details
                   </a>
-                  <a href="/patient/doctors?specialty={{id}}" class="btn btn-outline-primary">
+                  <a href="/patient/doctors?specialty={{specialtyId}}" class="btn btn-outline-primary">
                     <i class="fas fa-user-md me-2"></i>Find Doctors
-                  </a>
+                  </a>    
                 </div>
               </div>
             </div>

@@ -20,13 +20,13 @@ class TestRequestDAO {
                 .select(
                     'TestRequest.*',
                     'Service.name as serviceName',
-                    'Service.type as serviceType', // Kept from file 2
+                    'Service.type as serviceType',
                     'PatientUser.fullName as patientName',
-                    'Patient.patientId', // Kept from file 2
-                    'Patient.gender as patientGender', // Kept from file 2
-                    'Patient.dob as patientDob', // Kept from file 2
+                    'Patient.patientId',
+                    'Patient.gender as patientGender',
+                    'Patient.dob as patientDob',
                     'DoctorUser.fullName as doctorName',
-                    'Appointment.appointmentTime as appointmentDate' // Kept from file 2
+                    'Appointment.appointmentTime as appointmentDate'
                 )
                 .orderBy('TestRequest.requestDate', 'desc');
         } catch (error) {
@@ -52,14 +52,14 @@ class TestRequestDAO {
                 .select(
                     'TestRequest.*',
                     'Service.name as serviceName',
-                    'Service.type as serviceType', // Kept from file 2
-                    'Service.description as serviceDescription', // Kept from file 2
+                    'Service.type as serviceType',
+                    'Service.description as serviceDescription',
                     'PatientUser.fullName as patientName',
-                    'Patient.patientId', // Kept from file 2
-                    'Patient.gender as patientGender', // Kept from file 2
-                    'Patient.dob as patientDob', // Kept from file 2
+                    'Patient.patientId',
+                    'Patient.gender as patientGender',
+                    'Patient.dob as patientDob',
                     'DoctorUser.fullName as doctorName',
-                    'Appointment.appointmentTime as appointmentDate' // Kept from file 2
+                    'Appointment.appointmentTime as appointmentDate'
                 )
                 .where('TestRequest.requestId', requestId)
                 .first();

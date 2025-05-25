@@ -1,9 +1,6 @@
 import AppointmentDAO from '../dao/AppointmentDAO.js';
-<<<<<<< HEAD
 import db from '../ultis/db.js';
-=======
 import Room from './Room.js';
->>>>>>> 1b35a7e990adc481ac2b9f5ec39584dd701f494e
 
 /**
  * Appointment model representing an appointment in the system
@@ -36,6 +33,7 @@ class Appointment {
         this.patientName = appointmentData.patientName;
         this.patientEmail = appointmentData.patientEmail;
         this.patientPhone = appointmentData.patientPhone;
+        this.patientAddress = appointmentData.patientAddress;
         this.doctorName = appointmentData.doctorName;
         this.specialtyName = appointmentData.specialtyName;
         this.roomNumber = appointmentData.roomNumber;

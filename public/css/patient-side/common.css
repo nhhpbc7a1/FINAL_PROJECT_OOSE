@@ -45,7 +45,7 @@
 }
 
 .button-step-group button.active {
-    background-color: #4A73E8;
+    background-color: #002B9A;
 }
 
 .button-step-group button.active img {
@@ -64,12 +64,12 @@
     bottom: -25px;
     font-size: 12px;
     white-space: nowrap;
-    color: #666;
+    color: #fff;
     font-weight: bold;      
 }
 
 button.active .step-label {
-    color: #4A73E8;
+    color: #002B9A;
     font-weight: bold;
 }
 
@@ -87,7 +87,7 @@ button.active .step-label {
 }
 
 .modal-header h2 {
-    color: #4A73E8;
+    color: #002B9A;
     font-size: 18px;
     margin-bottom: 0;
 }
@@ -128,7 +128,7 @@ button.active .step-label {
 .submit-button,
 .pay-button,
 .back-to-main-button {
-    background-color: #4A73E8;
+    background-color: #002B9A;
     color: white;
     border: none;
     padding: 10px 20px;

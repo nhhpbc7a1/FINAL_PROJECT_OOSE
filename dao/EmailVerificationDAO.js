@@ -15,7 +15,6 @@ class EmailVerificationDAO {
                 email: data.email,
                 verificationCode: data.verificationCode,
                 appointmentId: data.appointmentId,
-                userId: data.userId,
                 expiresAt: data.expiresAt,
                 verified: data.verified || false
             });
@@ -41,7 +40,6 @@ class EmailVerificationDAO {
                     email: data.email,
                     verificationCode: data.verificationCode,
                     appointmentId: data.appointmentId,
-                    userId: data.userId,
                     expiresAt: data.expiresAt,
                     verified: data.verified
                 });

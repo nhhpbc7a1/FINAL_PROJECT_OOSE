@@ -62,6 +62,7 @@ router.get('/input-form', async function (req, res) {
         let specialties = [];
         try {
             specialties = await Specialty.getAllActive();
+            console.log('specialties:', specialties);
         } catch (error) {
             console.error('Error loading specialties:', error);
             // Fall back to getting all specialties if getAllActive fails
@@ -316,7 +317,7 @@ router.get('/available-dates', async function (req, res) {
         
         // Get dates with available schedules for the specialty
         const availableDates = await Appointment.getAvailableDatesForSpecialty(specialtyId);
-        
+        console.log(availableDates);
         return res.json({
             success: true,
             availableDates: availableDates
@@ -423,6 +424,7 @@ router.get('/make-payment', async function (req, res) {
         // Calculate total amount
         const totalAmount = calculateTotalAmount(appointment.services);
 
+        console.log(appointment);
         res.render('vwPatient/bookAppointment/makePayment', {
             appointment: appointment,
             totalAmount: totalAmount
