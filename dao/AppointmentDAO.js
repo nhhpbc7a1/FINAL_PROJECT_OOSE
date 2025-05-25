@@ -129,57 +129,93 @@ class AppointmentDAO {
 
     /**
      * Add a new appointment
-     * @param {Object} appointment - Appointment data to add
-     * @returns {Promise<number>} ID of the new appointment
+     * @param {Object} appointmentData - The appointment data to add
+     * @returns {Promise<number>} The ID of the newly created appointment
      */
-    static async add(appointment) {
+    static async add(appointmentData) {
         try {
-            const [appointmentId] = await db('Appointment').insert(appointment);
+            const [appointmentId] = await db('Appointment').insert({
+                patientId: appointmentData.patientId,
+                specialtyId: appointmentData.specialtyId,
+                appointmentDate: appointmentData.appointmentDate,
+                appointmentTime: appointmentData.appointmentTime,
+                reason: appointmentData.reason,
+                queueNumber: appointmentData.queueNumber,
+                estimatedTime: appointmentData.estimatedTime,
+                doctorId: appointmentData.doctorId,
+                roomId: appointmentData.roomId,
+                scheduleId: appointmentData.scheduleId,
+                status: appointmentData.status || 'pending',
+                emailVerified: appointmentData.emailVerified || false,
+                paymentStatus: appointmentData.paymentStatus || 'pending',
+                patientAppointmentStatus: appointmentData.patientAppointmentStatus || 'waiting'
+            });
+            
             return appointmentId;
         } catch (error) {
             console.error('Error adding appointment:', error);
-            throw new Error('Unable to add appointment');
+            throw new Error('Failed to add appointment: ' + error.message);
         }
     }
 
     /**
-     * Update an appointment
-     * @param {number} appointmentId - ID of appointment to update
-     * @param {Object} appointmentData - New appointment data
-     * @returns {Promise<boolean>} True if successful
+     * Update an existing appointment
+     * @param {number} appointmentId - The ID of the appointment to update
+     * @param {Object} appointmentData - The updated appointment data
+     * @returns {Promise<boolean>} True if update was successful
      */
     static async update(appointmentId, appointmentData) {
         try {
-            const result = await db('Appointment')
+            const updateData = {};
+            
+            // Only include fields that are provided
+            if (appointmentData.patientId !== undefined) updateData.patientId = appointmentData.patientId;
+            if (appointmentData.specialtyId !== undefined) updateData.specialtyId = appointmentData.specialtyId;
+            if (appointmentData.appointmentDate !== undefined) updateData.appointmentDate = appointmentData.appointmentDate;
+            if (appointmentData.appointmentTime !== undefined) updateData.appointmentTime = appointmentData.appointmentTime;
+            if (appointmentData.reason !== undefined) updateData.reason = appointmentData.reason;
+            if (appointmentData.queueNumber !== undefined) updateData.queueNumber = appointmentData.queueNumber;
+            if (appointmentData.estimatedTime !== undefined) updateData.estimatedTime = appointmentData.estimatedTime;
+            if (appointmentData.doctorId !== undefined) updateData.doctorId = appointmentData.doctorId;
+            if (appointmentData.roomId !== undefined) updateData.roomId = appointmentData.roomId;
+            if (appointmentData.scheduleId !== undefined) updateData.scheduleId = appointmentData.scheduleId;
+            if (appointmentData.status !== undefined) updateData.status = appointmentData.status;
+            if (appointmentData.emailVerified !== undefined) updateData.emailVerified = appointmentData.emailVerified;
+            if (appointmentData.paymentStatus !== undefined) updateData.paymentStatus = appointmentData.paymentStatus;
+            if (appointmentData.patientAppointmentStatus !== undefined) updateData.patientAppointmentStatus = appointmentData.patientAppointmentStatus;
+            
+            await db('Appointment')
                 .where('appointmentId', appointmentId)
-                .update(appointmentData);
-            return result > 0;
+                .update(updateData);
+                
+            return true;
         } catch (error) {
-            console.error(`Error updating appointment with ID ${appointmentId}:`, error);
-            throw new Error('Unable to update appointment');
+            console.error(`Error updating appointment ${appointmentId}:`, error);
+            throw new Error('Failed to update appointment: ' + error.message);
         }
     }
 
     /**
      * Delete an appointment
-     * @param {number} appointmentId - ID of appointment to delete
-     * @returns {Promise<boolean>} True if successful
+     * @param {number} appointmentId - The ID of the appointment to delete
+     * @returns {Promise<boolean>} True if deletion was successful
      */
     static async delete(appointmentId) {
         try {
-            const result = await db('Appointment')
+            await db('Appointment')
                 .where('appointmentId', appointmentId)
                 .delete();
-            return result > 0;
+                
+            return true;
         } catch (error) {
-            console.error(`Error deleting appointment with ID ${appointmentId}:`, error);
-            throw new Error('Unable to delete appointment');
+            console.error(`Error deleting appointment ${appointmentId}:`, error);
+            throw new Error('Failed to delete appointment: ' + error.message);
         }
     }
 
     /**
      * Count appointments by status
-     * @returns {Promise<Array>} Array of counts by status
+     * @returns {Promise<Object>} Counts by status
      */
     static async countByStatus() {
         try {
@@ -187,21 +223,17 @@ class AppointmentDAO {
                 .select('status')
                 .count('appointmentId as count')
                 .groupBy('status');
-            
-            // Format into a more useful object
-            const result = {
-                total: 0
-            };
-            
+                
+            // Convert array of counts to an object
+            const result = {};
             counts.forEach(item => {
-                result[item.status.toLowerCase()] = item.count;
-                result.total += item.count;
+                result[item.status] = parseInt(item.count);
             });
             
             return result;
         } catch (error) {
             console.error('Error counting appointments by status:', error);
-            throw new Error('Unable to count appointments by status');
+            throw new Error('Failed to count appointments: ' + error.message);
         }
     }
 
@@ -581,6 +613,397 @@ class AppointmentDAO {
         } catch (error) {
             console.error(`Error fetching appointments with patient appointment status ${status}:`, error);
             throw new Error('Unable to load appointments by patient appointment status');
+        }
+    }
+
+    /**
+     * Find an appointment by ID with all related details
+     * @param {number} appointmentId - The ID of the appointment to find
+     * @returns {Promise<Object|null>} The appointment with details or null if not found
+     */
+    static async findByIdWithDetails(appointmentId) {
+        try {
+            const appointment = await db('Appointment')
+                .select(
+                    'Appointment.*',
+                    'Patient.dob',
+                    'Patient.gender',
+                    'User.fullName as patientName',
+                    'User.email as patientEmail',
+                    'User.phoneNumber as patientPhone',
+                    'User.address',
+                    'Specialty.name as specialtyName',
+                    'Specialty.specialtyId',
+                    'Doctor.doctorId',
+                    'DoctorUser.fullName as doctorName',
+                    'Room.roomNumber'
+                )
+                .leftJoin('Patient', 'Appointment.patientId', 'Patient.patientId')
+                .leftJoin('User', 'Patient.userId', 'User.userId')
+                .leftJoin('Specialty', 'Appointment.specialtyId', 'Specialty.specialtyId')
+                .leftJoin('Doctor', 'Appointment.doctorId', 'Doctor.doctorId')
+                .leftJoin('User as DoctorUser', 'Doctor.userId', 'DoctorUser.userId')
+                .leftJoin('Room', 'Appointment.roomId', 'Room.roomId')
+                .where('Appointment.appointmentId', appointmentId)
+                .first();
+            
+            if (!appointment) return null;
+            
+            // Get services for this appointment
+            const services = await db('AppointmentServices')
+                .select(
+                    'AppointmentServices.*',
+                    'Service.name as serviceName',
+                    'Service.description as serviceDescription',
+                    'Service.type as serviceType'
+                )
+                .leftJoin('Service', 'AppointmentServices.serviceId', 'Service.serviceId')
+                .where('AppointmentServices.appointmentId', appointmentId);
+                
+            appointment.services = services;
+                
+            return appointment;
+        } catch (error) {
+            console.error(`Error finding appointment details for ID ${appointmentId}:`, error);
+            throw new Error('Failed to find appointment details: ' + error.message);
+        }
+    }
+
+    /**
+     * Find appointments for a patient
+     * @param {number} patientId - The patient ID
+     * @param {Object} filters - Optional filters for the query
+     * @returns {Promise<Object[]>} Array of appointments
+     */
+    static async findByPatient(patientId, filters = {}) {
+        try {
+            let query = db('Appointment')
+                .select(
+                    'Appointment.*',
+                    'Specialty.name as specialtyName',
+                    'DoctorUser.fullName as doctorName',
+                    'Room.roomNumber'
+                )
+                .leftJoin('Specialty', 'Appointment.specialtyId', 'Specialty.specialtyId')
+                .leftJoin('Doctor', 'Appointment.doctorId', 'Doctor.doctorId')
+                .leftJoin('User as DoctorUser', 'Doctor.userId', 'DoctorUser.userId')
+                .leftJoin('Room', 'Appointment.roomId', 'Room.roomId')
+                .where('Appointment.patientId', patientId);
+                
+            // Apply filters if provided
+            if (filters.status) {
+                query = query.where('Appointment.status', filters.status);
+            }
+            if (filters.date) {
+                query = query.where('Appointment.appointmentDate', filters.date);
+            }
+            
+            // Sort by date and time
+            query = query.orderBy('Appointment.appointmentDate', 'desc')
+                        .orderBy('Appointment.appointmentTime', 'asc');
+                        
+            return await query;
+        } catch (error) {
+            console.error(`Error finding appointments for patient ${patientId}:`, error);
+            throw new Error('Failed to find patient appointments: ' + error.message);
+        }
+    }
+
+    /**
+     * Find appointments for a doctor
+     * @param {number} doctorId - The doctor ID
+     * @param {Object} filters - Optional filters for the query
+     * @returns {Promise<Object[]>} Array of appointments
+     */
+    static async findByDoctor(doctorId, filters = {}) {
+        try {
+            let query = db('Appointment')
+                .select(
+                    'Appointment.*',
+                    'Patient.dob',
+                    'Patient.gender',
+                    'User.fullName as patientName',
+                    'User.email as patientEmail',
+                    'User.phoneNumber as patientPhone',
+                    'Specialty.name as specialtyName',
+                    'Room.roomNumber'
+                )
+                .leftJoin('Patient', 'Appointment.patientId', 'Patient.patientId')
+                .leftJoin('User', 'Patient.userId', 'User.userId')
+                .leftJoin('Specialty', 'Appointment.specialtyId', 'Specialty.specialtyId')
+                .leftJoin('Room', 'Appointment.roomId', 'Room.roomId')
+                .where('Appointment.doctorId', doctorId);
+                
+            // Apply filters if provided
+            if (filters.status) {
+                query = query.where('Appointment.status', filters.status);
+            }
+            if (filters.date) {
+                query = query.where('Appointment.appointmentDate', filters.date);
+            }
+            
+            // Sort by date and time
+            query = query.orderBy('Appointment.appointmentDate', 'desc')
+                        .orderBy('Appointment.appointmentTime', 'asc');
+                        
+            return await query;
+        } catch (error) {
+            console.error(`Error finding appointments for doctor ${doctorId}:`, error);
+            throw new Error('Failed to find doctor appointments: ' + error.message);
+        }
+    }
+
+    /**
+     * Find appointments for a specialty
+     * @param {number} specialtyId - The specialty ID
+     * @param {Object} filters - Optional filters for the query
+     * @returns {Promise<Object[]>} Array of appointments
+     */
+    static async findBySpecialty(specialtyId, filters = {}) {
+        try {
+            let query = db('Appointment')
+                .select(
+                    'Appointment.*',
+                    'Patient.dob',
+                    'Patient.gender',
+                    'User.fullName as patientName',
+                    'User.email as patientEmail',
+                    'User.phoneNumber as patientPhone',
+                    'DoctorUser.fullName as doctorName',
+                    'Room.roomNumber'
+                )
+                .leftJoin('Patient', 'Appointment.patientId', 'Patient.patientId')
+                .leftJoin('User', 'Patient.userId', 'User.userId')
+                .leftJoin('Doctor', 'Appointment.doctorId', 'Doctor.doctorId')
+                .leftJoin('User as DoctorUser', 'Doctor.userId', 'DoctorUser.userId')
+                .leftJoin('Room', 'Appointment.roomId', 'Room.roomId')
+                .where('Appointment.specialtyId', specialtyId);
+                
+            // Apply filters if provided
+            if (filters.status) {
+                query = query.where('Appointment.status', filters.status);
+            }
+            if (filters.date) {
+                query = query.where('Appointment.appointmentDate', filters.date);
+            }
+            
+            // Sort by date and time
+            query = query.orderBy('Appointment.appointmentDate', 'desc')
+                        .orderBy('Appointment.appointmentTime', 'asc');
+                        
+            return await query;
+        } catch (error) {
+            console.error(`Error finding appointments for specialty ${specialtyId}:`, error);
+            throw new Error('Failed to find specialty appointments: ' + error.message);
+        }
+    }
+
+    /**
+     * Find appointments by date
+     * @param {string} date - The appointment date
+     * @param {Object} filters - Optional filters for the query
+     * @returns {Promise<Object[]>} Array of appointments
+     */
+    static async findByDate(date, filters = {}) {
+        try {
+            let query = db('Appointment')
+                .select(
+                    'Appointment.*',
+                    'Patient.dob',
+                    'Patient.gender',
+                    'User.fullName as patientName',
+                    'User.email as patientEmail',
+                    'User.phoneNumber as patientPhone',
+                    'Specialty.name as specialtyName',
+                    'DoctorUser.fullName as doctorName',
+                    'Room.roomNumber'
+                )
+                .leftJoin('Patient', 'Appointment.patientId', 'Patient.patientId')
+                .leftJoin('User', 'Patient.userId', 'User.userId')
+                .leftJoin('Specialty', 'Appointment.specialtyId', 'Specialty.specialtyId')
+                .leftJoin('Doctor', 'Appointment.doctorId', 'Doctor.doctorId')
+                .leftJoin('User as DoctorUser', 'Doctor.userId', 'DoctorUser.userId')
+                .leftJoin('Room', 'Appointment.roomId', 'Room.roomId')
+                .where('Appointment.appointmentDate', date);
+                
+            // Apply filters if provided
+            if (filters.status) {
+                query = query.where('Appointment.status', filters.status);
+            }
+            if (filters.specialtyId) {
+                query = query.where('Appointment.specialtyId', filters.specialtyId);
+            }
+            if (filters.doctorId) {
+                query = query.where('Appointment.doctorId', filters.doctorId);
+            }
+            
+            // Sort by time
+            query = query.orderBy('Appointment.appointmentTime', 'asc');
+                        
+            return await query;
+        } catch (error) {
+            console.error(`Error finding appointments for date ${date}:`, error);
+            throw new Error('Failed to find appointments by date: ' + error.message);
+        }
+    }
+
+    /**
+     * Find appointments by status
+     * @param {string} status - The appointment status
+     * @param {Object} filters - Optional filters for the query
+     * @returns {Promise<Object[]>} Array of appointments
+     */
+    static async findByStatus(status, filters = {}) {
+        try {
+            let query = db('Appointment')
+                .select(
+                    'Appointment.*',
+                    'Patient.dob',
+                    'Patient.gender',
+                    'User.fullName as patientName',
+                    'User.email as patientEmail',
+                    'User.phoneNumber as patientPhone',
+                    'Specialty.name as specialtyName',
+                    'DoctorUser.fullName as doctorName',
+                    'Room.roomNumber'
+                )
+                .leftJoin('Patient', 'Appointment.patientId', 'Patient.patientId')
+                .leftJoin('User', 'Patient.userId', 'User.userId')
+                .leftJoin('Specialty', 'Appointment.specialtyId', 'Specialty.specialtyId')
+                .leftJoin('Doctor', 'Appointment.doctorId', 'Doctor.doctorId')
+                .leftJoin('User as DoctorUser', 'Doctor.userId', 'DoctorUser.userId')
+                .leftJoin('Room', 'Appointment.roomId', 'Room.roomId')
+                .where('Appointment.status', status);
+                
+            // Apply filters if provided
+            if (filters.date) {
+                query = query.where('Appointment.appointmentDate', filters.date);
+            }
+            if (filters.specialtyId) {
+                query = query.where('Appointment.specialtyId', filters.specialtyId);
+            }
+            if (filters.doctorId) {
+                query = query.where('Appointment.doctorId', filters.doctorId);
+            }
+            
+            // Sort by date and time
+            query = query.orderBy('Appointment.appointmentDate', 'desc')
+                        .orderBy('Appointment.appointmentTime', 'asc');
+                        
+            return await query;
+        } catch (error) {
+            console.error(`Error finding appointments with status ${status}:`, error);
+            throw new Error('Failed to find appointments by status: ' + error.message);
+        }
+    }
+
+    /**
+     * Search for appointments
+     * @param {string} query - The search query
+     * @returns {Promise<Object[]>} Array of appointments
+     */
+    static async search(query) {
+        try {
+            return await db('Appointment')
+                .select(
+                    'Appointment.*',
+                    'Patient.dob',
+                    'Patient.gender',
+                    'User.fullName as patientName',
+                    'User.email as patientEmail',
+                    'User.phoneNumber as patientPhone',
+                    'Specialty.name as specialtyName',
+                    'DoctorUser.fullName as doctorName',
+                    'Room.roomNumber'
+                )
+                .leftJoin('Patient', 'Appointment.patientId', 'Patient.patientId')
+                .leftJoin('User', 'Patient.userId', 'User.userId')
+                .leftJoin('Specialty', 'Appointment.specialtyId', 'Specialty.specialtyId')
+                .leftJoin('Doctor', 'Appointment.doctorId', 'Doctor.doctorId')
+                .leftJoin('User as DoctorUser', 'Doctor.userId', 'DoctorUser.userId')
+                .leftJoin('Room', 'Appointment.roomId', 'Room.roomId')
+                .where(function() {
+                    this.where('User.fullName', 'like', `%${query}%`)
+                        .orWhere('User.email', 'like', `%${query}%`)
+                        .orWhere('User.phoneNumber', 'like', `%${query}%`)
+                        .orWhere('DoctorUser.fullName', 'like', `%${query}%`)
+                        .orWhere('Specialty.name', 'like', `%${query}%`);
+                })
+                .orderBy('Appointment.appointmentDate', 'desc')
+                .orderBy('Appointment.appointmentTime', 'asc');
+        } catch (error) {
+            console.error(`Error searching appointments with query "${query}":`, error);
+            throw new Error('Failed to search appointments: ' + error.message);
+        }
+    }
+
+    /**
+     * Get recent appointments
+     * @param {number} limit - Maximum number of appointments to return
+     * @returns {Promise<Object[]>} Array of recent appointments
+     */
+    static async getRecent(limit = 10) {
+        try {
+            return await db('Appointment')
+                .select(
+                    'Appointment.*',
+                    'User.fullName as patientName',
+                    'Specialty.name as specialtyName',
+                    'DoctorUser.fullName as doctorName'
+                )
+                .leftJoin('Patient', 'Appointment.patientId', 'Patient.patientId')
+                .leftJoin('User', 'Patient.userId', 'User.userId')
+                .leftJoin('Specialty', 'Appointment.specialtyId', 'Specialty.specialtyId')
+                .leftJoin('Doctor', 'Appointment.doctorId', 'Doctor.doctorId')
+                .leftJoin('User as DoctorUser', 'Doctor.userId', 'DoctorUser.userId')
+                .orderBy('Appointment.createdDate', 'desc')
+                .limit(limit);
+        } catch (error) {
+            console.error('Error getting recent appointments:', error);
+            throw new Error('Failed to get recent appointments: ' + error.message);
+        }
+    }
+
+    /**
+     * Get appointments statistics
+     * @returns {Promise<Object>} Appointment statistics
+     */
+    static async getStatistics() {
+        try {
+            // Total appointments
+            const totalResult = await db('Appointment').count('appointmentId as count').first();
+            const total = parseInt(totalResult.count);
+            
+            // Today's appointments
+            const todayResult = await db('Appointment')
+                .count('appointmentId as count')
+                .where('appointmentDate', db.raw('CURDATE()'))
+                .first();
+            const today = parseInt(todayResult.count);
+            
+            // Pending appointments
+            const pendingResult = await db('Appointment')
+                .count('appointmentId as count')
+                .where('status', 'pending')
+                .first();
+            const pending = parseInt(pendingResult.count);
+            
+            // Completed appointments
+            const completedResult = await db('Appointment')
+                .count('appointmentId as count')
+                .where('status', 'completed')
+                .first();
+            const completed = parseInt(completedResult.count);
+            
+            return {
+                total,
+                today,
+                pending,
+                completed
+            };
+        } catch (error) {
+            console.error('Error getting appointment statistics:', error);
+            throw new Error('Failed to get appointment statistics: ' + error.message);
         }
     }
 }

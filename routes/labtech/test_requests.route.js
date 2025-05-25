@@ -1,7 +1,7 @@
 import express from 'express';
 import moment from 'moment';
-import testRequestsService from '../../services/labtech/test_requests.service.js';
-import labtechService from '../../services/lab-technician.service.js';
+import TestRequest from '../../models/TestRequest.js';
+import LabTechnician from '../../models/LabTechnician.js';
 
 const router = express.Router();
 
@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
     try {
         // Get logged in lab technician ID and specialty
         const userId = req.session.authUser.userId;
-        const labTechnician = await labtechService.findByUserId(userId);
+        const labTechnician = await LabTechnician.findByUserId(userId);
         
         if (!labTechnician) {
             return res.redirect('/account/login');
@@ -36,8 +36,8 @@ router.get('/', async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = 10;
         
-        // Get test requests from service
-        const { testRequests, pagination, total } = await testRequestsService.getAll(
+        // Get test requests using the model
+        const { testRequests, pagination, total } = await TestRequest.getAll(
             filters,
             labTechnician.technicianId,
             labTechnician.specialtyId,
@@ -46,7 +46,7 @@ router.get('/', async (req, res) => {
         );
         
         // Get test types for filter dropdown
-        const testTypes = await testRequestsService.getTestTypesBySpecialty(labTechnician.specialtyId);
+        const testTypes = await TestRequest.getTestTypesBySpecialty(labTechnician.specialtyId);
 
         console.log('testRequests:', testRequests);
         
@@ -79,8 +79,8 @@ router.get('/:id', async (req, res) => {
     try {
         const requestId = req.params.id;
         
-        // Get detailed information about the test request from service
-        const testRequest = await testRequestsService.getById(requestId);
+        // Get detailed information about the test request using the model
+        const testRequest = await TestRequest.findById(requestId);
         
         if (!testRequest) {
             return res.status(404).render('error', {
@@ -90,7 +90,7 @@ router.get('/:id', async (req, res) => {
         }
         
         // Check if there's already a test result for this request
-        const testResult = await testRequestsService.getTestResult(requestId);
+        const testResult = await TestRequest.getTestResult(requestId);
         
         // Format the request date for display
         const formattedRequest = {
@@ -125,25 +125,32 @@ router.get('/start/:id', async (req, res) => {
         
         // Get logged in lab technician ID
         const userId = req.session.authUser.userId;
-        const labTechnician = await labtechService.findByUserId(userId);
+        const labTechnician = await LabTechnician.findByUserId(userId);
         
         if (!labTechnician) {
             return res.redirect('/account/login');
         }
         
-        // Start processing using service
-        await testRequestsService.startProcessing(
-            requestId,
-            labTechnician.technicianId
-        );
+        // Get the test request and start processing
+        const testRequest = await TestRequest.findById(requestId);
+        
+        if (!testRequest) {
+            return res.status(404).render('error', {
+                layout: 'labtech',
+                message: 'Test request not found'
+            });
+        }
+        
+        // Start processing and create a test result
+        const resultId = await testRequest.startProcessing(labTechnician.technicianId);
         
         // Redirect to the result entry form
-        res.redirect(`/labtech/test-results/edit/${requestId}`);
+        res.redirect(`/labtech/test-results/edit/${resultId}`);
     } catch (error) {
         console.error(`Error starting test for request ID ${req.params.id}:`, error);
         res.status(500).render('error', { 
             layout: 'labtech',
-            message: 'Failed to start test processing' 
+            message: 'Failed to start test processing: ' + error.message
         });
     }
 });

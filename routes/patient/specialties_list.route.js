@@ -1,13 +1,13 @@
 import express from 'express';
-import specialtyListService from '../../services/patient/specialty_list.service.js';
+import Specialty from '../../models/Specialty.js';
 
 const router = express.Router();
 
 // GET: Display all specialties
 router.get('/', async function (req, res) {
   try {
-    // Get all specialties
-    const specialties = await specialtyListService.getAllSpecialties();
+    // Get all specialties using the Specialty model
+    const specialties = await Specialty.findAll();
 
     console.log('Specialties:', specialties);
     

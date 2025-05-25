@@ -1,5 +1,7 @@
 import express from 'express';
-import specialtyDetailService from '../../services/patient/specialty.service.js';
+import Specialty from '../../models/Specialty.js';
+import Doctor from '../../models/Doctor.js';
+import Service from '../../models/Service.js';
 
 const router = express.Router();
 
@@ -8,24 +10,33 @@ router.get('/:specialtyId', async function (req, res) {
   try {
     const specialtyId = parseInt(req.params.specialtyId, 10);
 
-    
     if (isNaN(specialtyId)) {
       return res.redirect('/'); // Redirect to homepage if invalid ID
     }
     
-    // Get specialty, doctors, services
-    const specialtyDetails = await specialtyDetailService.getSpecialtyDetails(specialtyId);
+    // Get specialty details using models
+    const specialty = await Specialty.findById(specialtyId);
     
-    console.log(specialtyDetails);
-    
-    if (!specialtyDetails.specialty) {
+    if (!specialty) {
       return res.redirect('/'); // Redirect if specialty not found
     }
 
+    // Get doctors by specialty
+    const doctors = await Doctor.findBySpecialty(specialtyId);
+    
+    // Get services by specialty
+    const services = await Service.findBySpecialty(specialtyId);
+    
+    console.log({
+      specialty,
+      doctors: doctors.length,
+      services: services.length
+    });
+    
     res.render('vwPatient/specialty/specialty_detail', {
-      specialty: specialtyDetails.specialty,
-      doctors: specialtyDetails.doctors,
-      services: specialtyDetails.services
+      specialty,
+      doctors,
+      services
     });
 
   } catch (error) {
