@@ -1,0 +1,7 @@
+{
+    "vnp_TmnCode": "FPW38P4B",
+    "vnp_HashSecret": "NO3ME71EJH2LQPMZ0GG0777V67MZ1F0V",
+    "vnp_Url": "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html",
+    "vnp_Api":"https://sandbox.vnpayment.vn/merchant_webapi/api/transaction",
+    "vnp_ReturnUrl": "http://localhost:3000/patient/book-appointment/vnpay-return"
+} 

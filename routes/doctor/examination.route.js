@@ -7,6 +7,7 @@ import MedicalRecord from '../../models/MedicalRecord.js';
 import Notification from '../../models/Notification.js';
 import Doctor from '../../models/Doctor.js';
 import Room from '../../models/Room.js';
+import Examination from '../../models/Examination.js';
 
 const router = express.Router();
 
@@ -252,27 +253,16 @@ router.post('/submit', async function (req, res) {
       // Continue even if room release fails - don't fail the whole examination
     }
     
-    // Send notification to the patient
-    try {
-      // Get full patient data instead of using select and lean
-      const patientData = await Patient.findById(appointmentDetails.patientId);
-      if (patientData && patientData.userId) {
-        // Create and save notification
-        const notification = new Notification({
-          userId: patientData.userId,
-          title: 'Medical examination completed',
-          content: `Your examination on ${moment(appointmentDetails.appointmentDate).format('MMMM D, YYYY')} has been completed. Please check your medical records.`,
-          isRead: false,
-          createdDate: new Date()
-        });
-        
-        const notificationId = await notification.save();
-          console.log(`Notification sent to patient (userId: ${patientData.userId})`);
-      }
-    } catch (notificationError) {
-      console.error('Error sending notification:', notificationError);
-      // We don't want to fail the examination submission if notification fails
-    }
+    // Create examination and use Observer Pattern for notifications
+    const examination = new Examination({
+      examinationId: recordId,
+      patientId: appointmentDetails.patientId,
+      doctorId: appointmentDetails.doctorId,
+      diagnosis: diagnosis
+    });
+    
+    // Complete examination - this will trigger notifications through Observer Pattern
+    await examination.complete(diagnosis);
     
     res.json({ 
       success: true, 

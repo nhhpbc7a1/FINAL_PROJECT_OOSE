@@ -66,7 +66,16 @@ export function generateAppointmentReference() {
 
 // Calculate total amount for appointment
 export function calculateTotalAmount(services = []) {
-    return services.reduce((sum, service) => sum + (service.price || 0), 0);
+    if (!Array.isArray(services)) {
+        console.warn('calculateTotalAmount received non-array input:', services);
+        return 0;
+    }
+    
+    return services.reduce((sum, service) => {
+        if (!service) return sum;
+        const price = service.price || 0;
+        return sum + price;
+    }, 0);
 }
 
 // Parse date string in DD/MM/YYYY format to ISO format

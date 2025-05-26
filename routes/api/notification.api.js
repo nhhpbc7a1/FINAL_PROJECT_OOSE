@@ -7,11 +7,22 @@ const router = express.Router();
 // Get unread notifications for the current user
 router.get('/unread', async function (req, res) {
   try {
-    // Get the userId from session or use default for testing
-    const userId = req.session.authUser?.userId || 4; // Fallback for testing
+    // Get the userId from session
+    const userId = req.session.authUser?.userId;
+    
+    if (!userId) {
+      console.error('No userId found in session:', req.session);
+      return res.status(401).json({
+        success: false,
+        error: 'User not authenticated'
+      });
+    }
+    
+    console.log(`Fetching unread notifications for userId: ${userId}`);
     
     // Get unread notifications
     const notifications = await notificationService.findUnreadByUser(userId);
+    console.log(`Found ${notifications.length} unread notifications`);
     
     // Format notifications
     const formattedNotifications = notifications.map(notification => ({
@@ -37,11 +48,22 @@ router.get('/unread', async function (req, res) {
 // Get notification count for the current user
 router.get('/count', async function (req, res) {
   try {
-    // Get the userId from session or use default for testing
-    const userId = req.session.authUser?.userId || 4; // Fallback for testing
+    // Get the userId from session
+    const userId = req.session.authUser?.userId;
+    
+    if (!userId) {
+      console.error('No userId found in session:', req.session);
+      return res.status(401).json({
+        success: false,
+        error: 'User not authenticated'
+      });
+    }
+    
+    console.log(`Fetching notification count for userId: ${userId}`);
     
     // Get unread count
     const count = await notificationService.countUnreadByUser(userId);
+    console.log(`Found ${count} unread notifications`);
     
     res.json({
       success: true,

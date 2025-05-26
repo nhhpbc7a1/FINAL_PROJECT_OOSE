@@ -1,4 +1,10 @@
 import TestRequestDAO from '../dao/TestRequestDAO.js';
+import TestResultObserver from '../observers/implementations/TestResultObserver.js';
+import TestRequestObserver from '../observers/implementations/TestRequestObserver.js';
+import notificationSubject from '../observers/implementations/NotificationSubject.js';
+import PatientDAO from '../dao/PatientDAO.js';
+import DoctorDAO from '../dao/DoctorDAO.js';
+import Appointment from '../models/Appointment.js';
 
 /**
  * TestRequest model representing a test request in the system
@@ -34,6 +40,9 @@ class TestRequest {
         this.doctorName = data.doctorName || null;
         this.appointmentDate = data.appointmentDate || null;
         this.specialtyName = data.specialtyName || null;
+
+        this.result = data.result || null;
+        this.testType = data.testType || null;
     }
 
     /**
@@ -46,13 +55,10 @@ class TestRequest {
                 // Update existing test request
                 const testRequestData = {
                     appointmentId: this.appointmentId,
-                    recordId: this.recordId,
                     serviceId: this.serviceId,
                     requestedByDoctorId: this.requestedByDoctorId,
-                    instructions: this.instructions,
                     requestDate: this.requestDate,
                     status: this.status,
-                    priority: this.priority,
                     notes: this.notes,
                     completionDate: this.completionDate
                 };
@@ -63,17 +69,49 @@ class TestRequest {
                 // Create new test request
                 const testRequestData = {
                     appointmentId: this.appointmentId,
-                    recordId: this.recordId,
                     serviceId: this.serviceId,
                     requestedByDoctorId: this.requestedByDoctorId,
-                    instructions: this.instructions,
                     requestDate: this.requestDate || new Date(),
                     status: this.status,
-                    priority: this.priority,
                     notes: this.notes
                 };
                 
                 this.requestId = await TestRequestDAO.add(testRequestData);
+
+                // Get appointment details to get patient information
+                const appointment = await Appointment.findById(this.appointmentId);
+                if (!appointment) {
+                    throw new Error('Could not find appointment information');
+                }
+
+                // Get user IDs from Patient and Doctor
+                const patient = await PatientDAO.findById(appointment.patientId);
+                const doctor = await DoctorDAO.findById(this.requestedByDoctorId);
+
+                if (!patient || !doctor) {
+                    throw new Error('Could not find patient or doctor information');
+                }
+
+                // Create observers for patient and doctor
+                const patientObserver = new TestRequestObserver(patient.userId);
+                const doctorObserver = new TestRequestObserver(doctor.userId);
+
+                // Attach observers
+                notificationSubject.attach(patientObserver, 'test_request');
+                notificationSubject.attach(doctorObserver, 'test_request');
+
+                // Notify observers
+                const notificationData = {
+                    requestId: this.requestId,
+                    testType: this.serviceType || this.testType,
+                    additionalInfo: this.notes ? `Notes: ${this.notes}` : ''
+                };
+                notificationSubject.notify('test_request', notificationData);
+
+                // Detach observers after notification
+                notificationSubject.detach(patientObserver, 'test_request');
+                notificationSubject.detach(doctorObserver, 'test_request');
+
                 return this.requestId;
             }
         } catch (error) {
@@ -301,6 +339,37 @@ class TestRequest {
         } catch (error) {
             console.error('Error counting pending requests by service:', error);
             throw new Error('Unable to count pending requests by service: ' + error.message);
+        }
+    }
+
+    async updateResult(result) {
+        try {
+            // Update test result
+            await TestRequestDAO.update(this.requestId, {
+                result: result,
+                status: 'completed'
+            });
+
+            // Create observers for patient and doctor
+            const patientObserver = new TestResultObserver(this.patientId);
+            const doctorObserver = new TestResultObserver(this.requestedByDoctorId);
+
+            // Attach observers
+            notificationSubject.attach(patientObserver, 'test_result');
+            notificationSubject.attach(doctorObserver, 'test_result');
+
+            // Notify observers
+            const notificationData = {
+                requestId: this.requestId,
+                testType: this.testType,
+                result: result,
+                additionalInfo: 'Test results are now available.'
+            };
+            notificationSubject.notify('test_result', notificationData);
+
+            return true;
+        } catch (error) {
+            throw error;
         }
     }
 }
