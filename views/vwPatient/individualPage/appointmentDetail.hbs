@@ -1,4 +1,3 @@
-
 {{#section 'css'}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
         integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
@@ -7,115 +6,729 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <link rel="stylesheet" href="/public/css/appointmentDetail.css">
+    <link rel="stylesheet" href="/public/css/patient-side/examination.css">
+    <style>
+        .back-button {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            display: inline-block;
+            margin-bottom: 24px;
+        }
+        
+        .back-button i {
+            margin-right: 5px;
+        }
+                
+        .service-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 8px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .service-name {
+            font-weight: 500;
+        }
+        
+        .service-price {
+            color: #16A90F;
+        }
+        
+        .alert {
+            margin-bottom: 20px;
+        }
+        
+        .appointment-status-button {
+            cursor: pointer;
+        }
+        
+        .appointment-status-button.active {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .medical-record {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .medical-record h5 {
+            color: #007bff;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 10px;
+        }
+        
+        .record-section {
+            margin-bottom: 20px;
+        }
+        
+        .record-section h6 {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .test-results {
+            margin-top: 20px;
+        }
+        
+        .test-result-item {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .test-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .test-name {
+            font-weight: 600;
+            color: #007bff;
+        }
+        
+        .test-date {
+            color: #6c757d;
+        }
+        
+        .test-details {
+            margin-top: 10px;
+        }
+        
+        .test-parameter {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .parameter-name {
+            font-weight: 500;
+        }
+        
+        .parameter-value {
+            font-weight: 600;
+        }
+        
+        .normal-range {
+            color: #6c757d;
+            font-size: 0.85em;
+        }
+        
+        .prescription {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .prescription-header {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 10px;
+        }
+        
+        .prescription-date {
+            color: #6c757d;
+        }
+        
+        .medication-list {
+            margin-top: 20px;
+        }
+        
+        .medication-item {
+            background-color: white;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .medication-name {
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 5px;
+        }
+        
+        .medication-dosage {
+            color: #495057;
+            margin-bottom: 5px;
+        }
+        
+        .medication-instructions {
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #adb5bd;
+        }
+        
+        .info-row {
+            display: flex;
+            margin-bottom: 15px;
+            align-items: flex-start;
+        }
+        
+        .info-label {
+            flex: 0 0 100px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .info-value {
+            flex: 1;
+            padding-left: 15px;
+            overflow: hidden;
+        }
+        
+        .service-list {
+            margin-bottom: 5px;
+            max-height: none;
+            overflow: visible;
+            margin-top: 0px !important;
+        }
+        
+        .service-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 8px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            width: 100%;
+            margin-top: 0px !important;
+        }
+        
+        .modal-body-appointment {
+            flex: 1;
+            padding-right: 20px;
+        }
+        
+        .modal-body-appointment-container {
+            display: flex;
+            gap: 0;
+            margin-bottom: 20px;
+            padding: 0 30px;
+            align-items: start;
+        }
+        
+        .modal-body-time {
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .appointment-info-table {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .appointment-info-table td {
+            padding: 12px 0;
+            vertical-align: top;
+        }
+        
+        .appointment-info-table td:first-child {
+            width: 120px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .appointment-info-table td:last-child {
+            padding-left: 15px;
+        }
+        
+        .service-list {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        
+        .service-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 8px 12px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .service-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .modal-body-appointment-container {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+        
+        .modal-body-appointment {
+            flex: 1;
+        }
+        
+    </style>
 {{/section}}
 
 {{#section 'js'}}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Tab switching functionality
+        const tabButtons = document.querySelectorAll('.appointment-status-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        tabButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const tabId = this.getAttribute('data-tab');
+                
+                // Remove active class from all buttons and contents
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
+                
+                // Add active class to clicked button and corresponding content
+                this.classList.add('active');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+        
+        // Cancel appointment functionality
+        const cancelButton = document.querySelector('.cancel-button');
+        if (cancelButton) {
+            cancelButton.addEventListener('click', function() {
+                const appointmentId = this.getAttribute('data-id');
+                if (confirm('Are you sure you want to cancel this appointment?')) {
+                    cancelAppointment(appointmentId);
+                }
+            });
+        }
+        
+        // Function to cancel appointment via AJAX
+        function cancelAppointment(appointmentId) {
+            fetch('/patient/profile/cancelAppointment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ appointmentId }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Appointment cancelled successfully');
+                    window.location.href = '/patient/profile/appointmentList'; // Redirect to list
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to cancel appointment. Please try again.');
+            });
+        }
+    });
+</script>
 {{/section}}
 
-<div class="appointment-status-container">
-    <button class="appointment-status-button">
-        <img src="/public/images/icon/icons8-coming-soon-24.png" alt="" width="30px">
-        Coming</button>
-    <button class="appointment-status-button">
-        <img src="/public/images/icon/icons8-complete-32.png" alt="" width="30px">
-        Completed</button>
-    <button class="appointment-status-button">
-        <img src="/public/images/icon/icons8-atm-cancel-32.png" alt="" width="30px">
-        Cancelled</button>
-    <button class="appointment-filter-button">
-        <img src="/public/images/icon/icons8-filter-32.png" alt=""width="30px">
-    </button>
-</div>
-<div class="modal-body-form-container">
-    <div class="appointment-card">
-        <div class="appointment-title">
-            <h5>Appointment Detail Information</h5>
-        </div>
-        <div class="modal-body-form">
-            <div class="booked-time">
-                <h5>Patient Information</h5>
-                <p>Booked time: <span>10/10/2004  7:00AM</span></p>
-            </div>
-            <div class="modal-body">
-                <div class="input-group">
-                    <input type="text" id="name" placeholder="Name">
-                </div>
-                <div class="input-group">
-                    <input type="tel" id="phone" placeholder="Phone Number">
-                </div>
-                <div class="input-group">
-                    <div class="birthday-input">
-                        <input type="text" id="birthday" placeholder="Birthday">
-                        <img src="/public/images/icon/icons8-calendar-32.png" alt="" width="20px">
-                    </div>
-                </div>                           
-                <div class="input-group">
-                    <input type="text" id="address" placeholder="Address">
-                </div>
-            </div>
-            <hr class="custom-separate-line">
-            <h5 class="mt-2">Appointment Information</h5>
-            <div class="modal-body-appointment-container">
-                <div class="modal-body-appointment">
-                    <div class="info-row">
-                        <div class="info-label">Specialty</div>
-                        <div class="info-value">Psychology</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">Service</div>
-                        <div class="info-value">None</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">Doctor</div>
-                        <div class="info-value">AkiraYuri</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">Room's No</div>
-                        <div class="info-value">A8-04</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">Order's No</div>
-                        <div class="info-value order-no">24</div>
-                    </div>
-                </div>
-                <div class="modal-body-time">
-                    <h5>Appointment Time</h5>
-                    <div>
-                        <img src="/public/images/icon/icons8-clock-32 (1).png" alt="">
-                        <span id="appointment-time" style="color: #FF4A4D;">10/11/2003 10:00 AM</span>
-                    </div>
-                    <p style="color: #E8B716; font-size: 14px;">This is only an estimated time. We sincerely apologize for any inconvenience caused by unexpected delays </p>
-                    {{!-- We sincerely apologize for any inconvenience caused by unexpected delays. --}}
-                </div>
-            </div>
-            <div class="payment-info-container">
-                <div class="payment-img">
-                    <img src="/public/images/icon/icons8-payment-32 (1) copy.png" alt="" width="60px">
-                </div>
-                <div class="payment-fee">
-                    <p>Examination fee</p>
-                    <p>Extra Service</p>
-                </div>
-                <div class="payment-value">
-                    <p>1000000</p>
-                    <p>1000000</p>
-                </div>
-                <div class="total-payment">
-                    <p style="font-weight:700; font-size:large; ">Total</p>
-                    <p class="total-value">1000000</p>
-
-                </div>
-            </div>
-            {{!-- <div class="button-action">
-                <button class="back-to-main-button">Back </button>
-                <button class="cancel-button">Cancel</button>
-            </div> --}}
-            <div class="button-action">
-                <button class="exam-button"><a href="/patient/profile/medicalExam">Exam's Result</a></button>
-                <button class="prescription-button"><a href="/patient/profile/prescription">Prescription</a></button>
-                <button class="blood-test-button"><a href="/patient/profile/bloodTest">Blood Test</a></button>
-            </div>
-        </div>
-
+{{#if error}}
+    <div class="alert alert-danger">
+        <i class="bi bi-exclamation-triangle-fill"></i> {{error}}
     </div>
-</div>
+{{else}}
+    <div>
+        <a href="/patient/profile/appointmentList" class="back-button">
+            <i class="bi bi-arrow-left"></i> Back to List
+        </a>
+    </div>
+
+    <div class="appointment-status-container">
+        <button class="appointment-status-button active" data-tab="detail-tab">
+            Detail
+        </button>
+        <button class="appointment-status-button" data-tab="examination-tab">
+            Examination
+        </button>
+        <button class="appointment-status-button" data-tab="test-results-tab">
+            Test Results
+        </button>
+        <button class="appointment-status-button" data-tab="prescription-tab">
+            Prescription
+        </button>
+    </div>
+    
+    <!-- Detail Tab Content -->
+    <div id="detail-tab" class="tab-content active">
+        <div class="modal-body-form-container">
+            <div class="appointment-card">
+                <div class="appointment-title d-flex justify-content-between align-items-center">
+                    <h5 class="p-2 ml-4">Appointment Detail Information</h5>
+                    <div class="status-badge p-2 {{#if (eq appointment.status 'confirmed')}}bg-primary{{else if (eq appointment.status 'completed')}}bg-success{{else if (eq appointment.status 'cancelled')}}bg-danger{{/if}} text-white px-3 py-1 rounded">
+                        {{#if (eq appointment.status "confirmed")}}
+                            Coming soon
+                        {{else if (eq appointment.status "completed")}}
+                            Completed
+                        {{else if (eq appointment.status "cancelled")}}
+                            Cancelled
+                        {{else}}
+                            {{appointment.status}}
+                        {{/if}}
+                    </div>
+                </div>
+                <div class="modal-body-form">
+                    <div class="booked-time">
+                        <h5>Patient Information</h5>
+                        <p>Booked time: <span>{{appointment.bookedDate}}</span></p>
+                    </div>
+                    <div class="modal-body">
+                        <div class="input-group">
+                            <input type="text" id="name" placeholder="Name" value="{{appointment.patientName}}" readonly>
+                        </div>
+                        <div class="input-group">
+                            <input type="tel" id="phone" placeholder="Phone Number" value="{{appointment.patientPhone}}" readonly>
+                        </div>
+                        <div class="input-group">
+                            <div class="birthday-input">
+                                <input type="text" id="birthday" placeholder="Birthday" value="{{appointment.patientDob}}" readonly>
+                                <img src="/public/images/icon/icons8-calendar-32.png" alt="" width="20px">
+                            </div>
+                        </div>                           
+                        <div class="input-group">
+                            <input type="text" id="address" placeholder="Address" value="{{appointment.patientAddress}}" readonly>
+                        </div>
+                    </div>
+                    <hr class="custom-separate-line">
+                    <h5 class="mt-2 mb-5">Appointment Information</h5>
+                    <div class="modal-body-appointment-container">
+                        <div class="modal-body-appointment">
+                            <table class="appointment-info-table">
+                                <tr>
+                                    <td>Specialty</td>
+                                    <td>{{appointment.specialtyName}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Services</td>
+                                    <td>
+                                        {{#if appointment.services.length}}
+                                            <div class="service-list">
+                                                {{#each appointment.services}}
+                                                    <div class="service-item">
+                                                        <span class="service-name">{{serviceName}}</span>
+                                                        <span class="service-price">{{formattedPrice}}</span>
+                                                    </div>
+                                                {{/each}}
+                                            </div>
+                                        {{else}}
+                                            None
+                                        {{/if}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Doctor</td>
+                                    <td>{{appointment.doctorName}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Room's No</td>
+                                    <td>{{appointment.roomNumber}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Order's No</td>
+                                    <td class="order-no">{{appointment.queueNumber}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Reason</td>
+                                    <td>{{appointment.reason}}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="modal-body-time">
+                            <h5>Appointment Time</h5>
+                            <div>
+                                <img src="/public/images/icon/icons8-clock-32 (1).png" alt="">
+                                <span id="appointment-time" style="color: #FF4A4D;">{{appointment.appointmentDate}} {{appointment.appointmentTime}}</span>
+                            </div>
+                            <p style="color: #E8B716; font-size: 14px;">This is only an estimated time. We sincerely apologize for any inconvenience caused by unexpected delays.</p>
+                        </div>
+                    </div>
+                    <div class="payment-info-container">
+                        <div class="payment-img">
+                            <img src="/public/images/icon/icons8-payment-32 (1) copy.png" alt="" width="60px">
+                        </div>
+                        <div class="payment-fee">
+                            {{#each appointment.services}}
+                                <p>{{serviceName}}</p>
+                            {{else}}
+                                <p>No services</p>
+                            {{/each}}
+                        </div>
+                        <div class="payment-value">
+                            {{#each appointment.services}}
+                                <p>{{formattedPrice}}</p>
+                            {{else}}
+                                <p>0 VND</p>
+                            {{/each}}
+                        </div>
+                        <div class="total-payment">
+                            <p style="font-weight:700; font-size:large;">Total</p>
+                            <p class="total-value">{{appointment.totalPrice}}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="button-action">                        
+                        {{#if (eq appointment.status "confirmed")}}
+                            <button class="cancel-button" data-id="{{appointment.appointmentId}}">Cancel Appointment</button>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Examination Tab Content -->
+    <div id="examination-tab" class="tab-content">
+        <div class="modal-body-form-container">
+            <div class="appointment-card">
+                <div class="appointment-title">
+                    <h5>Medical Examination Results</h5>
+                </div>
+                
+                {{#if appointment.medicalRecord}}
+                    <div class="medical-record">
+                        
+                        <div class="record-section">
+                            <h6>Diagnosis</h6>
+                            <p>{{appointment.medicalRecord.diagnosis}}</p>
+                        </div>
+
+                        <div class="record-section">
+                            <h6>Clinical Notes</h6>
+                            <p>{{appointment.medicalRecord.notes}}</p>
+                        </div>
+
+                        <div class="record-section">
+                            <h6>Recommendations</h6>
+                            <p>{{appointment.medicalRecord.recommendations}}</p>
+                        </div>
+
+                        {{#if appointment.medicalRecord.followupDate}}
+                            <div class="followup-section">
+                                <h6>Follow-up Appointment</h6>
+                                <p>Scheduled for: {{formatDate appointment.medicalRecord.followupDate}}</p>
+                            </div>
+                        {{/if}}
+
+                        <div class="mt-4">
+                            <button class="print-button" onclick="window.print()">
+                                <i class="fas fa-print"></i>
+                                Print Record
+                            </button>
+                        </div>
+                    </div>
+                {{else}}
+                    <div class="empty-state">
+                        <i class="fas fa-file-medical"></i>
+                        <h5>No Examination Results Yet</h5>
+                        <p>The doctor has not completed the examination record.</p>
+                    </div>
+                {{/if}}
+                
+            </div>
+        </div>
+    </div>
+    
+    <!-- Test Results Tab Content -->
+    <div id="test-results-tab" class="tab-content">
+        <div class="modal-body-form-container">
+            <div class="appointment-card">
+                <div class="appointment-title">
+                    <h5>Test Results</h5>
+                </div>
+                
+                {{#if appointment.testResults.length}}
+                    <div class="test-results">
+                        {{#each appointment.testResults}}
+                            <div class="test-result-item">
+                                <div class="test-header">
+                                    <div class="test-header-main">
+                                        <span class="test-name">{{serviceName}}</span>
+                                        <span class="test-status {{status}}">{{status}}</span>
+                                    </div>
+                                    <div class="test-header-sub">
+                                        <span class="test-date">Performed: {{performedDate}}</span>
+                                        {{#if technicianName}}
+                                            <span class="test-technician">by {{technicianName}}</span>
+                                        {{/if}}
+                                        {{#if roomNumber}}
+                                            <span class="test-room">Room: {{roomNumber}}</span>
+                                        {{/if}}
+                                    </div>
+                                </div>
+                                
+                                <div class="test-details">
+                                    {{#if serviceDescription}}
+                                        <div class="test-parameter">
+                                            <span class="parameter-name">Test Description</span>
+                                            <span class="parameter-value">{{serviceDescription}}</span>
+                                        </div>
+                                    {{/if}}
+
+                                    {{#if resultText}}
+                                        <div class="test-parameter">
+                                            <span class="parameter-name">Text Result</span>
+                                            <div class="parameter-value">
+                                                {{resultText}}
+                                                {{#if isNormal}}
+                                                    <span class="result-status status-normal">Normal</span>
+                                                {{else}}
+                                                    <span class="result-status status-abnormal">Abnormal</span>
+                                                {{/if}}
+                                            </div>
+                                        </div>
+                                    {{/if}}
+                                    
+                                    {{#if resultNumeric}}
+                                        <div class="test-parameter">
+                                            <span class="parameter-name">Numeric Result</span>
+                                            <div class="parameter-value">
+                                                {{resultNumeric}} {{unit}}
+                                                {{#if normalRange}}
+                                                    <div class="normal-range">Normal range: {{normalRange}}</div>
+                                                {{/if}}
+                                                {{#if isNormal}}
+                                                    <span class="result-status status-normal">Normal</span>
+                                                {{else}}
+                                                    <span class="result-status status-abnormal">Abnormal</span>
+                                                {{/if}}
+                                            </div>
+                                        </div>
+                                    {{/if}}
+
+                                    {{#if resultFileId}}
+                                        <div class="test-parameter">
+                                            <span class="parameter-name">File Result</span>
+                                            <div class="parameter-value">
+                                                <div class="file-result">
+                                                    <i class="bi bi-file-earmark-medical file-icon"></i>
+                                                    <div class="file-info">
+                                                        <div class="file-name">{{fileName}}</div>
+                                                        <div class="file-meta d-none">
+                                                            <span>{{fileType}}</span>
+                                                            <span>{{fileSize}} bytes</span>
+                                                            {{#if uploadDate}}
+                                                                <span>Uploaded: {{formatDate uploadDate}}</span>
+                                                            {{/if}}
+                                                        </div>
+                                                    </div>
+                                                    <a href="{{filePath}}" class="download-button" download>
+                                                        <i class="bi bi-download"></i>
+                                                        Download
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {{/if}}
+                                    
+                                    {{#if interpretation}}
+                                        <div class="test-parameter">
+                                            <span class="parameter-name">Interpretation</span>
+                                            <span class="parameter-value">{{interpretation}}</span>
+                                        </div>
+                                    {{/if}}
+
+                                    {{#if notes}}
+                                        <div class="test-parameter">
+                                            <span class="parameter-name">Additional Notes</span>
+                                            <span class="parameter-value">{{notes}}</span>
+                                        </div>
+                                    {{/if}}
+                                </div>
+                            </div>
+                        {{/each}}
+                    </div>
+                {{else}}
+                    <div class="empty-state">
+                        <i class="bi bi-clipboard-data"></i>
+                        <h5>No Test Results Available</h5>
+                        <p>Test results will be available after your tests are completed and processed.</p>
+                    </div>
+                {{/if}}
+                
+            </div>
+        </div>
+    </div>
+    
+    <!-- Prescription Tab Content -->
+    <div id="prescription-tab" class="tab-content">
+        <div class="modal-body-form-container">
+            <div class="appointment-card">
+                <div class="appointment-title">
+                    <h5>Prescription</h5>
+                </div>
+                
+                {{#if appointment.prescriptions.length}}
+                    {{#each appointment.prescriptions}}
+                        <div class="prescription">
+                            <div class="prescription-header">
+                                <h6>Prescription by Dr. {{doctorName}}</h6>
+                                <div class="prescription-date">{{prescriptionDate}}</div>
+                            </div>
+                            
+                            <div class="medication-list">
+                                {{#each medications}}
+                                    <div class="medication-item">
+                                        <div class="medication-name">{{name}}</div>
+                                        <div class="medication-dosage">{{dosage}} - {{frequency}} - {{duration}}</div>
+                                        <div class="medication-instructions">{{instructions}}</div>
+                                    </div>
+                                {{/each}}
+                            </div>
+                            
+                            {{#if notes}}
+                                <div class="prescription-notes mt-3">
+                                    <h6>Notes</h6>
+                                    <p>{{notes}}</p>
+                                </div>
+                            {{/if}}
+                        </div>
+                    {{/each}}
+                {{else}}
+                    <div class="empty-state">
+                        <i class="bi bi-capsule"></i>
+                        <h5>No Prescription Available</h5>
+                        <p>Prescription information will be available after your appointment is completed and medications are prescribed.</p>
+                    </div>
+                {{/if}}
+                
+            </div>
+        </div>
+    </div>
+{{/if}}

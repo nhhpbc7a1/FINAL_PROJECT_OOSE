@@ -688,7 +688,12 @@ class AppointmentDAO {
                 .leftJoin('Doctor', 'Appointment.doctorId', 'Doctor.doctorId')
                 .leftJoin('User as DoctorUser', 'Doctor.userId', 'DoctorUser.userId')
                 .leftJoin('Room', 'Appointment.roomId', 'Room.roomId')
-                .where('Appointment.patientId', patientId);
+                .where('Appointment.patientId', patientId)
+                .where(function() {
+                    this.where('Appointment.status', 'confirmed')
+                        .orWhere('Appointment.status', 'cancelled')
+                        .orWhere('Appointment.status', 'completed');
+                })
                 
             // Apply filters if provided
             if (filters.status) {

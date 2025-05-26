@@ -517,6 +517,9 @@ class TestResultDAO {
                 console.log(`Created file record with ID ${fileId} for test result ${resultId}`);
             }
             
+            // Remove the result field since it doesn't exist in the database
+            delete testResult.result;
+            
             // Update the test result
             const result = await trx('TestResult')
                 .where('resultId', resultId)
@@ -678,6 +681,41 @@ class TestResultDAO {
         } catch (error) {
             console.error(`Error retrieving test results for medical record of patient ID ${patientId}:`, error);
             throw error;
+        }
+    }
+
+    /**
+     * Find test results by appointment ID
+     * @param {number} appointmentId - Appointment ID
+     * @returns {Promise<Array>} Array of test results
+     */
+    static async findByAppointmentId(appointmentId) {
+        try {
+            return await db('TestResult')
+                .join('Service', 'TestResult.serviceId', 'Service.serviceId')
+                .leftJoin('LabTechnician', 'TestResult.technicianId', 'LabTechnician.technicianId')
+                .leftJoin('User', 'LabTechnician.userId', 'User.userId')
+                .leftJoin('File', 'TestResult.resultFileId', 'File.fileId')
+                .leftJoin('Room', 'TestResult.roomId', 'Room.roomId')
+                .select(
+                    'TestResult.*',
+                    'Service.name as serviceName',
+                    'Service.description as serviceDescription',
+                    'Service.type as serviceType',
+                    'User.fullName as technicianName',
+                    'Room.roomNumber',
+                    'Room.roomType',
+                    'File.fileName',
+                    'File.filePath',
+                    'File.fileType',
+                    'File.fileSize',
+                    'File.uploadDate'
+                )
+                .where('TestResult.appointmentId', appointmentId)
+                .orderBy('TestResult.performedDate', 'desc');
+        } catch (error) {
+            console.error(`Error finding test results for appointment ${appointmentId}:`, error);
+            throw new Error('Unable to find test results by appointment');
         }
     }
 }

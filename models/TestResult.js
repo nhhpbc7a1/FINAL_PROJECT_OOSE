@@ -27,7 +27,6 @@ class TestResult {
         this.performedDate = data.performedDate || data.conductedDate || null;
         this.reportedDate = data.reportedDate || data.completionDate || null;
         this.status = data.status || 'pending';
-        this.result = data.result || '';
         
         // Các trường từ join bảng
         this.serviceName = data.serviceName || data.testName || null;
@@ -66,8 +65,7 @@ class TestResult {
                     unit: this.unit,
                     interpretation: this.interpretation,
                     performedDate: this.performedDate,
-                    status: this.status,
-                    result: this.result
+                    status: this.status
                 };
                 
                 await TestResultDAO.update(this.resultId, testResultData);
@@ -89,8 +87,7 @@ class TestResult {
                     unit: this.unit,
                     interpretation: this.interpretation,
                     performedDate: this.performedDate,
-                    status: this.status,
-                    result: this.result
+                    status: this.status
                 };
                 
                 this.resultId = await TestResultDAO.add(testResultData);
@@ -124,8 +121,7 @@ class TestResult {
                 unit: this.unit,
                 interpretation: this.interpretation,
                 performedDate: this.performedDate,
-                status: this.status,
-                result: this.result
+                status: this.status
             };
             
             if (this.resultId) {
@@ -526,6 +522,21 @@ class TestResult {
         } catch (error) {
             console.error(`Error synchronizing recordId for test result ${this.resultId}:`, error);
             return false;
+        }
+    }
+
+    /**
+     * Find test results by appointment ID
+     * @param {number} appointmentId - Appointment ID
+     * @returns {Promise<Array<TestResult>>} Array of test results
+     */
+    static async findByAppointmentId(appointmentId) {
+        try {
+            const results = await TestResultDAO.findByAppointmentId(appointmentId);
+            return results.map(result => new TestResult(result));
+        } catch (error) {
+            console.error(`Error finding test results for appointment ${appointmentId}:`, error);
+            throw new Error('Unable to find test results by appointment: ' + error.message);
         }
     }
 }
