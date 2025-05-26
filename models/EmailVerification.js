@@ -3,15 +3,24 @@ import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 dotenv.config();
 
+const isDev = process.env.NODE_ENV !== 'production';
+
 /**
  * EmailVerification model representing an email verification record in the system
  */
 class EmailVerification {
+    static instance = null;
+    static transporter = null;
+
     /**
      * Create a new EmailVerification instance
      * @param {Object} data - Email verification data
      */
     constructor(data = {}) {
+        if (EmailVerification.instance) {
+            return EmailVerification.instance;
+        }
+
         this.id = data.id || null;
         this.email = data.email;
         this.verificationCode = data.verificationCode;
@@ -20,14 +29,63 @@ class EmailVerification {
         this.verified = data.verified || false;
         this.createdAt = data.createdAt || new Date();
 
-        // Khởi tạo nodemailer transporter
-        this.transporter = nodemailer.createTransport({
+        // Initialize transporter if not already initialized
+        if (!EmailVerification.transporter) {
+            EmailVerification.transporter = this.createTransporter();
+        }
+
+        EmailVerification.instance = this;
+    }
+
+    /**
+     * Create email transporter
+     * @returns {Object} Email transporter
+     */
+    createTransporter() {
+        if (isDev) {
+            return {
+                sendMail: async (mailOptions) => {
+                    console.log('MOCK EMAIL SENT:');
+                    console.log('To:', mailOptions.to);
+                    console.log('Subject:', mailOptions.subject);
+                    console.log('Code:', this.verificationCode);
+                    return { messageId: 'mock-email-id-' + Date.now() };
+                }
+            };
+        }
+
+        return nodemailer.createTransport({
             service: 'Gmail',
             auth: {
                 user: process.env.EMAIL_USER || 'your-email@gmail.com',
                 pass: process.env.EMAIL_PASS || 'your-app-password'
             }
         });
+    }
+
+    /**
+     * Get the singleton instance
+     * @returns {EmailVerification} The singleton instance
+     */
+    static getInstance(data = {}) {
+        if (!EmailVerification.instance) {
+            EmailVerification.instance = new EmailVerification(data);
+        }
+        return EmailVerification.instance;
+    }
+
+    /**
+     * Reset the instance data with new values
+     * @param {Object} data - New data to set
+     */
+    resetData(data = {}) {
+        this.id = data.id || null;
+        this.email = data.email;
+        this.verificationCode = data.verificationCode;
+        this.appointmentId = data.appointmentId || null;
+        this.expiresAt = data.expiresAt;
+        this.verified = data.verified || false;
+        this.createdAt = data.createdAt || new Date();
     }
 
     /**
@@ -48,16 +106,17 @@ class EmailVerification {
         const verificationCode = this.generateVerificationCode();
         const expiresAt = new Date(Date.now() + 5 * 60000); // Hết hạn sau 5 phút
 
-        const verification = new EmailVerification({
+        const instance = EmailVerification.getInstance();
+        instance.resetData({
             email,
             verificationCode,
             appointmentId,
             expiresAt
         });
 
-        await verification.save();
-        await verification.sendVerificationEmail();
-        return verification;
+        await instance.save();
+        await instance.sendVerificationEmail();
+        return instance;
     }
 
     /**
@@ -73,30 +132,34 @@ class EmailVerification {
      * @returns {Promise<boolean>} True if email sent successfully
      */
     async sendVerificationEmail() {
-        const mailOptions = {
-            from: process.env.EMAIL_USER || 'your-email@gmail.com',
-            to: this.email,
-            subject: 'Xác thực email đặt lịch khám',
-            html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <h2 style="color: #0066cc;">Xác thực email đặt lịch khám</h2>
-                    <p>Xin chào,</p>
-                    <p>Đây là mã xác thực email của bạn:</p>
-                    <div style="background-color: #f4f4f4; padding: 15px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px; margin: 20px 0;">
-                        ${this.verificationCode}
-                    </div>
-                    <p>Mã xác thực này sẽ hết hạn sau 5 phút.</p>
-                    <p>Nếu bạn không yêu cầu mã này, vui lòng bỏ qua email này.</p>
-                    <p>Trân trọng,<br>Phòng khám XYZ</p>
-                </div>
-            `
-        };
-
         try {
-            await this.transporter.sendMail(mailOptions);
+            const mailOptions = {
+                from: process.env.EMAIL_USER || 'noreply@healthclinic.com',
+                to: this.email,
+                subject: 'Xác thực email đặt lịch khám',
+                html: `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                        <h2 style="color: #0066cc;">Xác thực email đặt lịch khám</h2>
+                        <p>Xin chào,</p>
+                        <p>Đây là mã xác thực email của bạn:</p>
+                        <div style="background-color: #f4f4f4; padding: 15px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px; margin: 20px 0;">
+                            ${this.verificationCode}
+                        </div>
+                        <p>Mã xác thực này sẽ hết hạn sau 5 phút.</p>
+                        <p>Nếu bạn không yêu cầu mã này, vui lòng bỏ qua email này.</p>
+                        <p>Trân trọng,<br>Phòng khám XYZ</p>
+                    </div>
+                `
+            };
+
+            await EmailVerification.transporter.sendMail(mailOptions);
             return true;
         } catch (error) {
             console.error('Error sending verification email:', error);
+            if (isDev) {
+                console.log('Using mock verification code:', this.verificationCode);
+                return true;
+            }
             throw new Error('Failed to send verification email: ' + error.message);
         }
     }
@@ -159,7 +222,10 @@ class EmailVerification {
         try {
             const verification = await EmailVerificationDAO.findByEmailAndCode(email, code);
             if (!verification) return null;
-            return new EmailVerification(verification);
+            
+            const instance = EmailVerification.getInstance();
+            instance.resetData(verification);
+            return instance;
         } catch (error) {
             console.error('Error finding verification by email and code:', error);
             throw new Error('Failed to find verification: ' + error.message);
@@ -175,7 +241,10 @@ class EmailVerification {
         try {
             const verification = await EmailVerificationDAO.findByAppointmentId(appointmentId);
             if (!verification) return null;
-            return new EmailVerification(verification);
+            
+            const instance = EmailVerification.getInstance();
+            instance.resetData(verification);
+            return instance;
         } catch (error) {
             console.error('Error finding verification by appointment ID:', error);
             throw new Error('Failed to find verification: ' + error.message);
