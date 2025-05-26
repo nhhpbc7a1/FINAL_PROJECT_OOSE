@@ -185,6 +185,25 @@ class Prescription {
         }
     }
 
+    /**
+     * Find prescriptions by appointment ID
+     * @param {number} appointmentId - Appointment ID
+     * @returns {Promise<Array<Prescription>>} Array of prescriptions
+     */
+    static async findByAppointmentId(appointmentId) {
+        try {
+            const prescriptions = await PrescriptionDAO.findByAppointmentId(appointmentId);
+            return prescriptions.map(prescription => new Prescription(prescription));
+        } catch (error) {
+            console.error(`Error finding prescriptions for appointment ${appointmentId}:`, error);
+            throw new Error('Unable to find prescriptions by appointment: ' + error.message);
+        }
+    }
+
+    /**
+     * Create a new prescription with notifications
+     * @returns {Promise<Object>} The created prescription result
+     */
     async create() {
         try {
             // Create prescription in database
@@ -232,6 +251,11 @@ class Prescription {
         }
     }
 
+    /**
+     * Update prescription with notifications
+     * @param {Array} medications - Updated medications list
+     * @returns {Promise<boolean>} Success status
+     */
     async update(medications) {
         try {
             // Update prescription in database

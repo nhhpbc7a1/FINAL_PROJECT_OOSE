@@ -206,6 +206,47 @@ class PrescriptionDAO {
             throw new Error('Failed to create prescription: ' + error.message);
         }
     }
+
+    /**
+     * Find prescriptions by appointment ID
+     * @param {number} appointmentId - Appointment ID
+     * @returns {Promise<Array>} Array of prescriptions with medications
+     */
+    static async findByAppointmentId(appointmentId) {
+        try {
+            // First get the prescriptions
+            const prescriptions = await db('Prescription')
+                .join('Doctor', 'Prescription.doctorId', 'Doctor.doctorId')
+                .join('User', 'Doctor.userId', 'User.userId')
+                .join('MedicalRecord', 'Prescription.recordId', 'MedicalRecord.recordId')
+                .select(
+                    'Prescription.*',
+                    'User.fullName as doctorName',
+                    db.raw("DATE_FORMAT(Prescription.prescriptionDate, '%d/%m/%Y') as prescriptionDateFormatted")
+                )
+                .where('MedicalRecord.appointmentId', appointmentId);
+
+            // For each prescription, get its medications
+            for (const prescription of prescriptions) {
+                const medications = await db('PrescriptionDetail')
+                    .join('Medication', 'PrescriptionDetail.medicationId', 'Medication.medicationId')
+                    .select(
+                        'PrescriptionDetail.*',
+                        'Medication.name',
+                        'Medication.description'
+                    )
+                    .where('PrescriptionDetail.prescriptionId', prescription.prescriptionId);
+
+                prescription.medications = medications;
+                prescription.prescriptionDate = prescription.prescriptionDateFormatted;
+            }
+
+            return prescriptions;
+        } catch (error) {
+            console.error(`Error finding prescriptions for appointment ${appointmentId}:`, error);
+            throw new Error('Unable to find prescriptions by appointment');
+        }
+    }
 }
 
 export default PrescriptionDAO; 

@@ -6,96 +6,171 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <link rel="stylesheet" href="/public/css/appointmentList.css">
+    <style>
+        .status-count {
+            display: inline-block;
+            font-size: 0.85em;
+            color: #6c757d;
+            margin-left: 4px;
+        }
+        
+        .appointment-status-button.active .status-count {
+            color: #fff;
+        }
+    </style>
 {{/section}}
 
 {{#section 'js'}}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Filter buttons functionality
+        const statusButtons = document.querySelectorAll('.appointment-status-button');
+        const appointmentCards = document.querySelectorAll('.appointment-card');
+        
+        statusButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const status = this.getAttribute('data-status');
+                
+                // Remove active class from all buttons
+                statusButtons.forEach(btn => btn.classList.remove('active'));
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                // Show/hide appointment cards based on status
+                if (status === 'all') {
+                    appointmentCards.forEach(card => card.style.display = 'block');
+                } else {
+                    appointmentCards.forEach(card => {
+                        const cardStatus = card.getAttribute('data-status');
+                        card.style.display = (cardStatus === status) ? 'block' : 'none';
+                    });
+                }
+            });
+        });
+        
+        // Cancel appointment functionality
+        const cancelButtons = document.querySelectorAll('.cancel-button');
+        cancelButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const appointmentId = this.getAttribute('data-id');
+                if (confirm('Are you sure you want to cancel this appointment?')) {
+                    cancelAppointment(appointmentId);
+                }
+            });
+        });
+        
+        // Function to cancel appointment via AJAX
+        function cancelAppointment(appointmentId) {
+            fetch('/patient/profile/cancelAppointment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ appointmentId }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Appointment cancelled successfully');
+                    location.reload(); // Reload page to reflect changes
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to cancel appointment. Please try again.');
+            });
+        }
+    });
+</script>
 {{/section}}
+
 <div class="appointment-list-container">
     <div class="appointment-status-container">
-        <button class="appointment-status-button">
+        <button class="appointment-status-button active" data-status="all">
+            <img src="/public/images/icon/icons8-list-24.png" alt="" width="30px">
+            All <span class="status-count">({{statusCounts.all}})</span></button>
+        <button class="appointment-status-button" data-status="confirmed">
             <img src="/public/images/icon/icons8-coming-soon-24.png" alt="" width="30px">
-            Coming</button>
-        <button class="appointment-status-button">
+            Coming <span class="status-count">({{statusCounts.waiting}})</span></button>
+        <button class="appointment-status-button" data-status="completed">
             <img src="/public/images/icon/icons8-complete-32.png" alt="" width="30px">
-            Completed</button>
-        <button class="appointment-status-button">
+            Completed <span class="status-count">({{statusCounts.completed}})</span></button>
+        <button class="appointment-status-button" data-status="cancelled">
             <img src="/public/images/icon/icons8-atm-cancel-32.png" alt="" width="30px">
-            Cancelled</button>
-        <button class="appointment-filter-button">
-            <img src="/public/images/icon/icons8-filter-32.png" alt=""width="30px">
-        </button>
+            Cancelled <span class="status-count">({{statusCounts.cancelled}})</span></button>
     </div>
+    
     <main class="main-content">
-        <div class="appointment-card mb-4">
-            <div class="header">
-                <div class="booked-time">Booked Time: 09/10/2025</div>
-                <div class="status">Coming soon</div>
+        {{#if error}}
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle-fill"></i> {{error}}
             </div>
-            <div class="patient-info">
-                <div>
-                    <img src="/public/images/icon/icons8-user-blue.png" alt="">
-                    <span>Le Thi Thu Huong</span>
-                </div>
-                <div class="time-value-container">
-                    <img src="/public/images/icon/icons8-clock-32 (1).png" alt="">
-                    <span class="time-value">100/11/03</span>
-                </div>
-            </div>
-            <div class="doctor-info">
-                <img src="/public/images/icon/icons8-doctor-32.png" alt="">
-                <span>Hayashi Kyosuke</span>
-            </div>
-            <div class="specialty-info">
-                <img src="/public/images/icon/icons8-stethoscope-yellow.png" alt="">
-                <span style="color: #E8B716;">Obstetrics and Gynecology</span>
-            </div>
+        {{else}}
+            {{#if appointments.length}}
+                {{#each appointments}}
+                    <div class="appointment-card mb-4" data-status="{{status}}">
+                        <div class="header">
+                            <div class="booked-time">Booked Time: {{bookedDate}}</div>
+                            <div class="status">
+                                {{#if (eq status "confirmed")}}
+                                    Coming soon
+                                {{else if (eq status "completed")}}
+                                    Completed
+                                {{else if (eq status "cancelled")}}
+                                    Cancelled
+                                {{else}}
+                                    {{status}}
+                                {{/if}}
+                            </div>
+                        </div>
+                        <div class="patient-info">
+                            <div>
+                                <img src="/public/images/icon/icons8-user-blue.png" alt="">
+                                <span>{{patientName}}</span>
+                            </div>
+                            <div class="time-value-container">
+                                <img src="/public/images/icon/icons8-clock-32 (1).png" alt="">
+                                <span class="time-value">{{appointmentDate}} {{appointmentTime}}</span>
+                            </div>
+                        </div>
+                        <div class="doctor-info">
+                            <img src="/public/images/icon/icons8-doctor-32.png" alt="">
+                            <span>{{doctorName}}</span>
+                        </div>
+                        <div class="specialty-info">
+                            <img src="/public/images/icon/icons8-stethoscope-yellow.png" alt="">
+                            <span style="color: #E8B716;">{{specialtyName}}</span>
+                        </div>
 
-            <div class="fee-info">
-                <div>
-                    <img src="/public/images/icon/icons8-payment-32 (1) copy.png" alt="">
-                    <span style="color: #16A90F;">1.200.000 VND</span>
+                        <div class="fee-info">
+                            <div>
+                                <img src="/public/images/icon/icons8-payment-32 (1) copy.png" alt="">
+                                <span style="color: #16A90F;">{{totalPrice}}</span>
+                            </div>
+                            <div class="buttons">
+                                <button class="view-detail-button">
+                                    <a href="/patient/profile/appointmentDetail?id={{appointmentId}}" style="color: white;">View Detail</a>
+                                </button>
+                                {{#if (eq status "confirmed")}}
+                                    <button class="cancel-button" data-id="{{appointmentId}}">Cancel</button>
+                                {{/if}}
+                            </div>
+                        </div>
+                    </div>
+                {{/each}}
+            {{else}}
+                <div class="empty-state text-center py-5">
+                    <img src="/public/images/icon/no-appointment.png" alt="No appointments" class="mb-3" style="max-width: 150px;">
+                    <h3>No Appointments Found</h3>
+                    <p class="text-muted">You don't have any appointments scheduled.</p>
+                    <a href="/patient/book-appointment" class="btn btn-primary mt-3">
+                        <i class="bi bi-plus-circle me-2"></i> Book an Appointment
+                    </a>
                 </div>
-                <div class="buttons">
-                    <button class="view-detail-button"><a href="/patient/profile/appointmentDetail" style="color: white;">View Detail</a> </button>
-                    <button class="cancel-button">Cancel</button>
-                </div>
-            </div>
-        </div>
-        <div class="appointment-card">
-            <div class="header">
-                <div class="booked-time">Booked Time: 09/10/2025</div>
-                <div class="status">Coming soon</div>
-            </div>
-            <div class="patient-info">
-                <div>
-                    <img src="/public/images/icon/icons8-user-blue.png" alt="">
-                    <span>Le Thi Thu Huong</span>
-                </div>
-                <div class="time-value-container">
-                    <img src="/public/images/icon/icons8-clock-32 (1).png" alt="">
-                    <span class="time-value">100/11/03</span>
-                </div>
-            </div>
-            <div class="doctor-info">
-                <img src="/public/images/icon/icons8-doctor-32.png" alt="">
-                <span>Hayashi Kyosuke</span>
-            </div>
-            <div class="specialty-info">
-                <img src="/public/images/icon/icons8-stethoscope-yellow.png" alt="">
-                <span style="color: #E8B716;">Obstetrics and Gynecology</span>
-            </div>
-
-            <div class="fee-info">
-                <div>
-                    <img src="/public/images/icon/icons8-payment-32 (1) copy.png" alt="">
-                    <span style="color: #16A90F;">1.200.000 VND</span>
-                </div>
-                <div class="buttons">
-                    <button class="view-detail-button"><a href="/patient/profile/appointmentDetail">View Detail</a> </button>
-                    <button class="cancel-button">Cancel</button>
-                </div>
-            </div>
-        </div>
+            {{/if}}
+        {{/if}}
     </main>
 </div>
 

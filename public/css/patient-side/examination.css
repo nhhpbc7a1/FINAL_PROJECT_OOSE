@@ -1,0 +1,193 @@
+.medical-record {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.medical-record h5 {
+    color: #2c3e50;
+    font-size: 1.25rem;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.record-section {
+    margin-bottom: 24px;
+}
+
+.record-section:last-child {
+    margin-bottom: 0;
+}
+
+.record-section h6 {
+    color: #0056b3;
+    font-size: 1rem;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.record-section p {
+    color: #495057;
+    line-height: 1.6;
+    margin: 0;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 4px solid #0056b3;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    background: #f8f9fa;
+    border-radius: 12px;
+}
+
+.empty-state i {
+    font-size: 48px;
+    color: #adb5bd;
+    margin-bottom: 16px;
+}
+
+.empty-state h5 {
+    color: #495057;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.empty-state p {
+    color: #6c757d;
+    margin: 0;
+}
+
+/* Vital Signs Section */
+.vital-signs {
+    margin-top: 24px;
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.vital-signs-title {
+    color: #2c3e50;
+    font-size: 1.1rem;
+    margin-bottom: 16px;
+    font-weight: 600;
+}
+
+.vital-signs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.vital-sign-item {
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.vital-sign-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-bottom: 8px;
+}
+
+.vital-sign-value {
+    font-size: 1.1rem;
+    color: #212529;
+    font-weight: 500;
+    display: flex;
+    align-items: baseline;
+}
+
+.vital-sign-unit {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-left: 4px;
+}
+
+/* Follow-up Section */
+.followup-section {
+    margin-top: 24px;
+    padding: 16px;
+    background: #e8f4ff;
+    border-radius: 8px;
+    border: 1px solid #b8daff;
+}
+
+.followup-section h6 {
+    color: #004085;
+    margin-bottom: 8px;
+}
+
+.followup-section p {
+    color: #004085;
+    margin: 0;
+}
+
+/* Status Badges */
+.status-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.status-badge.completed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-badge.pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-badge.in-progress {
+    background: #cce5ff;
+    color: #004085;
+}
+
+/* Print Button */
+.print-button {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    background: #0056b3;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.print-button:hover {
+    background: #004085;
+}
+
+.print-button i {
+    margin-right: 8px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .medical-record {
+        padding: 16px;
+    }
+
+    .vital-signs-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .record-section p {
+        padding: 8px;
+    }
+} 
