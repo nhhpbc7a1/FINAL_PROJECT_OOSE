@@ -1,0 +1,41 @@
+{{#section 'css'}}
+<style>
+    .error-container {
+        text-align: center;
+        padding: 40px 20px;
+    }
+    .error-icon {
+        color: #dc3545;
+        font-size: 64px;
+        margin-bottom: 20px;
+    }
+    .error-message {
+        color: #721c24;
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        border-radius: 4px;
+        padding: 15px;
+        margin: 20px 0;
+    }
+    .back-button {
+        margin-top: 20px;
+    }
+</style>
+{{/section}}
+
+<div class="container">
+    <div class="error-container">
+        <div class="error-icon">
+            <i class="fas fa-times-circle"></i>
+        </div>
+        <h2>Thanh toán thất bại</h2>
+        <div class="error-message">
+            {{message}}
+        </div>
+        <div class="back-button">
+            <a href="/patient/book-appointment/input-form" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> Quay lại đặt lịch
+            </a>
+        </div>
+    </div>
+</div> 

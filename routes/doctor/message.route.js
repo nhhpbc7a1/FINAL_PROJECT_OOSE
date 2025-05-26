@@ -14,35 +14,47 @@ router.use((req, res, next) => {
 // GET: Messages list page
 router.get('/', async (req, res) => {
   try {
-        // Get user ID from session
+    // Get user ID from session
     const userId = req.session.authUser?.userId;
     
     if (!userId) {
-            return res.redirect('/account/login'); // Redirect to login if not logged in
+      return res.redirect('/account/login'); // Redirect to login if not logged in
     }
     
     // Fetch notifications for this user
-        const notifications = await Notification.findByUserId(userId);
+    const notifications = await Notification.findByUserId(userId);
     
     // Format notifications
     const formattedNotifications = notifications.map(notification => ({
       ...notification,
       formattedDate: moment(notification.createdDate).format('MMM D, YYYY'),
-            timeAgo: moment(notification.createdDate).fromNow(),
-            cssClass: notification.isRead ? 'read' : 'unread',
-            icon: _getNotificationIcon(notification.title)
+      formattedTime: moment(notification.createdDate).format('hh:mm A'),
+      timeAgo: moment(notification.createdDate).fromNow(),
+      cssClass: notification.isRead ? 'read' : 'unread',
+      icon: _getNotificationIcon(notification.title)
     }));
     
     // Get unread count
-        const unreadCount = await Notification.countUnreadByUserId(userId);
+    const unreadCount = await Notification.countUnreadByUserId(userId);
+    
+    // Add debug logging
+    console.log('Rendering messages with:', {
+      notificationCount: formattedNotifications.length,
+      unreadCount,
+      sampleNotification: formattedNotifications[0]
+    });
     
     res.render('vwDoctor/messages', {
       notifications: formattedNotifications,
+      hasNotifications: formattedNotifications.length > 0,
       unreadCount
     });
   } catch (error) {
     console.error('Error loading messages:', error);
-        res.render('vwDoctor/messages', { error: 'Failed to load messages' });
+    res.render('vwDoctor/messages', { 
+      error: 'Failed to load messages',
+      hasNotifications: false 
+    });
   }
 });
 
@@ -50,22 +62,23 @@ router.get('/', async (req, res) => {
 router.post('/mark-read/:id', async (req, res) => {
   try {
     const notificationId = req.params.id;
-        if (!notificationId) {
-            return res.status(400).json({ success: false, message: 'Notification ID is required' });
-        }
-        
-        const notification = await Notification.findById(notificationId);
-        if (!notification) {
-            return res.status(404).json({ success: false, message: 'Notification not found' });
-        }
-        
-        notification.isRead = true;
-        await notification.save();
-        
-        res.json({ success: true });
+    if (!notificationId) {
+      return res.status(400).json({ success: false, message: 'Notification ID is required' });
+    }
+    
+    const notification = await Notification.findById(notificationId);
+    if (!notification) {
+      return res.status(404).json({ success: false, message: 'Notification not found' });
+    }
+    
+    notification.isRead = true;
+    await notification.save();
+    
+    // Redirect back to messages page
+    res.redirect('/doctor/messages');
   } catch (error) {
     console.error('Error marking notification as read:', error);
-        res.status(500).json({ success: false, message: 'Failed to mark notification as read' });
+    res.status(500).json({ success: false, message: 'Failed to mark notification as read' });
   }
 });
 
@@ -74,15 +87,16 @@ router.post('/mark-all-read', async (req, res) => {
   try {
     const userId = req.session.authUser?.userId;
     if (!userId) {
-            return res.status(401).json({ success: false, message: 'Authentication required' });
+      return res.status(401).json({ success: false, message: 'Authentication required' });
     }
     
-        await Notification.markAllAsReadForUser(userId);
-        
-        res.json({ success: true });
+    await Notification.markAllAsReadForUser(userId);
+    
+    // Redirect back to messages page
+    res.redirect('/doctor/messages');
   } catch (error) {
     console.error('Error marking all notifications as read:', error);
-        res.status(500).json({ success: false, message: 'Failed to mark all notifications as read' });
+    res.status(500).json({ success: false, message: 'Failed to mark all notifications as read' });
   }
 });
 
@@ -90,22 +104,23 @@ router.post('/mark-all-read', async (req, res) => {
 router.post('/delete/:id', async (req, res) => {
   try {
     const notificationId = req.params.id;
-        if (!notificationId) {
-            return res.status(400).json({ success: false, message: 'Notification ID is required' });
-        }
-        
-        const notification = await Notification.findById(notificationId);
-        if (!notification) {
-            return res.json({ success: true }); // Already deleted, consider it success
-        }
-        
-        await notification.delete();
-        
-        res.json({ success: true });
+    if (!notificationId) {
+      return res.status(400).json({ success: false, message: 'Notification ID is required' });
+    }
+    
+    const notification = await Notification.findById(notificationId);
+    if (!notification) {
+      return res.redirect('/doctor/messages'); // Already deleted, redirect back
+    }
+    
+    await notification.delete();
+    
+    // Redirect back to messages page
+    res.redirect('/doctor/messages');
   } catch (error) {
     console.error('Error deleting notification:', error);
-        res.status(500).json({ success: false, message: 'Failed to delete notification' });
-    }
+    res.status(500).json({ success: false, message: 'Failed to delete notification' });
+  }
 });
 
 // Helper function to get appropriate icon based on notification title

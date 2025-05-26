@@ -178,41 +178,42 @@ router.post('/submit', async function(req, res) {
       }
     } 
     
-    // If no appointment or couldn't find it, but we have patientId, create a virtual appointment context
+    // If no appointment or couldn't find it, but we have patientId, create a real appointment
     if ((!appointment || !appointmentId) && patientId) {
-      virtualAppointment = true;
-      
       // Get patient details
       const patient = await Patient.findById(patientId);
       
       if (!patient) {
         return res.status(404).send('Patient not found');
       }
+
+      // Create a new appointment
+      const newAppointment = new Appointment({
+        patientId: patientId,
+        specialtyId: req.session.authUser?.specialtyId,
+        appointmentDate: moment().format('YYYY-MM-DD'),
+        appointmentTime: moment().format('HH:mm:ss'),
+        reason: 'Test Request',
+        doctorId: req.session.authUser?.doctorId,
+        status: 'confirmed',
+        patientAppointmentStatus: 'examining'
+      });
+
+      // Save the new appointment
+      const savedAppointment = await newAppointment.save();
+      actualAppointmentId = savedAppointment.appointmentId;
       
-      // Create a virtual appointment object with minimal required info
       appointment = {
-        appointmentId: `virtual-${Date.now()}`, // Virtual ID that won't be stored
+        appointmentId: actualAppointmentId,
         patientId: patientId,
         patientName: patient.fullName,
-        doctorId: req.session.authUser?.doctorId, // Use logged in doctor
+        doctorId: req.session.authUser?.doctorId,
         doctorName: req.session.authUser?.fullName || 'Doctor'
       };
-      
-      // Try to find the most recent real appointment for this patient to use its ID
-      if (patient.appointments && patient.appointments.length > 0) {
-        const sortedAppointments = [...patient.appointments].sort((a, b) => {
-          return new Date(b.appointmentDate) - new Date(a.appointmentDate);
-        });
-        
-        if (sortedAppointments[0] && sortedAppointments[0].appointmentId) {
-          actualAppointmentId = sortedAppointments[0].appointmentId;
-          virtualAppointment = false; // We found a real appointment to use
-        }
-      }
     }
     
     if (!appointment) {
-      return res.status(404).send('Appointment not found and could not create virtual appointment');
+      return res.status(404).send('Appointment not found and could not create new appointment');
     }
     
     // Get the doctorId from the session
@@ -225,12 +226,13 @@ router.post('/submit', async function(req, res) {
     
     // Create the test request object
     const testRequest = new TestRequest({
-      appointmentId: actualAppointmentId, // Use actual appointment ID if available
+      appointmentId: actualAppointmentId,
       serviceId: serviceId,
       requestDate: moment().format('YYYY-MM-DD HH:mm:ss'),
       status: status || 'pending',
       notes: `Test request for ${testName}`,
-      requestedByDoctorId: doctorId
+      requestedByDoctorId: doctorId,
+      patientId: appointment.patientId
     });
     
     // Add the test request to the database

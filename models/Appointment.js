@@ -558,6 +558,17 @@ class Appointment {
             throw new Error('Failed to release room: ' + error.message);
         }
     }
+
+    static async update(appointmentId, updateData) {
+        try {
+            await db('Appointment')
+                .where('appointmentId', appointmentId)
+                .update(updateData);
+        } catch (error) {
+            console.error('Error updating appointment:', error);
+            throw error;
+        }
+    }
 }
 
 export default Appointment; 

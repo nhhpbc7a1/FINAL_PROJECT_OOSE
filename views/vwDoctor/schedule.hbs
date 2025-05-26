@@ -22,8 +22,8 @@
     <div class="section-header">
       <h2>Monthly Summary</h2>
       <div class="view-switcher">
-        <div class="view-option" data-view="calendar"><i class="ti ti-calendar"></i> Calendar</div>
-        <div class="view-option active" data-view="list"><i class="ti ti-list"></i> List</div>
+        <div class="view-option active" data-view="calendar"><i class="ti ti-calendar"></i> Calendar</div>
+        <div class="view-option" data-view="list"><i class="ti ti-list"></i> List</div>
       </div>
     </div>
     
@@ -94,7 +94,7 @@
   </section>
 
   <!-- Schedule List -->
-  <section class="schedule-list-section">
+  <section class="schedule-list-section" style="display: none;">
     <div class="section-header">
       <h2>{{formatDate selectedDate}}'s Schedules</h2>
     </div>
@@ -136,9 +136,9 @@
   </section>
   
   <!-- Calendar View -->
-  <section class="calendar-section">
+  <section class="calendar-section" style="display: block;">
     <div class="calendar-container">
-      <div id="calendar" class="calendar-view" style="display: none;"></div>
+      <div id="calendar" class="calendar-view"></div>
     </div>
   </section>
 </div>
@@ -210,12 +210,15 @@
           }
         });
         
-        // Render the calendar when in calendar view
-        if (document.querySelector('.view-option[data-view="calendar"]').classList.contains('active')) {
-          setTimeout(() => {
+        // Render the calendar immediately
+        setTimeout(() => {
+          try {
             calendar.render();
-          }, 0);
-        }
+            console.log('Calendar rendered successfully');
+          } catch (error) {
+            console.error('Error rendering calendar:', error);
+          }
+        }, 0);
         
       } catch (e) {
         console.error('Failed to initialize calendar:', e);
@@ -277,11 +280,6 @@
       item.style.animationDelay = `${index * 0.05}s`;
       item.classList.add('fade-in');
     });
-
-    // Initial calendar view setup
-    if (document.querySelector('.view-option[data-view="list"]').classList.contains('active')) {
-      document.querySelector('.calendar-section').style.display = 'none';
-    }
   });
 </script>
 {{/section}} 

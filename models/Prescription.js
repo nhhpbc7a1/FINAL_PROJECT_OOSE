@@ -1,4 +1,8 @@
 import PrescriptionDAO from '../dao/PrescriptionDAO.js';
+import PrescriptionObserver from '../observers/implementations/PrescriptionObserver.js';
+import notificationSubject from '../observers/implementations/NotificationSubject.js';
+import PatientDAO from '../dao/PatientDAO.js';
+import DoctorDAO from '../dao/DoctorDAO.js';
 import moment from 'moment';
 
 /**
@@ -181,6 +185,7 @@ class Prescription {
         }
     }
 
+<<<<<<< HEAD
     /**
      * Find prescriptions by appointment ID
      * @param {number} appointmentId - Appointment ID
@@ -193,6 +198,98 @@ class Prescription {
         } catch (error) {
             console.error(`Error finding prescriptions for appointment ${appointmentId}:`, error);
             throw new Error('Unable to find prescriptions by appointment: ' + error.message);
+=======
+    async create() {
+        try {
+            // Create prescription in database
+            const result = await PrescriptionDAO.create({
+                patientId: this.patientId,
+                doctorId: this.doctorId,
+                medications: this.medications,
+                status: 'active'
+            });
+
+            if (result) {
+                // Get user IDs from Patient and Doctor
+                const patient = await PatientDAO.findById(this.patientId);
+                const doctor = await DoctorDAO.findById(this.doctorId);
+
+                if (!patient || !doctor) {
+                    throw new Error('Could not find patient or doctor information');
+                }
+
+                // Create observers for patient and doctor
+                const patientObserver = new PrescriptionObserver(patient.userId);
+                const doctorObserver = new PrescriptionObserver(doctor.userId);
+
+                // Attach observers
+                notificationSubject.attach(patientObserver, 'prescription');
+                notificationSubject.attach(doctorObserver, 'prescription');
+
+                // Notify observers
+                const notificationData = {
+                    prescriptionId: result.prescriptionId,
+                    medications: this.medications,
+                    additionalInfo: 'A new prescription has been created.'
+                };
+                notificationSubject.notify('prescription', notificationData);
+
+                // Detach observers after notification
+                notificationSubject.detach(patientObserver, 'prescription');
+                notificationSubject.detach(doctorObserver, 'prescription');
+
+                return result;
+            }
+        } catch (error) {
+            console.error('Error creating prescription:', error);
+            throw error;
+        }
+    }
+
+    async update(medications) {
+        try {
+            // Update prescription in database
+            const result = await PrescriptionDAO.update(this.prescriptionId, {
+                medications: medications,
+                status: 'updated'
+            });
+
+            if (result) {
+                // Get user IDs from Patient and Doctor
+                const patient = await PatientDAO.findById(this.patientId);
+                const doctor = await DoctorDAO.findById(this.doctorId);
+
+                if (!patient || !doctor) {
+                    throw new Error('Could not find patient or doctor information');
+                }
+
+                // Create observers for patient and doctor
+                const patientObserver = new PrescriptionObserver(patient.userId);
+                const doctorObserver = new PrescriptionObserver(doctor.userId);
+
+                // Attach observers
+                notificationSubject.attach(patientObserver, 'prescription');
+                notificationSubject.attach(doctorObserver, 'prescription');
+
+                // Notify observers
+                const notificationData = {
+                    prescriptionId: this.prescriptionId,
+                    medications: medications,
+                    additionalInfo: 'The prescription has been updated.'
+                };
+                notificationSubject.notify('prescription', notificationData);
+
+                // Detach observers after notification
+                notificationSubject.detach(patientObserver, 'prescription');
+                notificationSubject.detach(doctorObserver, 'prescription');
+
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error('Error updating prescription:', error);
+            throw error;
+>>>>>>> 5b9d08a667131ccea26609273ee4f05275518e40
         }
     }
 }

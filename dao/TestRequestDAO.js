@@ -226,9 +226,8 @@ class TestRequestDAO {
                 requestedByDoctorId,
                 serviceId,
                 requestDate = new Date(),
-                status = 'pending', // Default status
-                notes,
-                recordId // Added from file 2's createTestResult logic
+                status = 'pending',
+                notes
             } = testRequestData;
 
             const [requestId] = await db('TestRequest').insert({
@@ -237,8 +236,7 @@ class TestRequestDAO {
                 serviceId,
                 requestDate,
                 status,
-                notes,
-                recordId // Ensure this column exists in your TestRequest table
+                notes
             });
 
             return requestId;

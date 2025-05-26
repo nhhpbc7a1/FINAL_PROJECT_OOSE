@@ -3,6 +3,7 @@ import check from '../middlewares/auth.middleware.js'
 import User from '../models/User.js';
 import accountService from '../services/account.service.js';
 import moment from 'moment';
+import UserFactory from '../factories/UserFactory.js';
 
 
 const router = express.Router();
@@ -113,21 +114,23 @@ router.post('/logout', check, function (req, res) {
 });
 
 router.post('/signup', async function (req, res) {
-
     try {
         const { name, email, phone, birthday, gender, address, password } = req.body;
         
-        // Create a new User instance
-        const user = new User({
+        // Create user data object
+        const userData = {
             fullName: name,
             email,
             phoneNumber: phone,
             dob: moment(birthday, 'DD/MM/YYYY').format('YYYY-MM-DD'),
             gender,
             address,
-            password, // Password will be hashed in the save() method
-            roleId: 3,
-        });
+            password,
+            roleId: 3, // Patient role
+        };
+        
+        // Use UserFactory to create user
+        const user = UserFactory.createUser(userData);
         
         // Save the user to the database
         await user.save();

@@ -1,5 +1,27 @@
 {{#section 'css'}}
     <link rel="stylesheet" href="/public/css/patient-side/makePayment.css">
+    <style>
+        .payment-button {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .payment-button:hover {
+            background-color: #0052a3;
+        }
+
+        .payment-button img {
+            height: 24px;
+        }
+    </style>
 {{/section}}
 
 {{#section 'js'}}
@@ -7,23 +29,19 @@
     $(document).ready(function() {
         // Handle payment button
         $(".pay-button").click(function(e) {
-            e.preventDefault(); 
+            e.preventDefault();
             
-            const paymentData = {
-                amount: $("#total-amount").val(),
-                paymentMethod: "VNPAY",
-                transactionId: generateTransactionId() // Generate a random transaction ID for demo purposes
-            };
+            const amount = $("#total-amount").val();
             
             // Submit payment data via AJAX
             $.ajax({
                 url: '/patient/book-appointment/process-payment',
                 type: 'POST',
                 contentType: 'application/json',
-                data: JSON.stringify(paymentData),
+                data: JSON.stringify({ amount: amount }),
                 success: function(response) {
-                    if (response.success) {
-                        window.location.href = response.redirectUrl;
+                    if (response.success && response.paymentUrl) {
+                        window.location.href = response.paymentUrl;
                     }
                 },
                 error: function(xhr) {
@@ -32,16 +50,11 @@
                 }
             });
         });
-        
+
         // Handle back button
         $(".back-button").click(function() {
             window.location.href = '/patient/book-appointment/verify-email';
         });
-        
-        // Helper function to generate a mock transaction ID
-        function generateTransactionId() {
-            return "VNPAY_" + Math.floor(Math.random() * 1000000000);
-        }
     });
 </script>
 {{/section}}
@@ -66,7 +79,7 @@
                         <input type="text" id="birthday" value="{{formatDate appointment.birthday}}" readonly>
                         <img src="/public/images/icon/icons8-calendar-32.png" alt="" width="20px">
                     </div>
-                </div>                           
+                </div>
                 <div class="input-group">
                     <input type="text" id="address" value="{{appointment.patientAddress}}" readonly>
                 </div>
@@ -91,16 +104,16 @@
                             No additional services
                         {{/if}}
                     </span>
-                </div>                                
+                </div>
                 <div>
                     <img src="/public/images/icon/icons8-time-32.png" alt="">
                     <b>Date:</b>
                     <span id="appointment-date">{{formatDate appointment.appointmentDate}}</span>
-                </div>                                
+                </div>
                 <div>
                     <img src="/public/images/icon/icons8-payment-32 (1) copy.png" alt="">
                     <span id="total-cost" style="color: #16A90F;">{{formatCurrency totalAmount}} VND</span>
-                </div>                                
+                </div>
             </div>
         </div>
     </div>
