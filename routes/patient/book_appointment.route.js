@@ -9,7 +9,9 @@ import Patient from '../../models/Patient.js';
 import User from '../../models/User.js';
 import EmailVerification from '../../models/EmailVerification.js';
 import AppointmentService from '../../models/AppointmentService.js';
-import emailService from '../../services/email.service.js';
+import Payment from '../../models/Payment.js';
+
+import VNPay from '../../models/VNPay.js';
 
 const router = express.Router();
 
@@ -154,12 +156,9 @@ router.post('/input-form', async function (req, res) {
             services: []
         };
 
-        console.log('Processed appointmentData:', appointmentData);
-
         // Add the selected service to the services array if provided
         if (req.body.serviceId) {
             appointmentData.services.push(req.body.serviceId);
-            console.log('Added service ID to services array:', req.body.serviceId);
         }
 
         // Validate required fields
@@ -173,46 +172,34 @@ router.post('/input-form', async function (req, res) {
 
         // Get or create user and patient
         let user = await User.findByEmail(appointmentData.email);
-        if (user) {
-            // Update user information
-            user.fullName = appointmentData.fullName || user.fullName;
-            user.phoneNumber = appointmentData.phoneNumber || user.phoneNumber;
-            user.address = appointmentData.address || user.address;
-            await user.save();
-        } else {
-            // Create new user
+        let patient;
+
+        if (!user) {
             user = new User({
-                fullName: appointmentData.fullName,
                 email: appointmentData.email,
+                fullName: appointmentData.fullName,
                 phoneNumber: appointmentData.phoneNumber,
                 address: appointmentData.address,
-                roleId: 3, // Patient role
+                gender: appointmentData.gender,
+                dob: appointmentData.birthday,
+                role: 'patient'
             });
             await user.save();
         }
 
-        // Get or create patient
-        let patient = await Patient.findByUserId(user.userId);
-        if (patient) {
-            // Update patient information
-            patient.dob = parseDateString(appointmentData.birthday) || patient.dob;
-            patient.gender = appointmentData.gender || patient.gender;
-            await patient.save();
-        } else {
-            // Create new patient
+        patient = await Patient.findByUserId(user.userId);
+        if (!patient) {
             patient = new Patient({
-                userId: user.userId,
-                dob: parseDateString(appointmentData.birthday),
-                gender: appointmentData.gender
+                userId: user.userId
             });
             await patient.save();
         }
 
-        // Handle doctor and queue assignment
+        // Format appointment date
         const formattedAppointmentDate = parseDateString(appointmentData.appointmentDate);
-        let doctorId = appointmentData.doctorId;
+        let doctorId = req.body.doctorId || null;
         let roomId = null;
-        let queueNumber = null;
+        let queueNumber = 1;
         let estimatedTime = null;
 
         if (!doctorId) {
@@ -256,33 +243,23 @@ router.post('/input-form', async function (req, res) {
         
         await appointment.save();
 
-        // Add services if selected
+        // Add service if selected
         if (appointmentData.services && appointmentData.services.length > 0) {
-            for (const serviceId of appointmentData.services) {
-                const service = await Service.findById(serviceId);
-                if (service) {
-                    const appointmentService = new AppointmentService({
-                        appointmentId: appointment.appointmentId,
-                        serviceId: service.serviceId,
-                        price: service.price
-                    });
-                    await appointmentService.save();
-                }
+            const serviceId = appointmentData.services[0]; // Get the single service ID
+            const service = await Service.findById(serviceId);
+            if (service) {
+                const appointmentService = new AppointmentService({
+                    appointmentId: appointment.appointmentId,
+                    serviceId: service.serviceId,
+                    price: service.price
+                });
+                await appointmentService.save();
             }
         }
 
-        // Generate and save verification code
-        const verificationCode = generateVerificationCode();
-        const emailVerification = new EmailVerification({
-            email: appointmentData.email,
-            verificationCode: verificationCode,
-            appointmentId: appointment.appointmentId,
-            expiresAt: new Date(Date.now() + 30 * 60000) // 30 minutes expiration
-        });
-        await emailVerification.save();
-
-        // Send verification email
-        await emailService.sendVerificationEmail(appointmentData.email, verificationCode);
+        // Create email verification
+        const emailVerification = await EmailVerification.create(appointmentData.email, appointment.appointmentId);
+        await emailVerification.sendVerificationEmail();
 
         // Store appointment data in session
         req.session.appointmentData = {
@@ -362,19 +339,25 @@ router.post('/verify-email', async function (req, res) {
         
         console.log('Verifying email:', email, 'with code:', verificationCode);
 
-        // Verify the code
+        // Find and verify the code
         const verification = await EmailVerification.findByEmailAndCode(email, verificationCode);
         
-        if (!verification || verification.isExpired() || !verification.appointmentId) {
+        if (!verification) {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid or expired verification code'
+                message: 'Invalid verification code'
             });
         }
 
-        // Mark verification as verified
-        verification.verified = true;
-        await verification.save();
+        if (verification.isExpired()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Verification code has expired'
+            });
+        }
+
+        // Verify the code
+        await verification.verify(verificationCode);
 
         // Update appointment status
         const appointment = await Appointment.findById(verification.appointmentId);
@@ -395,7 +378,7 @@ router.post('/verify-email', async function (req, res) {
         console.error('Error verifying email:', error);
         res.status(500).json({
             success: false,
-            message: 'Internal server error: ' + error.message
+            message: error.message || 'Internal server error'
         });
     }
 });
@@ -403,36 +386,71 @@ router.post('/verify-email', async function (req, res) {
 // Step 3: Show payment form
 router.get('/make-payment', async function (req, res) {
     try {
-        // Set current step for UI highlighting
-        res.locals.currentStep = 'make-payment';
-        
         if (!req.session.appointmentData) {
             return res.redirect('/patient/book-appointment/input-form');
         }
 
         const { appointmentId } = req.session.appointmentData;
+        
+        // Get appointment with details
         const appointment = await Appointment.findByIdWithDetails(appointmentId);
-
         if (!appointment) {
             throw new Error('Appointment not found');
         }
 
         // Get services for this appointment
         const appointmentServices = await AppointmentService.findByAppointmentId(appointmentId);
-        appointment.services = appointmentServices;
-
+        
         // Calculate total amount
-        const totalAmount = calculateTotalAmount(appointment.services);
+        const totalAmount = calculateTotalAmount(appointmentServices);
 
-        console.log(appointment);
         res.render('vwPatient/bookAppointment/makePayment', {
-            appointment: appointment,
-            totalAmount: totalAmount
+            appointment,
+            totalAmount
         });
     } catch (error) {
         console.error('Error loading payment page:', error);
-        res.redirect('/patient/book-appointment/input-form');
+        res.redirect('/patient/book-appointment/error');
     }
+});
+
+// Add success route
+router.get('/success', async function (req, res) {
+    try {
+        if (!req.session.appointmentData) {
+            return res.redirect('/patient/book-appointment/input-form');
+        }
+
+        // Clear appointment data from session after successful payment
+        delete req.session.appointmentData;
+        
+        res.render('vwPatient/bookAppointment/success');
+    } catch (error) {
+        console.error('Error loading success page:', error);
+        res.redirect('/patient/book-appointment/error');
+    }
+});
+
+// Add error route
+router.get('/error', async function (req, res) {
+    const errorCode = req.query.code || '99';
+    let errorMessage = 'An unknown error occurred';
+    
+    switch (errorCode) {
+        case '97':
+            errorMessage = 'Invalid payment signature';
+            break;
+        case '99':
+            errorMessage = 'Payment processing error';
+            break;
+        default:
+            errorMessage = 'Payment failed';
+    }
+    
+    res.render('vwPatient/bookAppointment/error', {
+        errorCode,
+        errorMessage
+    });
 });
 
 // Handle payment
@@ -446,44 +464,83 @@ router.post('/process-payment', async function (req, res) {
         }
 
         const { appointmentId } = req.session.appointmentData;
-        const paymentData = {
-            amount: req.body.amount,
-            method: req.body.paymentMethod,
-            transactionId: req.body.transactionId
-        };
+        const { amount } = req.body;
 
-        // Get the appointment
-        const appointment = await Appointment.findById(appointmentId);
-        if (!appointment) {
-            return res.status(404).json({
-                success: false,
-                message: 'Appointment not found'
-            });
-        }
+        // Create VNPay payment URL
+        const ipAddr = req.headers['x-forwarded-for'] || 
+                      req.connection.remoteAddress || 
+                      req.socket.remoteAddress || 
+                      req.connection.socket.remoteAddress;
 
-        // Update appointment payment status
-        appointment.paymentStatus = 'completed';
-        appointment.status = 'confirmed';
-        await appointment.save();
-
-        // Create payment record if needed
-        // In a full implementation, you would create a Payment model and save the payment details
-
-        // Keep appointment ID for viewing but update session data
-        req.session.appointmentData = {
-            appointmentId: appointmentId,
-            paymentComplete: true
-        };
+        const paymentUrl = await VNPay.createPaymentUrl(appointmentId, amount, ipAddr);
 
         res.json({
             success: true,
-            redirectUrl: `/patient/book-appointment/view-appointment?id=${appointmentId}`
+            paymentUrl: paymentUrl
         });
     } catch (error) {
         console.error('Error processing payment:', error);
         res.status(500).json({
             success: false,
             message: 'Internal server error: ' + error.message
+        });
+    }
+});
+
+// Handle VNPay return
+router.get('/vnpay-return', async function (req, res) {
+    try {
+        const vnpParams = req.query;
+        const paymentStatus = VNPay.getPaymentStatus(vnpParams);
+
+        if (paymentStatus.status) {
+            // Get the appointment ID from the order info
+            const appointmentId = parseInt(vnpParams.vnp_OrderInfo.split(' ').pop());
+            
+            // Get the appointment
+            const appointment = await Appointment.findById(appointmentId);
+            if (!appointment) {
+                throw new Error('Appointment not found');
+            }
+
+            // Create payment record
+            const paymentData = {
+                appointmentId: appointmentId,
+                amount: parseFloat(vnpParams.vnp_Amount) / 100, // Convert from VNPay amount (in cents)
+                method: 'bank_transfer',
+                status: 'completed',
+                transactionId: vnpParams.vnp_TransactionNo,
+                paymentDate: new Date(),
+                notes: `VNPay Transaction Reference: ${vnpParams.vnp_TxnRef}`
+            };
+
+            // Save payment using Payment model
+            await Payment.create(paymentData);
+
+            // Update appointment status
+            await Appointment.update(appointmentId, {
+                status: 'confirmed',
+                paymentStatus: 'completed'
+            });
+
+            // Update session data
+            req.session.appointmentData = {
+                appointmentId: appointmentId,
+                paymentComplete: true
+            };
+
+            // Redirect to success page
+            res.redirect('/patient/book-appointment/success');
+        } else {
+            // Payment failed
+            res.render('vwPatient/bookAppointment/paymentError', {
+                message: paymentStatus.message || 'Thanh toán thất bại'
+            });
+        }
+    } catch (error) {
+        console.error('Error handling payment return:', error);
+        res.render('vwPatient/bookAppointment/paymentError', {
+            message: 'Có lỗi xảy ra trong quá trình xử lý thanh toán: ' + error.message
         });
     }
 });
