@@ -185,7 +185,6 @@ class Prescription {
         }
     }
 
-<<<<<<< HEAD
     /**
      * Find prescriptions by appointment ID
      * @param {number} appointmentId - Appointment ID
@@ -198,7 +197,13 @@ class Prescription {
         } catch (error) {
             console.error(`Error finding prescriptions for appointment ${appointmentId}:`, error);
             throw new Error('Unable to find prescriptions by appointment: ' + error.message);
-=======
+        }
+    }
+
+    /**
+     * Create a new prescription with notifications
+     * @returns {Promise<Object>} The created prescription result
+     */
     async create() {
         try {
             // Create prescription in database
@@ -246,6 +251,11 @@ class Prescription {
         }
     }
 
+    /**
+     * Update prescription with notifications
+     * @param {Array} medications - Updated medications list
+     * @returns {Promise<boolean>} Success status
+     */
     async update(medications) {
         try {
             // Update prescription in database
@@ -289,7 +299,6 @@ class Prescription {
         } catch (error) {
             console.error('Error updating prescription:', error);
             throw error;
->>>>>>> 5b9d08a667131ccea26609273ee4f05275518e40
         }
     }
 }
