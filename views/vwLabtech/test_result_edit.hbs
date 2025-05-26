@@ -435,9 +435,6 @@
                 <option value="text" {{#if (eq testResult.resultType 'text')}}selected{{/if}}>Text Description</option>
                 <option value="file" {{#if (eq testResult.resultType 'file')}}selected{{/if}}>File/Image Upload</option>
             </select>
-            {{#if testResult.resultType}}
-            <input type="hidden" name="resultType" value="{{testResult.resultType}}">
-            {{/if}}
         </div>
         
         <div class="form-group">
@@ -465,15 +462,9 @@
                     <div class="form-group">
                         <label for="normalRange" class="form-label">Normal Range</label>
                         <div class="normal-range-group">
-                            {{#if testResult.normalRange}}
                             <input type="number" id="normalRangeMin" name="normalRangeMin" class="form-control" step="0.01" placeholder="Min" value="{{splitRange testResult.normalRange 0}}">
                             <span>to</span>
                             <input type="number" id="normalRangeMax" name="normalRangeMax" class="form-control" step="0.01" placeholder="Max" value="{{splitRange testResult.normalRange 1}}">
-                            {{else}}
-                            <input type="number" id="normalRangeMin" name="normalRangeMin" class="form-control" step="0.01" placeholder="Min">
-                            <span>to</span>
-                            <input type="number" id="normalRangeMax" name="normalRangeMax" class="form-control" step="0.01" placeholder="Max">
-                            {{/if}}
                         </div>
                     </div>
                 </div>
@@ -560,6 +551,7 @@
     </div>
 
     <div class="btn-container">
+        <input type="hidden" name="_csrf" value="{{csrfToken}}">
         <a href="/labtech/test-results/{{testResult.resultId}}" class="btn btn-outline">Cancel</a>
         <button type="submit" class="btn btn-primary">Save Changes</button>
     </div>
@@ -694,26 +686,28 @@
             handleFileSelection(fileInput.files);
         }
         
-        // Validate form before submission
-        $('#test-result-form').on('submit', function(e) {
-            const resultType = $('#resultType').val();
+        // Add form submission handling
+        document.getElementById('test-result-form').addEventListener('submit', function(e) {
+            const formData = new FormData(this);
+            const resultType = document.getElementById('resultType').value;
             
+            // Remove file input if no file is selected and it's not a file type result
+            if (resultType !== 'file' && formData.get('resultFile').size === 0) {
+                formData.delete('resultFile');
+            }
+            
+            // Ensure all required fields are filled based on result type
             if (resultType === 'numeric') {
-                const resultNumeric = $('#resultNumeric').val();
-                const normalRangeMin = $('#normalRangeMin').val();
-                const normalRangeMax = $('#normalRangeMax').val();
-                const unit = $('#unit').val();
-                
-                if (!resultNumeric || !normalRangeMin || !normalRangeMax || !unit) {
-                    alert('For numeric results, please provide the value, normal range, and unit.');
+                if (!formData.get('resultNumeric') || !formData.get('unit')) {
                     e.preventDefault();
+                    alert('Please fill in all required fields for numeric result');
+                    return;
                 }
             } else if (resultType === 'text') {
-                const resultText = $('#resultText').val();
-                
-                if (!resultText) {
-                    alert('Please provide the result text.');
+                if (!formData.get('resultText')) {
                     e.preventDefault();
+                    alert('Please fill in the result description');
+                    return;
                 }
             }
         });

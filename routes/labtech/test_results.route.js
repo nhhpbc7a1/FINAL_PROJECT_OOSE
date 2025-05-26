@@ -2,10 +2,30 @@ import express from 'express';
 import moment from 'moment';
 import TestResult from '../../models/TestResult.js';
 import LabTechnician from '../../models/LabTechnician.js';
-import upload from '../../middlewares/upload.middleware.js';
-import db from '../../ultis/db.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import fs from 'fs/promises';
 
 const router = express.Router();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const UPLOAD_DIR = path.join(__dirname, '../../public/uploads/test_results/');
+
+// Ensure upload directory exists
+const ensureUploadDirExists = async () => {
+    try {
+        await fs.access(UPLOAD_DIR);
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            await fs.mkdir(UPLOAD_DIR, { recursive: true });
+            console.log(`Created upload directory: ${UPLOAD_DIR}`);
+        } else {
+            console.error('Error checking/creating upload directory:', error);
+        }
+    }
+};
+ensureUploadDirExists();
 
 // Set layout for all labtech routes
 router.use((req, res, next) => {
@@ -196,10 +216,9 @@ router.get('/edit/:id', async (req, res) => {
  * POST /labtech/test-results/edit/:id
  * Handle form submission for updating a test result
  */
-router.post('/edit/:id', upload.single('resultFile'), async (req, res) => {
+router.post('/edit/:id', async (req, res) => {
     try {
         console.log("Form data received:", req.body);
-        console.log("File received:", req.file);
         
         const resultId = req.params.id;
         
@@ -217,18 +236,6 @@ router.post('/edit/:id', upload.single('resultFile'), async (req, res) => {
         if (!testResult) {
             req.session.flashMessage = { type: 'error', message: 'Test result not found' };
             return res.redirect('/labtech/test-results');
-        }
-        
-        // Ensure recordId is set by synchronizing it from the appointment
-        if (!testResult.recordId) {
-            console.log("No recordId found, attempting to synchronize from appointment");
-            const syncSuccess = await testResult.syncRecordIdFromAppointment();
-            
-            if (syncSuccess) {
-                console.log(`Successfully synchronized recordId: ${testResult.recordId}`);
-            } else {
-                console.warn(`Could not synchronize recordId for test result ${resultId}. Proceeding with null recordId.`);
-            }
         }
         
         // Parse form data
@@ -257,18 +264,40 @@ router.post('/edit/:id', upload.single('resultFile'), async (req, res) => {
         // Handle file upload
         let fileData = null;
         
-        if (req.file) {
-            console.log("Processing uploaded file:", req.file);
-            // Prepare file data for database
-            fileData = {
-                fileName: req.file.originalname,
-                filePath: req.file.path.replace(/\\/g, '/'),
-                fileType: req.file.originalname.split('.').pop().toLowerCase(),
-                mimeType: req.file.mimetype,
-                fileSize: req.file.size,
-                uploadDate: new Date()
-            };
-            console.log("File data prepared:", fileData);
+        if (req.files && req.files.resultFile) {
+            const file = req.files.resultFile;
+            
+            // Validate file type
+            const fileExtension = path.extname(file.name).toLowerCase();
+            const allowedExtensions = ['.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx'];
+            
+            if (!allowedExtensions.includes(fileExtension)) {
+                req.session.flashMessage = { type: 'error', message: 'Invalid file type. Only PDF, images, and documents are allowed.' };
+                return res.redirect(`/labtech/test-results/edit/${resultId}`);
+            }
+            
+            // Generate unique filename
+            const timestamp = Date.now();
+            const filename = `result_${resultId}_${timestamp}${fileExtension}`;
+            const uploadPath = path.join(UPLOAD_DIR, filename);
+            
+            try {
+                await file.mv(uploadPath);
+                
+                fileData = {
+                    fileName: file.name,
+                    filePath: `/public/uploads/test_results/${filename}`,
+                    fileType: file.mimetype, // This is the MIME type (e.g., 'application/pdf')
+                    fileSize: file.size,
+                    uploadDate: new Date(),
+                    description: `Test result file for test #${resultId}`,
+                    uploadedByUserId: userId
+                };
+            } catch (uploadError) {
+                console.error('Error uploading file:', uploadError);
+                req.session.flashMessage = { type: 'error', message: 'Failed to upload file. Please try again.' };
+                return res.redirect(`/labtech/test-results/edit/${resultId}`);
+            }
         }
         
         // Prepare normalized data
@@ -288,8 +317,6 @@ router.post('/edit/:id', upload.single('resultFile'), async (req, res) => {
         testResult.resultType = resultType;
         testResult.status = 'completed';
         testResult.performedDate = new Date();
-        
-        console.log("Saving test result with file:", testResult);
         
         // Use the new saveWithFile method if we have a file, otherwise use regular save
         if (fileData) {

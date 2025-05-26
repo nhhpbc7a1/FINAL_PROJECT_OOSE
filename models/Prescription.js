@@ -180,6 +180,21 @@ class Prescription {
             throw new Error('Failed to create medical record and prescription: ' + error.message);
         }
     }
+
+    /**
+     * Find prescriptions by appointment ID
+     * @param {number} appointmentId - Appointment ID
+     * @returns {Promise<Array<Prescription>>} Array of prescriptions
+     */
+    static async findByAppointmentId(appointmentId) {
+        try {
+            const prescriptions = await PrescriptionDAO.findByAppointmentId(appointmentId);
+            return prescriptions.map(prescription => new Prescription(prescription));
+        } catch (error) {
+            console.error(`Error finding prescriptions for appointment ${appointmentId}:`, error);
+            throw new Error('Unable to find prescriptions by appointment: ' + error.message);
+        }
+    }
 }
 
 export default Prescription; 
